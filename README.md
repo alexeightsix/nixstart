@@ -163,6 +163,30 @@ installed; delete the `.qcow2` it leaves behind and it never happened.
 Keychron, Bluetooth, tailscale, snapshots, the fixed xrandr line — and
 autologins straight to i3. Software rendering, so expect it to feel slow.
 
+## Installing
+
+```sh
+scripts/install.sh desktop /dev/nvme0n1
+scripts/install.sh laptop  /dev/nvme0n1 --luks --swap 40G
+scripts/install.sh desktop /dev/nvme0n1 --dry-run
+```
+
+btrfs with subvolumes, because `snapshots.home` needs `/home` to be one:
+1GiB vfat ESP, optional swap, then `@` `@home` `@nix` `@log`. `@nix` and
+`@log` are separate so neither lands inside a snapshot of `/`.
+
+Generates a real `hardware-configuration.nix` into `hosts/<host>/`, replacing
+the placeholder, plus a `filesystems.nix` with by-label devices and the LUKS
+UUID when encrypted.
+
+Checks every tool it needs *before* printing the plan — a `parted` that turns
+out to be missing halfway through leaves a disk partitioned but not formatted,
+which is worse than not starting. Then it refuses the disk this system is
+running from, and makes you type the device name back.
+
+`--keep-home` reuses an existing `@home` rather than formatting it. Check that
+uid 1000 still owns it afterwards.
+
 ## Installer USB
 
 ```sh
@@ -182,8 +206,6 @@ that refuses to start.
    exist only so the flake evaluates.
 2. Change `user.initialPassword` (`"changeme"`), or add a `user-password`
    secret to `secrets/<hostname>.yaml`, which wins over it.
-3. `pkgs/fury-renegade-rgb` carries `lib.fakeHash` for `src` and `cargoHash`.
-   Desktop only. Build once and paste in what the failure prints.
-4. Set the laptop's `dpi` once `xrandr --query` says which panel it has.
-5. The `dotfiles` input is a local path, so this flake only evaluates on a
+3. Set the laptop's `dpi` once `xrandr --query` says which panel it has.
+4. The `dotfiles` input is a local path, so this flake only evaluates on a
    machine that has that checkout. Point it at a git URL to change that.

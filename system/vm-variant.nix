@@ -21,11 +21,16 @@
       diskSize = 16 * 1024;
 
       # A window rather than a serial console, which is the whole point here.
+      #
+      # No gl=on: it needs an EGL display the GTK backend cannot always get,
+      # and when it cannot, qemu refuses to start rather than falling back.
+      # Software rendering is slower but it always works, which matters more
+      # for something whose job is to be looked at once.
       graphics = true;
       qemu.options = [
         "-vga none"
-        "-device virtio-gpu-pci"
-        "-display gtk,gl=on,show-cursor=on"
+        "-device virtio-gpu-pci,xres=1920,yres=1080"
+        "-display gtk,show-cursor=on"
       ];
 
       # The host's Nix store is mounted read-only instead of being copied into
