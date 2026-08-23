@@ -11,6 +11,12 @@
   nixstart.system = {
     user.name = "alex";
 
+    # First-boot password only, and world-readable in the store — run
+    # `passwd` on the first login and this is ignored from then on. Replace it
+    # with a `user-password` secret in secrets/HOSTNAME.yaml when sops is set
+    # up; that wins over this whenever it exists.
+    user.initialPassword = "changeme";
+
     desktop.enable = true;
     apps.gui = true;
     tailscale = true;
@@ -56,7 +62,9 @@
       "rust"
       "lua"
       "python"
+      "gtk" # gtk4 + libadwaita + blueprint-compiler, from stage-01
     ];
+    databases = true; # the `mysql` and `psql` clients
     agents = true;
   };
 }

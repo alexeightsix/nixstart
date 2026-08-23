@@ -220,6 +220,16 @@ in
       '';
     };
 
+    databases = mkOption {
+      type = types.bool;
+      default = false;
+      description = ''
+        mariadb and postgresql clients. stage-01 installed both server
+        packages to get the `mysql` and `psql` binaries; the servers
+        themselves run in Docker, so only the clients are here.
+      '';
+    };
+
     agents = mkOption {
       type = types.bool;
       default = false;

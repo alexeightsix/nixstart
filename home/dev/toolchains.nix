@@ -41,11 +41,27 @@ in
       lua
       luarocks
     ]
+    # stage-01's gtk4-devel, libadwaita-devel and blueprint-compiler — the
+    # three together are a GTK4/Adwaita app build environment, and none of
+    # them means anything on its own.
+    ++ lib.optionals (has "gtk") [
+      gtk4
+      libadwaita
+      blueprint-compiler
+      pkg-config
+      gobject-introspection
+    ]
     # rustup rather than a pinned toolchain: lua/config/lsp.lua's comment says
     # rust-analyzer comes from rustup deliberately, "which keeps it matched to
     # the compiler the project is actually built with". Overriding that here
     # would be a change of behaviour, not a port.
-    ++ lib.optionals (has "rust") [ rustup ];
+    ++ lib.optionals (has "rust") [ rustup ]
+    # The database clients. The servers run in Docker; stage-01 installed the
+    # full mariadb and postgresql packages only to get `mysql` and `psql`.
+    ++ lib.optionals cfg.databases [
+      mariadb
+      postgresql
+    ];
 
   home.sessionVariables = lib.mkIf (has "rust") {
     RUSTUP_HOME = "${config.home.homeDirectory}/.rustup";

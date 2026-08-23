@@ -24,6 +24,10 @@ in
       age.sshKeyPaths = [ "/etc/ssh/ssh_host_ed25519_key" ];
 
       secrets = {
+        # The login password, as a hash from `mkpasswd -m yescrypt`. Read by
+        # system/core/users.nix in preference to any initialPassword.
+        user-password.neededForUsers = true;
+
         zsh-secrets = {
           owner = cfg.user.name;
           path = "/home/${cfg.user.name}/.zsh_secrets";

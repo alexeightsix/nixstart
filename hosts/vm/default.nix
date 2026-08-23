@@ -45,7 +45,7 @@
   # The only way in. Password auth because this is a throwaway with no key
   # provisioned; system/services/openssh.nix defaults it off for real hosts.
   services.openssh.settings.PasswordAuthentication = lib.mkForce true;
-  users.users.alex.initialPassword = "test";
+  nixstart.system.user.initialPassword = "test";
   users.users.root.initialPassword = "test";
   security.sudo.wheelNeedsPassword = lib.mkForce false;
 

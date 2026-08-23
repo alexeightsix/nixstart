@@ -53,5 +53,14 @@ in
     gh
     delta
     vhs
+
+    # stage-01 odds and ends that belong to no toolchain in particular.
+    jq
+    gettext
+    ncdu
+    btop
+    fastfetch
+    tree
+    unzip
   ];
 }
