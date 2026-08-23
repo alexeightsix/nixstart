@@ -68,21 +68,36 @@ new() {
     local kind="${2:-$KIND_DEFAULT}"
     ensure_project
 
-    local args=(--project "$PROJECT")
+    local args=()
     [ "$kind" = vm ] && args+=(--vm)
 
-    echo "==> launching $name ($kind)"
-    incus launch "agent-$kind" "$name" "${args[@]}" \
+    # init rather than launch: the uid mapping below has to be in place
+    # before the instance starts, and it cannot be changed while it runs.
+    echo "==> creating $name ($kind)"
+    incus_ init "agent-$kind" "$name" "${args[@]}" \
         -c limits.cpu=4 \
         -c limits.memory=4GiB
 
-    # The project directory the agent works in. A disk device rather than a
-    # copy, so what the agent changes is visible on the host immediately.
     if [ -n "${AGENT_WORKSPACE:-}" ]; then
-        echo "==> mounting $AGENT_WORKSPACE at /workspace"
+        local workspace
+        workspace=$(realpath "$AGENT_WORKSPACE")
+
+        if [ "$kind" = container ]; then
+            # An unprivileged container shifts uids, so the host's files
+            # arrive owned by nobody and every write is refused — which makes
+            # the mount useless to an agent. This maps the invoking user onto
+            # the guest's account in both directions, so a file written on
+            # either side belongs to the right person on the other.
+            echo "==> mapping uid $(id -u) onto the guest's agent account"
+            incus_ config set "$name" raw.idmap "both $(id -u) 1000"
+        fi
+
+        echo "==> mounting $workspace at /workspace"
         incus_ config device add "$name" workspace disk \
-            source="$AGENT_WORKSPACE" path=/workspace
+            source="$workspace" path=/workspace
     fi
+
+    incus_ start "$name"
 
     echo "==> waiting for the instance to answer"
     until incus_ exec "$name" -- true 2>/dev/null; do sleep 1; done

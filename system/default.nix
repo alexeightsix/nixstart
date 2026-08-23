@@ -31,6 +31,7 @@
 
     ./virtualisation.nix
     ./dev-env.nix
+    ./vm-variant.nix
 
     ./home.nix
   ];

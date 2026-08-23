@@ -20,6 +20,29 @@ let
   hasSopsPassword = sops ? user-password;
 in
 {
+  options.nixstart.system.user.uid = lib.mkOption {
+    type = lib.types.int;
+    default = 1000;
+    description = ''
+      Pinned rather than left to be allocated. Every file in /home carries a
+      numeric owner, so an account that comes back with a different uid owns
+      none of them — and nothing warns you, the files simply belong to a
+      stranger.
+    '';
+  };
+
+  options.nixstart.system.user.gid = lib.mkOption {
+    type = lib.types.int;
+    default = 1000;
+    description = ''
+      The account's own group, matching its uid. NixOS puts a normal user in
+      the shared `users` group (gid 100) by default; most other distributions
+      give each user a group of their own with the same number. Taking the
+      default here would leave every file in a migrated /home with a group
+      that no longer means anything.
+    '';
+  };
+
   options.nixstart.system.user.initialPassword = lib.mkOption {
     type = lib.types.nullOr lib.types.str;
     default = null;
@@ -51,8 +74,12 @@ in
       }
     ];
 
+    users.groups.${cfg.user.name}.gid = cfg.user.gid;
+
     users.users.${cfg.user.name} = {
       isNormalUser = true;
+      uid = cfg.user.uid;
+      group = cfg.user.name;
       description = cfg.user.fullName;
       shell = pkgs.zsh;
       hashedPasswordFile = lib.mkIf hasSopsPassword sops.user-password.path;

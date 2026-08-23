@@ -51,8 +51,15 @@ in
   config = {
     nixstart.devEnv.enable = true;
 
+    users.groups.${cfg.user}.gid = 1000;
+
     users.users.${cfg.user} = {
       isNormalUser = true;
+      # Pinned, because scripts/agent maps the host's uid onto 1000 inside the
+      # guest so a mounted workspace is writable. If this drifts, that mapping
+      # lands on the wrong account and every write is refused.
+      uid = 1000;
+      group = cfg.user;
       extraGroups = [ "wheel" ];
       shell = pkgs.zsh;
       openssh.authorizedKeys.keys = cfg.authorizedKeys;

@@ -150,6 +150,32 @@ Disk is bounded elsewhere too: `min-free`/`max-free` make the Nix daemon
 collect on its own below 5 GiB, weekly `nix-optimise` hard-links duplicates,
 journald is capped at 2 GB, and `/tmp` is cleared on boot.
 
+## Trying it without installing
+
+```sh
+nixos-rebuild build-vm --flake .#desktop
+./result/bin/run-desktop-vm          # user alex, password vm
+```
+
+Boots the real configuration in a window against a throwaway disk. Nothing is
+installed; delete the `.qcow2` it leaves behind and it never happened.
+`system/vm-variant.nix` forces off what a VM has no business running — RGB,
+Keychron, Bluetooth, tailscale, snapshots, the fixed xrandr line — and
+autologins straight to i3. Software rendering, so expect it to feel slow.
+
+## Installer USB
+
+```sh
+scripts/install-iso.sh               # list acceptable devices
+scripts/install-iso.sh /dev/sdX      # download, verify, write
+```
+
+Refuses anything that is not removable, is mounted, or holds a filesystem this
+system is running from, then makes you type the device name back. Verifies the
+published sha256 before writing — an image that is subtly wrong produces a
+machine that boots and then misbehaves, which is far worse to debug than one
+that refuses to start.
+
 ## Before the first switch
 
 1. Replace `hosts/*/hardware-configuration.nix` — they are placeholders that
