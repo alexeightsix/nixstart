@@ -1,239 +1,95 @@
 # nixstart
 
-NixOS for two machines and a test VM, ported from the `kickstart` bootstrap
-scripts. Two layers, deliberately kept apart:
+NixOS for a desktop, an XPS 13, and a throwaway VM.
 
 ```
-system/          what a machine is    — boot, hardware, daemons, the display server
-home/            what a person has    — shell, git, i3, the terminal, toolchains
-hosts/           one file per machine — the facts true of it and no other
-profiles/        home without NixOS   — an account on a box this repo doesn't own
-pkgs/            derivations for what the bootstrap scripts fetched by hand
-lib/unfree.nix   the unfree allowlist, by name rather than a blanket allow
+system/     what a machine is   — boot, hardware, daemons, X
+home/       what a person has   — shell, git, i3, terminal, toolchains
+hosts/      one file per machine
+profiles/   home without NixOS  — an account on a box this repo doesn't own
+pkgs/       jk, glow-rose-pine, weather-wallpaper, dracula-zsh-theme, fury-renegade-rgb
 ```
-
-`system/` and `home/` never import each other. `system/home.nix` is the only
-link and it runs one way: the system tells the home layer what the machine is,
-never the reverse. That is what makes the second command below work at all.
 
 ```sh
 sudo nixos-rebuild switch --flake .#desktop     # a machine this repo owns
 home-manager switch --flake .#alex@headless     # an account, anywhere
 ```
 
-The second replaces `link.sh --headless`. Why that flag existed is worth
-remembering: before it, the desktop bootstrap and the Incus provisioning each
-kept their own list of what to link, and they had already drifted — an instance
-linked `tmux.conf` and the desktop did not. One module set, two profiles, no
-second list to forget.
+`system/` and `home/` never import each other; `system/home.nix` is the one
+link and runs one way. `home/` reads only `nixstart.home.*`, which is why the
+second command works at all.
 
 ## Hosts
 
-| | desktop | laptop | vm |
-|---|---|---|---|
-| hardware | Fury Renegade RGB | Dell XPS 13 9350 | Incus guest |
-| i3 status bar | no battery | battery + warnings | no battery |
-| docker / libvirt / incus | ✓ ✓ ✓ | ✓ — ✓ | ✓ — — |
-| tailscale | ✓ | ✓ | — |
-| displays | fixed `xrandr` | `autorandr` | — |
+|                    | desktop | laptop | vm |
+|--------------------|---------|--------|----|
+| battery in the bar | —       | ✓      | —  |
+| docker             | ✓       | ✓      | ✓  |
+| libvirt            | ✓       | —      | —  |
+| incus              | ✓       | ✓      | —  |
+| tailscale          | ✓       | ✓      | —  |
+| /home snapshots    | ✓       | ✓      | ✓  |
 
-`laptop` is a **Core Ultra 7 258V (Lunar Lake), Arc 140V, 32GB soldered
-LPDDR5X, Killer BE201**, and gets `system/hardware/xps13.nix`: the latest
-kernel rather than LTS (Xe2, BE201 and the SOF audio topology all landed across
-6.11–6.13), the `xe` DRM driver rather than `i915`, s2idle because the platform
-has no S3, `fprintd`, and `power-profiles-daemon` over TLP.
-
-No libvirt on the laptop — full VMs do not belong on something running off a
-60W charger — but incus is there, because that is how work moves.
+`laptop` is a Dell XPS 13 9350 — Lunar Lake, Arc 140V, Killer BE201. See
+`system/hardware/xps13.nix`.
 
 ## Options
 
-Everything is switched on by `nixstart.system.*` (`system/options.nix`) and
-`nixstart.home.*` (`home/options.nix`). All modules are imported all the time
-and each is inert until its option is set, so adding a machine never means
-editing a module. A host file is a list of decisions:
+`nixstart.system.*` (`system/options.nix`) and `nixstart.home.*`
+(`home/options.nix`). Every module is always imported and inert until its
+option is set, so adding a machine never means editing a module.
 
 ```nix
 nixstart.system = {
-  user.name = "alex";
-  user.initialPassword = "changeme";
-
   desktop.enable = true;
   apps.gui = true;
   tailscale = true;
-
   virtualisation = { docker = true; libvirt = true; incus = true; };
   hardware = { keychron = true; rgb = true; bluetooth = true; };
 };
 ```
 
-A few options live next to the module that owns them rather than in
-`options.nix` — `virtualisation`, `tailscale`, `hardware.xps13`,
+A few options live beside the module that owns them rather than in
+`options.nix`: `virtualisation`, `tailscale`, `hardware.xps13`,
 `snapshots.home`, `user.initialPassword`, `desktop.jk`, `neovim.linkConfig`,
 `pi.linkConfig`.
 
-## The two kinds of path
+## Two kinds of path
 
-The one distinction this port has to get right.
+- `nixstart.home.dotfiles` — a **store path** from the `dotfiles` input. What
+  Nix reads at build time: `tmux.conf`, `dunstrc`, the Ghostty shaders, the
+  wallpapers. Pinned, frozen until the next rebuild.
+- `nixstart.home.checkout` — a **path on the machine**, never read. What is
+  edited far more often than the system is rebuilt: `nvim`, `pi`, `zsh/alias`.
+  Edits take effect on save.
 
-- **`nixstart.home.dotfiles`** is a **store path**, from the `dotfiles` flake
-  input. Files Nix reads at build time come from here: `tmux.conf`, `dunstrc`,
-  the Ghostty shaders, the wallpapers. Pinned by the lockfile, reproducible,
-  frozen until the next rebuild.
-- **`nixstart.home.checkout`** is a **path on the machine**, referred to and
-  never read. The trees edited far more often than the system is rebuilt live
-  here: `dotfiles/nvim`, `dotfiles/pi`, `dotfiles/zsh/alias`. An edit takes
-  effect on save.
+## Neovim and Pi are unmanaged
 
-Conflating the two is what makes a ported configuration feel worse than the
-shell scripts it replaced.
+Installed, not configured. No generated `init.lua`, no `programs.neovim`,
+nothing written to `~/.config/nvim` or `~/.pi/agent`. Nix owns the environment
+— compilers, language servers, formatters — not the config. Opt in with
+`nixstart.neovim.linkConfig` / `nixstart.pi.linkConfig`.
 
-The `dotfiles` input is a **path**, not a git URL, and deliberately:
-`ghostty-shaders/` and `zsh/copyline.plugin.zsh` are untracked in the `dev-env`
-remote, so a git input silently produces a configuration missing both. Commit
-those and the URL in `flake.nix` can be swapped back. Meanwhile:
-
-```sh
-sudo nixos-rebuild switch --flake . --override-input dotfiles path:/home/alex/kickstart
-```
-
-## Neovim and Pi are not managed
-
-Both are installed, not configured. No generated `init.lua`, no
-`programs.neovim`, nothing written to `~/.config/nvim` or `~/.pi/agent`. What
-Nix owns is the *environment* — compilers, language servers, formatters,
-Node — which is the part that does not exist on a NixOS box unless something
-puts it there.
-
-Each has an opt-in escape hatch (`nixstart.neovim.linkConfig`,
-`nixstart.pi.linkConfig`), both off by default.
-
-`programs.nix-ld` is on for the same reason: Mason downloads prebuilt,
-dynamically linked binaries that look for `/lib64/ld-linux-x86-64.so.2`, which
-does not exist here. Without it they install cleanly and then fail to run — the
-most common way a working Neovim setup appears broken after a port.
-
-Pi is the sharper case. Its configuration is a live TypeScript project with its
-own tests and Docusaurus site, and its runtime state (`auth.json`, sessions,
-`models-store.json`) has to stay untracked in the same directory the tracked
-files are linked into. A store path is read-only and cannot hold both halves.
-
-## Packages built here
-
-| | was |
-|---|---|
-| `jk` | a hand-built ELF at `~/.local/bin/jk` — would not run on NixOS at all |
-| `glow-rose-pine` | replaces `pkgs.glow` for the `md` alias |
-| `weather-wallpaper` | `go build` in `~/dev/archive`, driven by two crontab lines |
-| `dracula-zsh-theme` | a `git clone` into `~/.oh-my-zsh/themes` |
-| `fury-renegade-rgb` | `cargo install` into `~/.cargo/bin` |
-
-The weather wallpaper's `@reboot` crontab entry polled `xset q` up to 150 times
-waiting for an X server to exist. It is a systemd user timer now, and systemd
-already knows when the graphical session started. The same applies to `jk`,
-`vicinae` and `batsignal`.
-
-## Things the port fixed rather than carried over
-
-- `.gitconfig` called `!/usr/bin/gh` as its credential helper. There is no
-  `/usr/bin/gh` here.
-- `i3config` hardcoded `$HOME/kickstart/...` in six places, while `link.sh` and
-  `common.sh` went to real trouble to derive every path.
-- `i3config` exec'd `dex-autostart`, `xss-lock` and `i3lock`; no stage
-  installed any of the three. They arrived as Fedora transitive dependencies.
-- `dunstrc` was tracked and `link.sh` never linked it, so dunst had been
-  running on built-in defaults.
-- The Ghostty config named `bloom.glsl`, which was not in the repository.
-- `scripts/xrandr.sh` was one commented-out line, so every machine ran an empty
-  script at login.
-- The battery block had no thresholds, so the bar never left its idle colour
-  and nothing warned before the machine suspended.
-- The tracked `i3config` said `wallpaper-2.png` while `~/.fehbg` — what
-  actually ran — pointed at the weather wallpaper's output.
-- Incus was running on the desktop and no stage installed it.
-- Neither real host had a login password. An assertion now fails the build
-  rather than producing an account that cannot log in.
+`programs.nix-ld` is on so Mason's prebuilt binaries still run.
 
 ## Snapshots
 
-`/home` and nothing else. That is the point of doing this on NixOS rather than
-Fedora: the system is a generation and rolls back from the boot menu, and
-everything under `/nix/store` rebuilds from the flake. `/home` is the one
-directory that is neither reproducible nor disposable.
+`/home` only. The system is a generation and rolls back from the boot menu;
+`/home` is the part that doesn't. Hourly snapper timeline, 10 hourly / 10 daily
+/ 4 weekly / 6 monthly / 2 yearly, tunable via `snapshots.limits`. Stops at 50%
+used or 20% free.
 
-```nix
-nixstart.system.snapshots.home = true;
-```
-
-Hourly timeline snapshots via snapper, cleaned up on a schedule — ten hourly,
-ten daily, four weekly, six monthly, two yearly by default, tunable with
-`snapshots.limits`. Creation stops if the filesystem passes 50% used or drops
-below 20% free, so a full disk does not get worse.
-
-`/home` must be its own btrfs subvolume; snapper snapshots a subvolume, not a
-directory. An assertion catches the wrong `fsType` at build time rather than
-letting it fail cryptically at activation.
-
-`snapper-home-subvolume.service` creates `/home/.snapshots` before the snapper
-units run. Nothing else does — NixOS writes the config file declaratively
-rather than running `snapper create-config`, which is the command that would
-have made it, so without this every snapper run fails on a missing path.
-systemd-tmpfiles' `v` is the obvious tool for it and is deliberately not used:
-it falls back to a plain directory, which snapper then rejects with a second,
-different error that looks like the first fix worked.
-
-The layout is snapper's own `/home/.snapshots/<n>/snapshot/<path>`, which is
-exactly what the `restore` alias in `dotfiles/zsh/alias` already reads — it
-fzf-picks an old version of a file or directory and moves the current one
-aside. `ALLOW_USERS` and `SYNC_ACL` are set so that works without sudo.
-
-Snapshots are not backups: they die with the filesystem holding them. The
-off-disk half is still `scripts/backup.sh`.
-
-## What is still a shell script
-
-- `scripts/backup.sh` — mounts `/dev/sda1` and rsyncs the system to it. An
-  operator action, not system state.
-- `scripts/sync-dev.sh`, `scripts/ssh-dev-storage.sh` — remote operations. The
-  host and password they read move to sops; the scripts stay.
-- `dotfiles/zsh/alias/*` — more than half are shell functions with fzf
-  pipelines in them, which Nix could only hold as opaque strings. The directory
-  stays the source of truth and is sourced at runtime, so adding an alias still
-  does not need a rebuild.
-
-## Testing
-
-`hosts/vm` is a throwaway Incus VM, installed from the official NixOS ISO the
-same way a real machine would be. It runs the same modules, so what is tested
-is the real thing.
-
-```sh
-incus init --empty --vm nixos-test --project nixos-test \
-  -c limits.cpu=6 -c limits.memory=10GiB -c security.secureboot=false -d root,size=60GiB
-incus config device add nixos-test iso disk --project nixos-test \
-  source=/path/to/nixos-minimal.iso boot.priority=10
-```
-
-The ISO's boot menu is graphical; press `t` within the first ten seconds for
-the text menu on the serial console, then `e` and append
-`console=ttyS0,115200` to the `linux` line so `incus console` can drive it.
+`/home` must be its own btrfs subvolume. `snapper-home-subvolume.service`
+creates `/home/.snapshots`; nothing else does.
 
 ## Before the first switch
 
-1. **Replace `hosts/*/hardware-configuration.nix`.** The files in the tree are
-   placeholders that exist only so the flake evaluates. Use
-   `nixos-generate-config --show-hardware-config` on each machine.
-2. **Change the password.** Both real hosts set
-   `user.initialPassword = "changeme"`, which is world-readable in the store.
-   Run `passwd` after the first login, or add a `user-password` secret to
-   `secrets/<hostname>.yaml` — that wins over `initialPassword` whenever it
-   exists. `mkpasswd -m yescrypt` generates the hash.
-3. **`pkgs/fury-renegade-rgb` still carries `lib.fakeHash`** for both its `src`
-   and `cargoHash`; crates.io answered 403 to every request when this was
-   written. Only the desktop builds it. Build once and paste in the two hashes
-   the failure prints.
-4. **Set the laptop's DPI** once `xrandr --query` says which panel it has. The
-   9350 ships FHD+, QHD+ or 2.8K OLED, and the value for each is in
-   `hosts/laptop/default.nix`.
-5. `secrets/<hostname>.yaml` is optional — the sops module skips itself when
-   the file is absent.
+1. Replace `hosts/*/hardware-configuration.nix` — they are placeholders that
+   exist only so the flake evaluates.
+2. Change `user.initialPassword` (`"changeme"`), or add a `user-password`
+   secret to `secrets/<hostname>.yaml`, which wins over it.
+3. `pkgs/fury-renegade-rgb` carries `lib.fakeHash` for `src` and `cargoHash`.
+   Desktop only. Build once and paste in what the failure prints.
+4. Set the laptop's `dpi` once `xrandr --query` says which panel it has.
+5. The `dotfiles` input is a local path, so this flake only evaluates on a
+   machine that has that checkout. Point it at a git URL to change that.
