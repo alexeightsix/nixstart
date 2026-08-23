@@ -13,6 +13,22 @@
         "type": "path"
       }
     },
+    "glow-rose-pine": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1786033709,
+        "narHash": "sha256-fHhz+86uxBTFGz8n33j037kX27+a4CA6HSZd3pOrm4U=",
+        "owner": "upbeatdevelopment",
+        "repo": "glow-rose-pine",
+        "rev": "139d2fb427a76a5e8128a77271dcd7e795ea8524",
+        "type": "github"
+      },
+      "original": {
+        "owner": "upbeatdevelopment",
+        "repo": "glow-rose-pine",
+        "type": "github"
+      }
+    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -30,6 +46,26 @@
       "original": {
         "owner": "nix-community",
         "repo": "home-manager",
+        "type": "github"
+      }
+    },
+    "jk": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1786053329,
+        "narHash": "sha256-7Hqmyaj0gvbHfQz48GiE6pvJt/fxkNknzv4oiZuBYfA=",
+        "owner": "upbeatdevelopment",
+        "repo": "jk",
+        "rev": "a255e8372f35cbd2217150078822d28b63ec9156",
+        "type": "github"
+      },
+      "original": {
+        "owner": "upbeatdevelopment",
+        "repo": "jk",
         "type": "github"
       }
     },
@@ -67,7 +103,9 @@
     "root": {
       "inputs": {
         "dotfiles": "dotfiles",
+        "glow-rose-pine": "glow-rose-pine",
         "home-manager": "home-manager",
+        "jk": "jk",
         "nix-flatpak": "nix-flatpak",
         "nixpkgs": "nixpkgs",
         "sops-nix": "sops-nix",
@@ -97,14 +135,17 @@
     "weather-wallpaper": {
       "flake": false,
       "locked": {
-        "lastModified": 1787507220,
-        "narHash": "sha256-FCCCRh2v2fyMqX16j7UlbYq/CYWjRSq0tliE0LTSf5Q=",
-        "path": "/home/alex/dev/archive/wealther-wallpaper",
-        "type": "path"
+        "lastModified": 1786810189,
+        "narHash": "sha256-YTjNNS1Z78cLvuqwPyc9m2mdRTAo1lE3/k5AfDd8MyM=",
+        "owner": "upbeatdevelopment",
+        "repo": "wealther-wallpaper",
+        "rev": "8dd37388528e39d58aa9301fd83134e462565731",
+        "type": "github"
       },
       "original": {
-        "path": "/home/alex/dev/archive/wealther-wallpaper",
-        "type": "path"
+        "owner": "upbeatdevelopment",
+        "repo": "wealther-wallpaper",
+        "type": "github"
       }
     }
   },

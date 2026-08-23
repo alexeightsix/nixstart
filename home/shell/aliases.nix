@@ -48,7 +48,7 @@ in
     fd
     ripgrep
     fzf
-    glow
+    glow-rose-pine
     lazygit
     gh
     delta

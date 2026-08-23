@@ -54,8 +54,8 @@ in
       # vicinae is a systemd user unit now (modules/nixos/desktop/i3.nix), not
       # a `systemctl --user start` from the window manager.
 
-      # jk: keyboard scroll mode (double-press Shift, then j/k).
-      exec_always --no-startup-id sh -c "pkill -x jk; exec $HOME/.local/bin/jk"
+      # jk (keyboard scroll mode) and vicinae are systemd user units now, not
+      # exec lines — see home/desktop/jk.nix and system/desktop/i3.nix.
 
       set $refresh_i3status killall -SIGUSR1 i3status
       bindsym XF86AudioRaiseVolume exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-sink-volume @DEFAULT_SINK@ +10% && $refresh_i3status

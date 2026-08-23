@@ -19,12 +19,12 @@
     ./shell/atuin.nix
     ./shell/tools.nix
     ./shell/tmux.nix
-    ./shell/zellij.nix
 
     ./git.nix
     ./editor/neovim.nix
 
     ./desktop/i3.nix
+    ./desktop/jk.nix
     ./desktop/statusbar.nix
     ./desktop/battery.nix
     ./desktop/display.nix

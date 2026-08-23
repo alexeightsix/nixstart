@@ -64,19 +64,6 @@ in
       };
     };
 
-    virtualisation = {
-      docker = mkOption {
-        type = types.bool;
-        default = false;
-        description = "Docker daemon, with the user in the docker group.";
-      };
-      libvirt = mkOption {
-        type = types.bool;
-        default = false;
-        description = "libvirt/QEMU and virt-manager.";
-      };
-    };
-
     hardware = {
       keychron = mkOption {
         type = types.bool;

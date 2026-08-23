@@ -15,9 +15,12 @@
     apps.gui = true;
     tailscale = true;
 
+    # Everything: this is the machine that runs the disposable dev instances
+    # and the occasional full VM.
     virtualisation = {
       docker = true;
       libvirt = true;
+      incus = true;
     };
 
     hardware = {

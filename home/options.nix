@@ -47,8 +47,8 @@ in
       type = types.path;
       description = ''
         Store path of the dotfiles checkout, from the `dotfiles` flake input.
-        Read at build time: tmux.conf, the zellij config and layouts, the
-        alias files, copyline, the wallpapers.
+        Read at build time: tmux.conf, dunstrc, the Ghostty shaders and the
+        wallpapers.
       '';
     };
 

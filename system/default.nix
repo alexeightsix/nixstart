@@ -27,9 +27,9 @@
 
     ./services/openssh.nix
     ./services/tailscale.nix
-    ./services/docker.nix
-    ./services/libvirt.nix
     ./services/snapshots.nix
+
+    ./virtualisation.nix
 
     ./home.nix
   ];

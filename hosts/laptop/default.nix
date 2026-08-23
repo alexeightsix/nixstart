@@ -16,7 +16,13 @@
     apps.gui = true;
     tailscale = true;
 
-    virtualisation.docker = true;
+    # No libvirt: full VMs belong on the desktop, not on something running
+    # off a 60W charger. incus is here because the dev instances are how work
+    # gets done on the move.
+    virtualisation = {
+      docker = true;
+      incus = true;
+    };
 
     hardware = {
       xps13 = true; # Lunar Lake: kernel, Xe2, SOF audio, fprintd, upower

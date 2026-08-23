@@ -19,18 +19,18 @@
 
     # The dotfiles repository — the other half of this configuration.
     #
-    # A path input, not a git URL, and deliberately: zellij/, ghostty-shaders/
-    # and zsh/copyline.plugin.zsh are untracked in the dev-env remote, so a
-    # git input silently produces a configuration missing all three. A path
-    # input takes the working tree as it is, which is also how the dotfiles
-    # are actually worked on.
+    # A path input, not a git URL, and deliberately: ghostty-shaders/ and
+    # zsh/copyline.plugin.zsh are untracked in the dev-env remote, so a git
+    # input silently produces a configuration missing both. A path input takes
+    # the working tree as it is, which is also how the dotfiles are actually
+    # worked on.
     #
     # The cost is that this flake is only reproducible on a machine that has
     # the checkout. Swap in the remote once the tree is committed:
     #   url = "git+ssh://git@github.com/alexeightsix/dev-env.git";
     #
-    # Files Nix reads at build time (tmux.conf, the zellij layouts, dunstrc,
-    # the shaders) come from here. Trees that must stay editable at runtime —
+    # Files Nix reads at build time (tmux.conf, dunstrc, the shaders) come
+    # from here. Trees that must stay editable at runtime —
     # the Neovim config, the Pi setup — do not; those are
     # `kickstart.home.checkout`, a plain path on the machine.
     dotfiles = {
@@ -38,10 +38,27 @@
       flake = false;
     };
 
-    # The weather wallpaper generator. Its remote is not reachable
-    # anonymously, so this is the working checkout, same as `dotfiles`.
+    # The weather wallpaper generator — the base image with the current
+    # temperature drawn on it. Was a `go build` in a checkout under
+    # ~/dev/archive with the binary committed next to its source.
     weather-wallpaper = {
-      url = "path:/home/alex/dev/archive/wealther-wallpaper";
+      url = "github:upbeatdevelopment/wealther-wallpaper";
+      flake = false;
+    };
+
+    # jk: vim-style keyboard scrolling for X11. i3config execs it as
+    # $HOME/.local/bin/jk, which is a dynamically linked ELF that was built by
+    # hand and would not run on NixOS at all. It ships its own flake, so this
+    # takes the package rather than repackaging it.
+    jk = {
+      url = "github:upbeatdevelopment/jk";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # A fork of glow with a built-in rose-pine style, matching Ghostty, the
+    # bar, vicinae and Neovim. The `md` alias is glow.
+    glow-rose-pine = {
+      url = "github:upbeatdevelopment/glow-rose-pine";
       flake = false;
     };
 
@@ -138,7 +155,13 @@
           pkgs = pkgsFor system;
         in
         {
-          inherit (pkgs) fury-renegade-rgb dracula-zsh-theme weather-wallpaper;
+          inherit (pkgs)
+            fury-renegade-rgb
+            dracula-zsh-theme
+            weather-wallpaper
+            glow-rose-pine
+            jk
+            ;
         }
       );
 

@@ -48,8 +48,8 @@ set, so `system/default.nix` never has to be edited to add a machine.
 The one distinction this port has to get right.
 
 - **`kickstart.home.dotfiles`** is a **store path**, from the `dotfiles` flake
-  input. Files Nix reads at build time come from here: `tmux.conf`, the zellij
-  config and layouts, the wallpapers. Pinned by the lockfile, reproducible,
+  input. Files Nix reads at build time come from here: `tmux.conf`, `dunstrc`,
+  the Ghostty shaders, the wallpapers. Pinned by the lockfile, reproducible,
   and frozen until the next rebuild.
 - **`kickstart.home.checkout`** is a **path on the machine**, referred to and
   never read. The trees that are edited far more often than the system is
