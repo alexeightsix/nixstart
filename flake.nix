@@ -149,6 +149,12 @@
         "alex@headless" = mkHome { profile = "headless"; };
       };
 
+      # Incus images for the agent guest. Both are built from hosts/agent, so
+      # the container and the VM cannot drift apart.
+      #
+      #   nix build .#agent-container
+      #   scripts/agent build   does the build and the import
+      #   scripts/agent new foo  launches an instance from it
       # Reusable pieces, for guests built outside this flake — a microvm.nix
       # host, an Incus VM image, another machine's configuration.
       nixosModules = {
@@ -164,6 +170,38 @@
         system:
         let
           pkgs = pkgsFor system;
+
+          # Both images come from the same guest configuration, so the
+          # container and the VM cannot drift apart. nixpkgs carries the Incus
+          # image modules itself — nixos-generators is deprecated for exactly
+          # this, having been upstreamed.
+          agentGuest =
+            extra:
+            lib.nixosSystem {
+              inherit system;
+              specialArgs = { inherit inputs self; };
+              # Not the whole ./system tree: that imports the home-manager
+              # bridge, and a guest has no per-user generation — its dev
+              # environment comes in through nixstart.devEnv instead.
+              modules = [
+                { nixpkgs.pkgs = pkgs; }
+                ./system/options.nix
+                ./system/core/nix.nix
+                ./system/core/nix-ld.nix
+                ./system/dev-env.nix
+                ./hosts/agent
+              ]
+              ++ extra;
+            };
+
+          container = agentGuest [
+            "${inputs.nixpkgs}/nixos/modules/virtualisation/lxc-container.nix"
+            "${inputs.nixpkgs}/nixos/modules/virtualisation/lxc-image-metadata.nix"
+          ];
+
+          vm = agentGuest [
+            "${inputs.nixpkgs}/nixos/modules/virtualisation/incus-virtual-machine.nix"
+          ];
         in
         {
           inherit (pkgs)
@@ -173,6 +211,16 @@
             glow-rose-pine
             jk
             ;
+
+          # An Incus container: shares the host kernel, boots in under a
+          # second, costs almost nothing to throw away.
+          agent-container = container.config.system.build.tarball;
+          agent-container-metadata = container.config.system.build.metadata;
+
+          # An Incus virtual machine: its own kernel, so code the agent runs
+          # cannot reach the host through a shared one. Prefer this when the
+          # agent is running code you have not read.
+          agent-vm = vm.config.system.build.qemuImage;
         }
       );
 

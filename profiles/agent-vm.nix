@@ -84,12 +84,13 @@ in
     documentation.man.enable = false;
     services.xserver.enable = false;
 
-    # These VMs are disposable, so the store should not be allowed to grow
-    # into the disk image.
+    # These guests are disposable and their disks are small, so the store is
+    # collected far harder than on a real machine — mkForce because the
+    # workstation default of 30 days would fill the image.
     nix.gc = {
       automatic = true;
-      dates = "daily";
-      options = "--delete-older-than 3d";
+      dates = lib.mkForce "daily";
+      options = lib.mkForce "--delete-older-than 3d";
     };
 
     networking.firewall.allowedTCPPorts = [ 22 ];

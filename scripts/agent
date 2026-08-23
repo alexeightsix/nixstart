@@ -1,0 +1,102 @@
+#!/usr/bin/env bash
+#
+# agent — build, import and launch the Incus guests that run coding agents.
+#
+#   agent build [container|vm]     build the image and import it into Incus
+#   agent new <name> [container|vm]  launch an instance
+#   agent shell <name>            a shell inside one
+#   agent list                    what is running
+#   agent rm <name>               delete one
+#   agent rm-all                  delete every agent instance
+#
+# Containers share the host kernel and start in under a second. VMs bring
+# their own, so code the agent runs cannot reach the host through a shared
+# one — prefer a VM when the agent is running code you have not read.
+set -euo pipefail
+
+FLAKE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PROJECT="${AGENT_PROJECT:-agents}"
+KIND_DEFAULT=vm
+
+incus_() { incus --project "$PROJECT" "$@"; }
+
+ensure_project() {
+    if ! incus project list --format csv | cut -d, -f1 | grep -qx "$PROJECT"; then
+        echo "==> creating incus project '$PROJECT'"
+        # features.profiles=false so instances inherit the default project's
+        # profile, which already has the bridge and the storage pool.
+        incus project create "$PROJECT" \
+            -c features.images=false \
+            -c features.profiles=false >/dev/null
+    fi
+}
+
+build() {
+    local kind="${1:-$KIND_DEFAULT}"
+    ensure_project
+
+    case "$kind" in
+      container)
+        echo "==> building the container image"
+        local rootfs meta
+        rootfs=$(nix build --no-link --print-out-paths "$FLAKE#agent-container")
+        meta=$(nix build --no-link --print-out-paths "$FLAKE#agent-container-metadata")
+        # Both derivations are called "tarball" and both put a single
+        # .tar.xz under tarball/; the order below is what incus expects,
+        # metadata first.
+        echo "==> importing as 'agent-container'"
+        incus_ image delete agent-container 2>/dev/null || true
+        incus_ image import \
+            "$meta"/tarball/*.tar.xz \
+            "$rootfs"/tarball/*.tar.xz \
+            --alias agent-container
+        ;;
+      vm)
+        echo "==> building the VM image (this takes a while the first time)"
+        local img
+        img=$(nix build --no-link --print-out-paths "$FLAKE#agent-vm")
+        echo "==> importing as 'agent-vm'"
+        incus_ image delete agent-vm 2>/dev/null || true
+        incus_ image import "$img"/*.qcow2 --alias agent-vm
+        ;;
+      *) echo "agent: unknown kind '$kind' (container|vm)" >&2; exit 2 ;;
+    esac
+}
+
+new() {
+    local name="${1:?usage: agent new <name> [container|vm]}"
+    local kind="${2:-$KIND_DEFAULT}"
+    ensure_project
+
+    local args=(--project "$PROJECT")
+    [ "$kind" = vm ] && args+=(--vm)
+
+    echo "==> launching $name ($kind)"
+    incus launch "agent-$kind" "$name" "${args[@]}" \
+        -c limits.cpu=4 \
+        -c limits.memory=4GiB
+
+    # The project directory the agent works in. A disk device rather than a
+    # copy, so what the agent changes is visible on the host immediately.
+    if [ -n "${AGENT_WORKSPACE:-}" ]; then
+        echo "==> mounting $AGENT_WORKSPACE at /workspace"
+        incus_ config device add "$name" workspace disk \
+            source="$AGENT_WORKSPACE" path=/workspace
+    fi
+
+    echo "==> waiting for the instance to answer"
+    until incus_ exec "$name" -- true 2>/dev/null; do sleep 1; done
+    echo "==> ready:  agent shell $name"
+}
+
+case "${1:-}" in
+    build)   shift; build "$@" ;;
+    new)     shift; new "$@" ;;
+    shell)   incus_ exec "${2:?usage: agent shell <name>}" -- \
+                 /run/current-system/sw/bin/zsh ;;
+    list)    incus_ list ;;
+    rm)      incus_ delete --force "${2:?usage: agent rm <name>}" ;;
+    rm-all)  incus_ list --format csv --columns n | xargs -r -n1 incus_ delete --force ;;
+    # Print the comment header, stopping at the first line that is not one.
+    *)       awk 'NR>1 && /^#/ {sub(/^# ?/, ""); print; next} NR>1 {exit}' "$0"; exit 0 ;;
+esac

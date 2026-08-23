@@ -90,23 +90,36 @@ then execs zsh. Nothing is written to the real home directory, so it is safe
 on a machine whose shell setup you do not want touched — including one that is
 not NixOS. Aliases are sourced at runtime, so adding one needs no rebuild.
 
-## Agent VMs
+## Agent guests
 
-`profiles/agent-vm.nix` — VM-technology agnostic; works under microvm.nix, an
-Incus VM, or plain qemu.
+`hosts/agent` builds two Incus images from one definition, so they cannot
+drift:
 
-```nix
-{
-  imports = [ nixstart.nixosModules.agentVm ];
-  networking.hostName = "agent-01";
-  nixstart.devEnv.languages = [ "node" ];
-  nixstart.agentVm.authorizedKeys = [ "ssh-ed25519 AAAA..." ];
-}
+| | boots | isolation |
+|---|-------|-----------|
+| `agent-container` | under a second | shares the host kernel |
+| `agent-vm` | a few seconds | its own kernel |
+
+The default is the VM. An agent running code you have not read is where a
+shared kernel stops being an acceptable trade; containers are for when you are
+driving it yourself and want it now.
+
+```sh
+scripts/agent build             # build + import
+scripts/agent new work-01       # launch
+scripts/agent shell work-01     # zsh inside
+scripts/agent rm-all
 ```
 
-Keys only, no account password, no X, shell opens in `/workspace`, daily
-`nix-gc --delete-older-than 3d` so a disposable image does not grow into its
-own disk.
+`AGENT_WORKSPACE=~/dev/foo scripts/agent new work-01` mounts the project at
+`/workspace` as a disk device rather than a copy, so what the agent changes is
+visible on the host immediately. The shell opens there.
+
+Instances live in their own `agents` Incus project with
+`features.profiles=false`, inheriting the existing bridge and storage pool
+without touching the default project's limits. Keys only, no account password,
+no X, no man pages, and `nix-gc --delete-older-than 3d` daily so a disposable
+image does not grow into its own disk.
 
 ## Neovim and Pi are unmanaged
 
