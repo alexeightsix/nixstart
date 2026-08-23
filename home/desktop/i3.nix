@@ -17,7 +17,7 @@
   ...
 }:
 let
-  cfg = config.kickstart.home;
+  cfg = config.nixstart.home;
   desktop = cfg.desktop;
 
   # scripts/xrandr.sh was a single commented-out line, so every host ran an

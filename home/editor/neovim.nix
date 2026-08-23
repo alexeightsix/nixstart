@@ -18,12 +18,12 @@
   ...
 }:
 let
-  cfg = config.kickstart.home;
+  cfg = config.nixstart.home;
   langs = cfg.languages;
   enabled = l: builtins.elem l langs;
 in
 {
-  options.kickstart.neovim.linkConfig = lib.mkOption {
+  options.nixstart.neovim.linkConfig = lib.mkOption {
     type = lib.types.bool;
     default = false;
     description = ''
@@ -88,7 +88,7 @@ in
 
     home.sessionVariables.EDITOR = "nvim";
 
-    home.file.".config/nvim" = lib.mkIf config.kickstart.neovim.linkConfig {
+    home.file.".config/nvim" = lib.mkIf config.nixstart.neovim.linkConfig {
       source = config.lib.file.mkOutOfStoreSymlink "${cfg.checkout}/dotfiles/nvim";
     };
   };

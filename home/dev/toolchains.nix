@@ -12,7 +12,7 @@
   ...
 }:
 let
-  cfg = config.kickstart.home;
+  cfg = config.nixstart.home;
   has = l: builtins.elem l cfg.languages;
 in
 {

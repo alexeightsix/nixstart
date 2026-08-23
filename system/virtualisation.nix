@@ -22,10 +22,10 @@
   ...
 }:
 let
-  cfg = config.kickstart.system.virtualisation;
+  cfg = config.nixstart.system.virtualisation;
 in
 {
-  options.kickstart.system.virtualisation = {
+  options.nixstart.system.virtualisation = {
     docker = lib.mkOption {
       type = lib.types.bool;
       default = false;
@@ -58,7 +58,7 @@ in
           dates = "weekly";
         };
       };
-      kickstart.system.user.extraGroups = [ "docker" ];
+      nixstart.system.user.extraGroups = [ "docker" ];
       environment.systemPackages = with pkgs; [
         docker-compose
         lazydocker # was `GOBIN=/usr/local/bin go install ...@latest` in stage-01
@@ -71,7 +71,7 @@ in
         qemu.swtpm.enable = true;
       };
       programs.virt-manager.enable = true;
-      kickstart.system.user.extraGroups = [ "libvirtd" ];
+      nixstart.system.user.extraGroups = [ "libvirtd" ];
       environment.systemPackages = with pkgs; [
         qemu
         virtiofsd
@@ -85,7 +85,7 @@ in
         # lazyincus, and the UI would be another listening socket.
         ui.enable = false;
       };
-      kickstart.system.user.extraGroups = [ "incus-admin" ];
+      nixstart.system.user.extraGroups = [ "incus-admin" ];
 
       # Instances get their addresses from incus's own bridge, so the host
       # firewall has to let its traffic through — without this, DHCP and DNS

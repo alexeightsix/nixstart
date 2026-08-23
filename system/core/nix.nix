@@ -18,7 +18,7 @@
       ];
       trusted-users = [
         "root"
-        config.kickstart.system.user.name
+        config.nixstart.system.user.name
       ];
       auto-optimise-store = true;
       warn-dirty = false;

@@ -20,7 +20,7 @@
   ...
 }:
 let
-  cfg = config.kickstart.home;
+  cfg = config.nixstart.home;
   isLaptop = cfg.desktop.statusBar == "laptop";
 in
 {

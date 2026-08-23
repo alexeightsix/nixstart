@@ -32,7 +32,7 @@
     # Files Nix reads at build time (tmux.conf, dunstrc, the shaders) come
     # from here. Trees that must stay editable at runtime —
     # the Neovim config, the Pi setup — do not; those are
-    # `kickstart.home.checkout`, a plain path on the machine.
+    # `nixstart.home.checkout`, a plain path on the machine.
     dotfiles = {
       url = "path:/home/alex/kickstart";
       flake = false;

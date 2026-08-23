@@ -1,6 +1,6 @@
 # A full desktop account, applied without NixOS underneath it.
 {
-  kickstart.home = {
+  nixstart.home = {
     checkout = "/home/alex/kickstart";
 
     desktop.enable = true;

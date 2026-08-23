@@ -14,7 +14,7 @@
   ...
 }:
 let
-  cfg = config.kickstart.home;
+  cfg = config.nixstart.home;
   desktop = cfg.desktop;
 
   # "The last one, by name." wallpaper-4.jpg and wallpaper-5.jpg break a plain
@@ -38,7 +38,7 @@ in
 {
   config = lib.mkIf desktop.enable {
     # What i3's feh line uses. Read by home/desktop/i3.nix.
-    kickstart.home.desktop._resolvedWallpaper = if desktop.weather.enable then dynamic else base;
+    nixstart.home.desktop._resolvedWallpaper = if desktop.weather.enable then dynamic else base;
 
     systemd.user.services.weather-wallpaper = lib.mkIf desktop.weather.enable {
       Unit = {

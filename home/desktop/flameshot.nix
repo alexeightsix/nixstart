@@ -14,7 +14,7 @@
   ...
 }:
 let
-  cfg = config.kickstart.home;
+  cfg = config.nixstart.home;
   helpers = import ../lib.nix { inherit lib config; };
 
   ini = pkgs.writeText "flameshot.ini" ''

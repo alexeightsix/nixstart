@@ -17,7 +17,7 @@
   ...
 }:
 let
-  cfg = config.kickstart.home;
+  cfg = config.nixstart.home;
   shader = cfg.desktop.ghosttyShader;
 in
 {

@@ -6,13 +6,13 @@
 # this repository does not manage.
 { config, lib, ... }:
 let
-  cfg = config.kickstart.system;
+  cfg = config.nixstart.system;
 in
 {
   home-manager.users.${cfg.user.name} = {
     imports = [ ../home ];
 
-    kickstart.home = {
+    nixstart.home = {
       user.name = cfg.user.name;
       user.fullName = cfg.user.fullName;
       desktop.enable = lib.mkDefault cfg.desktop.enable;

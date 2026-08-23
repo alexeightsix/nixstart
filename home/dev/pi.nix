@@ -23,11 +23,11 @@
   ...
 }:
 let
-  cfg = config.kickstart.home;
+  cfg = config.nixstart.home;
   piRepo = "${cfg.checkout}/dotfiles/pi";
 in
 {
-  options.kickstart.pi.linkConfig = lib.mkOption {
+  options.nixstart.pi.linkConfig = lib.mkOption {
     type = lib.types.bool;
     default = false;
     description = ''
@@ -53,7 +53,7 @@ in
     # editing pi-launcher does not need a rebuild.
     home.file.".local/bin/pi".source = config.lib.file.mkOutOfStoreSymlink "${piRepo}/pi-launcher";
 
-    home.activation.linkPi = lib.mkIf config.kickstart.pi.linkConfig (
+    home.activation.linkPi = lib.mkIf config.nixstart.pi.linkConfig (
       lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         if [ -x ${piRepo}/link.sh ]; then
           run ${pkgs.bash}/bin/bash ${piRepo}/link.sh

@@ -35,7 +35,7 @@
   swapDevices = [ ];
   nixpkgs.hostPlatform = "x86_64-linux";
 
-  kickstart.system = {
+  nixstart.system = {
     user.name = "alex";
     desktop.enable = true;
     apps.gui = true;
@@ -53,7 +53,7 @@
   # installed system the way they do against a container.
   virtualisation.incus.agent.enable = true;
 
-  home-manager.users.alex.kickstart.home = {
+  home-manager.users.alex.nixstart.home = {
     checkout = "/home/alex/kickstart";
     user.email = "alexlatour@gmail.com";
     desktop.weather.enable = true;

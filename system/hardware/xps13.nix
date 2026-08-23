@@ -13,10 +13,10 @@
   ...
 }:
 let
-  cfg = config.kickstart.system.hardware;
+  cfg = config.nixstart.system.hardware;
 in
 {
-  options.kickstart.system.hardware.xps13 = lib.mkOption {
+  options.nixstart.system.hardware.xps13 = lib.mkOption {
     type = lib.types.bool;
     default = false;
     description = "Dell XPS 13 9350 — Lunar Lake platform support.";

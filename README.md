@@ -28,8 +28,8 @@ profiles, and no second list to forget.
 
 ## Options
 
-Everything is turned on by `kickstart.system.*` (see `system/options.nix`) and
-`kickstart.home.*` (see `home/options.nix`). A host file is a list of decisions:
+Everything is turned on by `nixstart.system.*` (see `system/options.nix`) and
+`nixstart.home.*` (see `home/options.nix`). A host file is a list of decisions:
 
 ```nix
 kickstart.system = {

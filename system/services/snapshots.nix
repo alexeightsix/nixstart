@@ -14,17 +14,17 @@
   ...
 }:
 {
-  options.kickstart.system.snapshots.home = lib.mkOption {
+  options.nixstart.system.snapshots.home = lib.mkOption {
     type = lib.types.bool;
     default = false;
     description = "Timeline snapshots of /home with snapper (btrfs only).";
   };
 
-  config = lib.mkIf config.kickstart.system.snapshots.home {
+  config = lib.mkIf config.nixstart.system.snapshots.home {
     services.snapper = {
       configs.home = {
         SUBVOLUME = "/home";
-        ALLOW_USERS = [ config.kickstart.system.user.name ];
+        ALLOW_USERS = [ config.nixstart.system.user.name ];
         TIMELINE_CREATE = true;
         TIMELINE_CLEANUP = true;
       };

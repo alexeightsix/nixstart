@@ -5,7 +5,7 @@
   ...
 }:
 {
-  config = lib.mkIf config.kickstart.system.desktop.enable {
+  config = lib.mkIf config.nixstart.system.desktop.enable {
     services.pulseaudio.enable = false;
     security.rtkit.enable = true;
 

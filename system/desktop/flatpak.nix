@@ -11,7 +11,7 @@
 {
   imports = [ inputs.nix-flatpak.nixosModules.nix-flatpak ];
 
-  config = lib.mkIf config.kickstart.system.apps.flatpak {
+  config = lib.mkIf config.nixstart.system.apps.flatpak {
     services.flatpak = {
       enable = true;
       remotes = [

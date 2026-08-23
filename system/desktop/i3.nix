@@ -12,7 +12,7 @@
   ...
 }:
 let
-  cfg = config.kickstart.system.desktop;
+  cfg = config.nixstart.system.desktop;
 in
 {
   config = lib.mkIf cfg.enable {

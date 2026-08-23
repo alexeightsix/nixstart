@@ -13,6 +13,13 @@ rustPlatform.buildRustPackage rec {
   pname = "fury-renegade-rgb";
   version = "0.1.3";
 
+  # Both hashes are still placeholders: crates.io answered 403 to every
+  # request from this network while the port was written, so they could not
+  # be resolved. Build once on a machine that can reach it and paste in the
+  # two hashes the failures print — nothing else here has to change.
+  #
+  # Only the desktop builds this (system/hardware/rgb.nix asserts as much), so
+  # the laptop and the VM are unaffected by it being unresolved.
   src = fetchCrate {
     inherit pname version;
     hash = lib.fakeHash;

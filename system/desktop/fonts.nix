@@ -7,7 +7,7 @@
   ...
 }:
 {
-  config = lib.mkIf config.kickstart.system.desktop.enable {
+  config = lib.mkIf config.nixstart.system.desktop.enable {
     fonts = {
       packages = with pkgs; [
         nerd-fonts.jetbrains-mono

@@ -19,11 +19,11 @@
   ...
 }:
 let
-  cfg = config.kickstart.home;
+  cfg = config.nixstart.home;
   jk = cfg.desktop.jk;
 in
 {
-  options.kickstart.home.desktop.jk = {
+  options.nixstart.home.desktop.jk = {
     enable = lib.mkOption {
       type = lib.types.bool;
       default = true;

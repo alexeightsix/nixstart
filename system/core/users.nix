@@ -4,7 +4,7 @@
 # group list only existed as the union of three scripts you had to have run.
 { config, pkgs, ... }:
 let
-  cfg = config.kickstart.system;
+  cfg = config.nixstart.system;
 in
 {
   programs.zsh.enable = true;

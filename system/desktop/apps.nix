@@ -8,7 +8,7 @@
   ...
 }:
 let
-  cfg = config.kickstart.system;
+  cfg = config.nixstart.system;
 in
 {
   config = lib.mkIf (cfg.desktop.enable && cfg.apps.gui) {

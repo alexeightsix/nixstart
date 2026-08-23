@@ -8,7 +8,7 @@
 
   networking.hostName = "desktop";
 
-  kickstart.system = {
+  nixstart.system = {
     user.name = "alex";
 
     desktop.enable = true;
@@ -30,9 +30,9 @@
     };
   };
 
-  kickstart.system.snapshots.home = true;
+  nixstart.system.snapshots.home = true;
 
-  home-manager.users.alex.kickstart.home = {
+  home-manager.users.alex.nixstart.home = {
     checkout = "/home/alex/kickstart";
 
     user.email = "alexlatour@gmail.com";

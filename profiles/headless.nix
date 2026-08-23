@@ -6,7 +6,7 @@
 # own list, and they had already drifted — an instance linked tmux.conf and
 # the desktop did not. One module set, two profiles, no second list.
 {
-  kickstart.home = {
+  nixstart.home = {
     checkout = "/home/alex/dotfiles";
     desktop.enable = false;
     languages = [

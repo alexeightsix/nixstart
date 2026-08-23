@@ -7,7 +7,7 @@
   ...
 }:
 {
-  config = lib.mkIf config.kickstart.home.desktop.enable {
+  config = lib.mkIf config.nixstart.home.desktop.enable {
     xdg.configFile."picom/picom.conf".text = ''
       vsync = true;
       backend = "glx";

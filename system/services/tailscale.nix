@@ -11,13 +11,13 @@
   ...
 }:
 {
-  options.kickstart.system.tailscale = lib.mkOption {
+  options.nixstart.system.tailscale = lib.mkOption {
     type = lib.types.bool;
     default = false;
     description = "Tailscale daemon, and the CLI.";
   };
 
-  config = lib.mkIf config.kickstart.system.tailscale {
+  config = lib.mkIf config.nixstart.system.tailscale {
     services.tailscale = {
       enable = true;
       # "client" opens the UDP port and sets up the routing a normal node

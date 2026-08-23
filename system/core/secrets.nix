@@ -12,7 +12,7 @@
   ...
 }:
 let
-  cfg = config.kickstart.system;
+  cfg = config.nixstart.system;
   secretsFile = ../../secrets/${config.networking.hostName}.yaml;
 in
 {

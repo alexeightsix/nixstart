@@ -5,7 +5,7 @@
   ...
 }:
 {
-  config = lib.mkIf config.kickstart.system.hardware.bluetooth {
+  config = lib.mkIf config.nixstart.system.hardware.bluetooth {
     hardware.bluetooth = {
       enable = true;
       powerOnBoot = false;

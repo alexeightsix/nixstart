@@ -1,10 +1,10 @@
-# The `kickstart.system.*` namespace — what a machine *is*.
+# The `nixstart.system.*` namespace — what a machine *is*.
 #
 # The bootstrap stages encoded this as "which script did you remember to run";
 # there was no way to ask a machine what it was supposed to be. This is that
 # answer, and it covers only the system layer: boot, hardware, daemons, and
 # the packages that belong to the machine rather than to a person. Everything
-# a user carries with them is `kickstart.home.*`, in home/options.nix, which
+# a user carries with them is `nixstart.home.*`, in home/options.nix, which
 # is a separate module set that can be applied to a machine this repository
 # does not manage at all.
 { lib, ... }:
@@ -12,7 +12,7 @@ let
   inherit (lib) mkOption types;
 in
 {
-  options.kickstart.system = {
+  options.nixstart.system = {
 
     user = {
       name = mkOption {

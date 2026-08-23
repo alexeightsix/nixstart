@@ -12,7 +12,7 @@
   ...
 }:
 let
-  cfg = config.kickstart.home;
+  cfg = config.nixstart.home;
 in
 {
   programs.git = {
