@@ -73,6 +73,50 @@ in
       }
     ];
 
+    # snapper stores its snapshots in <subvolume>/.snapshots and requires that
+    # to be a btrfs subvolume in its own right. Nothing creates it: NixOS
+    # writes /etc/snapper/configs/home declaratively rather than running
+    # `snapper create-config`, which is the command that would have made it.
+    # Without it, every snapper run fails with
+    #     IO Error (open failed path:/home/.snapshots errno:2)
+    # and the first sign of trouble is a failed unit, not a missing snapshot.
+    #
+    # systemd-tmpfiles' `v` is the obvious tool and is deliberately not used:
+    # it silently falls back to a plain directory, which snapper then rejects
+    # with `.snapshots is not a btrfs subvolume` — a second failure that looks
+    # like the first one was fixed. This is explicit instead, and repairs that
+    # directory if a previous attempt left one behind.
+    systemd.services.snapper-home-subvolume = {
+      description = "Create the /home/.snapshots btrfs subvolume";
+      wantedBy = [ "multi-user.target" ];
+      after = [ "local-fs.target" ];
+      before = [
+        "snapper-timeline.service"
+        "snapper-cleanup.service"
+      ];
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+      };
+      script = ''
+        btrfs=${lib.getExe pkgs.btrfs-progs}
+
+        if $btrfs subvolume show /home/.snapshots >/dev/null 2>&1; then
+          exit 0
+        fi
+
+        # rmdir, never rm -r: it succeeds only on an empty directory, so a
+        # path that somehow holds real snapshots is left alone and the unit
+        # fails loudly instead of deleting them.
+        if [ -e /home/.snapshots ]; then
+          rmdir /home/.snapshots
+        fi
+
+        $btrfs subvolume create /home/.snapshots
+        chmod 0750 /home/.snapshots
+      '';
+    };
+
     services.snapper = {
       # Timers, rather than the pre/post hooks a package manager would use:
       # nothing here installs software into /home, so there is no transaction

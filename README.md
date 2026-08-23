@@ -174,6 +174,14 @@ below 20% free, so a full disk does not get worse.
 directory. An assertion catches the wrong `fsType` at build time rather than
 letting it fail cryptically at activation.
 
+`snapper-home-subvolume.service` creates `/home/.snapshots` before the snapper
+units run. Nothing else does — NixOS writes the config file declaratively
+rather than running `snapper create-config`, which is the command that would
+have made it, so without this every snapper run fails on a missing path.
+systemd-tmpfiles' `v` is the obvious tool for it and is deliberately not used:
+it falls back to a plain directory, which snapper then rejects with a second,
+different error that looks like the first fix worked.
+
 The layout is snapper's own `/home/.snapshots/<n>/snapshot/<path>`, which is
 exactly what the `restore` alias in `dotfiles/zsh/alias` already reads — it
 fzf-picks an old version of a file or directory and moves the current one

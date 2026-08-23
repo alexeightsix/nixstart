@@ -32,6 +32,21 @@
     fsType = "vfat";
   };
 
+  # A second disk, btrfs, with /home as its own subvolume — the layout
+  # nixstart.system.snapshots.home needs. The desktop has the same shape on one
+  # disk; what matters to snapper is that /home is a subvolume, not which
+  # device it lives on.
+  fileSystems."/home" = {
+    device = "/dev/disk/by-label/home";
+    fsType = "btrfs";
+    options = [
+      "subvol=@home"
+      "compress=zstd"
+    ];
+  };
+
+  nixstart.system.snapshots.home = true;
+
   swapDevices = [ ];
   nixpkgs.hostPlatform = "x86_64-linux";
 
