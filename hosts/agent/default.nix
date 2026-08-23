@@ -37,9 +37,20 @@
   networking.firewall.enable = lib.mkDefault true;
 
   # Nothing in a disposable guest should be waiting on the network to finish
-  # booting.
+  # booting, and a unit that hangs on shutdown is what turns `incus stop` into
+  # a two-minute wait.
   systemd.services.NetworkManager-wait-online.enable = false;
-  boot.initrd.systemd.enable = lib.mkDefault true;
+  systemd.services.systemd-networkd-wait-online.enable = lib.mkDefault false;
+
+  # Bound how long shutdown can take. The default is 90 seconds per job, which
+  # on a guest you are throwing away is 90 seconds of nothing useful.
+  systemd.settings.Manager = {
+    DefaultTimeoutStopSec = "10s";
+    DefaultTimeoutStartSec = "30s";
+  };
+
+  # No initrd line here: it means nothing in a container, and the VM gets its
+  # own from incus-virtual-machine.nix.
 
   time.timeZone = "America/Toronto";
   i18n.defaultLocale = "en_CA.UTF-8";
