@@ -210,6 +210,7 @@ in
           "python"
           "rust"
           "lua"
+          "gtk"
         ]
       );
       default = [ ];
