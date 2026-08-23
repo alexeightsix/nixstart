@@ -117,6 +117,29 @@ in
       '';
     };
 
+    # Deleting snapshots is the part that generates real IO, and by default it
+    # competes with whatever is running at the time. None of this work is
+    # urgent: it runs in the background at idle priority so a cleanup pass can
+    # never be what makes the desktop stutter.
+    systemd.services.snapper-cleanup.serviceConfig = {
+      Nice = 19;
+      IOSchedulingClass = "idle";
+      CPUSchedulingPolicy = "idle";
+      IOWeight = 10;
+    };
+
+    systemd.services.snapper-timeline.serviceConfig = {
+      Nice = 10;
+      IOSchedulingClass = "best-effort";
+      IOSchedulingPriority = 7;
+    };
+
+    # Snapshots on the hour and cleanup daily land on round numbers, which is
+    # also when everything else in the system wakes up. A few minutes of
+    # jitter keeps them out of that pile-up.
+    systemd.timers.snapper-timeline.timerConfig.RandomizedDelaySec = "5m";
+    systemd.timers.snapper-cleanup.timerConfig.RandomizedDelaySec = "30m";
+
     services.snapper = {
       # Timers, rather than the pre/post hooks a package manager would use:
       # nothing here installs software into /home, so there is no transaction
@@ -149,10 +172,19 @@ in
         NUMBER_LIMIT = 50;
         NUMBER_MIN_AGE = 1800;
 
-        # Stop taking timeline snapshots when the filesystem is nearly full,
-        # rather than making a full disk worse.
-        SPACE_LIMIT = "0.5";
+        # Stop taking snapshots once the filesystem is nearly full, rather
+        # than making a full disk worse. FREE_LIMIT reads free space straight
+        # from the filesystem, so it needs nothing else turned on.
         FREE_LIMIT = "0.2";
+
+        # SPACE_LIMIT is deliberately not set. It measures how much space the
+        # snapshots themselves occupy, which btrfs can only answer with
+        # qgroups — and qgroups are the single most reliable way to make a
+        # btrfs filesystem stall: every delete walks the quota tree, and a
+        # rescan can lock the filesystem for minutes at a time. FREE_LIMIT
+        # plus the retention counts below bound the space without them.
+        #
+        # QGROUP = "";
       };
     };
 

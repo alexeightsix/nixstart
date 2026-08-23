@@ -1,10 +1,8 @@
-# Language toolchains.
+# The development toolchains, from the shared definition.
 #
-# Between stage-01 (dnf: golang, nodejs, npm, python3, luarocks), stage-06
-# (rustup via curl), stage-10 (PHP from the Remi repo, plus composer from
-# getcomposer.org) and a handful of `PATH=` lines in .zshrc for bun, pnpm and
-# a global npm prefix, "which languages does this machine have" was a question
-# you answered by reading five files. It is a list now.
+# lib/dev-env.nix is the single list; this module is the home-manager consumer
+# of it. The dev shell and any micro VM guest call the same function, so a
+# language added there appears in all three.
 {
   config,
   lib,
@@ -13,62 +11,22 @@
 }:
 let
   cfg = config.nixstart.home;
-  has = l: builtins.elem l cfg.languages;
+
+  devEnv = import ../../lib/dev-env.nix {
+    inherit pkgs lib;
+    inherit (cfg) languages databases;
+    agents = false; # home/dev/agents.nix owns those, gated separately
+  };
 in
 {
-  home.packages =
-    with pkgs;
-    lib.optionals (has "go") [
-      go
-      gopls
-      golangci-lint
-    ]
-    ++ lib.optionals (has "node") [
-      nodejs
-      pnpm
-      bun
-      typescript
-    ]
-    ++ lib.optionals (has "php") [
-      php84
-      php84Packages.composer
-    ]
-    ++ lib.optionals (has "python") [
-      python3
-      uv
-    ]
-    ++ lib.optionals (has "lua") [
-      lua
-      luarocks
-    ]
-    # stage-01's gtk4-devel, libadwaita-devel and blueprint-compiler — the
-    # three together are a GTK4/Adwaita app build environment, and none of
-    # them means anything on its own.
-    ++ lib.optionals (has "gtk") [
-      gtk4
-      libadwaita
-      blueprint-compiler
-      pkg-config
-      gobject-introspection
-    ]
-    # rustup rather than a pinned toolchain: lua/config/lsp.lua's comment says
-    # rust-analyzer comes from rustup deliberately, "which keeps it matched to
-    # the compiler the project is actually built with". Overriding that here
-    # would be a change of behaviour, not a port.
-    ++ lib.optionals (has "rust") [ rustup ]
-    # The database clients. The servers run in Docker; stage-01 installed the
-    # full mariadb and postgresql packages only to get `mysql` and `psql`.
-    ++ lib.optionals cfg.databases [
-      mariadb
-      postgresql
-    ];
+  home.packages = devEnv.toolchains ++ devEnv.databasePackages;
 
-  home.sessionVariables = lib.mkIf (has "rust") {
+  home.sessionVariables = lib.mkIf (builtins.elem "rust" cfg.languages) {
     RUSTUP_HOME = "${config.home.homeDirectory}/.rustup";
     CARGO_HOME = "${config.home.homeDirectory}/.cargo";
   };
 
-  home.sessionPath = lib.optionals (has "rust") [
+  home.sessionPath = lib.optionals (builtins.elem "rust" cfg.languages) [
     "${config.home.homeDirectory}/.cargo/bin"
   ];
 }

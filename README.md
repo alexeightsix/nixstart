@@ -26,7 +26,7 @@ second command works at all.
 | battery in the bar | —       | ✓      | —  |
 | docker             | ✓       | ✓      | ✓  |
 | libvirt            | ✓       | —      | —  |
-| incus              | ✓       | ✓      | —  |
+| incus              | ✓       | —      | —  |
 | tailscale          | ✓       | ✓      | —  |
 | /home snapshots    | ✓       | ✓      | ✓  |
 
@@ -63,6 +63,51 @@ A few options live beside the module that owns them rather than in
   edited far more often than the system is rebuilt: `nvim`, `pi`, `zsh/alias`.
   Edits take effect on save.
 
+## Dev environment
+
+`lib/dev-env.nix` is a plain function, not a module, so everything can use it:
+
+| consumer | how |
+|----------|-----|
+| desktop / laptop | `home/dev/toolchains.nix` → `home.packages` |
+| micro VM | `nixosModules.devEnv` → `environment.systemPackages` |
+| dev shell | `lib/dev-shell.nix` → `mkShell` |
+| anything else | `nixstart.lib.devEnv` |
+
+Tiers (`base`, `toolchains`, `agentPackages`, `databasePackages`) are separate
+so a VM running one agent takes `base ++ agents ++ one language`.
+
+```sh
+nix develop .#agent    # agents + go/node — what agents are started in
+nix develop            # everything, by hand
+nix develop .#node     # one language
+nix develop .#nix      # working on this repo
+```
+
+`nix develop` gives you bash with no shell config, so `lib/dev-shell.nix`
+generates the rc files as store paths and points zsh at them with `ZDOTDIR`,
+then execs zsh. Nothing is written to the real home directory, so it is safe
+on a machine whose shell setup you do not want touched — including one that is
+not NixOS. Aliases are sourced at runtime, so adding one needs no rebuild.
+
+## Agent VMs
+
+`profiles/agent-vm.nix` — VM-technology agnostic; works under microvm.nix, an
+Incus VM, or plain qemu.
+
+```nix
+{
+  imports = [ nixstart.nixosModules.agentVm ];
+  networking.hostName = "agent-01";
+  nixstart.devEnv.languages = [ "node" ];
+  nixstart.agentVm.authorizedKeys = [ "ssh-ed25519 AAAA..." ];
+}
+```
+
+Keys only, no account password, no X, shell opens in `/workspace`, daily
+`nix-gc --delete-older-than 3d` so a disposable image does not grow into its
+own disk.
+
 ## Neovim and Pi are unmanaged
 
 Installed, not configured. No generated `init.lua`, no `programs.neovim`,
@@ -81,6 +126,16 @@ used or 20% free.
 
 `/home` must be its own btrfs subvolume. `snapper-home-subvolume.service`
 creates `/home/.snapshots`; nothing else does.
+
+No qgroups. `SPACE_LIMIT` would need them, and they are the most reliable way
+to make a btrfs filesystem stall — every delete walks the quota tree.
+`FREE_LIMIT` plus the retention counts bound the space without them. Cleanup
+runs at idle IO and CPU priority so a pass can never be what makes the desktop
+stutter, and both timers are jittered off the hour.
+
+Disk is bounded elsewhere too: `min-free`/`max-free` make the Nix daemon
+collect on its own below 5 GiB, weekly `nix-optimise` hard-links duplicates,
+journald is capped at 2 GB, and `/tmp` is cleared on boot.
 
 ## Before the first switch
 

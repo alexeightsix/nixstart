@@ -149,6 +149,17 @@
         "alex@headless" = mkHome { profile = "headless"; };
       };
 
+      # Reusable pieces, for guests built outside this flake — a microvm.nix
+      # host, an Incus VM image, another machine's configuration.
+      nixosModules = {
+        devEnv = ./system/dev-env.nix;
+        agentVm = ./profiles/agent-vm.nix;
+      };
+
+      # The dev environment as a plain function, for anything that is not a
+      # NixOS module at all.
+      lib.devEnv = import ./lib/dev-env.nix;
+
       packages = forAllSystems (
         system:
         let
@@ -167,13 +178,75 @@
 
       formatter = forAllSystems (system: (pkgsFor system).nixfmt);
 
+      # The dev shells. This is where agents are started: `nix develop
+      # .#agent` gives them the same tools, aliases and shell they would have
+      # on the desktop, without needing a NixOS host underneath.
       devShells = forAllSystems (
         system:
         let
           pkgs = pkgsFor system;
+          lib = pkgs.lib;
+
+          mkShell =
+            {
+              name,
+              languages ? [ ],
+              agents ? false,
+              databases ? false,
+            }:
+            import ./lib/dev-shell.nix {
+              inherit pkgs lib name;
+              dotfiles = "${inputs.dotfiles}/dotfiles";
+              devEnv = import ./lib/dev-env.nix {
+                inherit
+                  pkgs
+                  lib
+                  languages
+                  agents
+                  databases
+                  ;
+              };
+            };
         in
         {
-          default = pkgs.mkShellNoCC {
+          # Everything, for working on a project by hand.
+          default = mkShell {
+            name = "dev";
+            languages = [
+              "go"
+              "node"
+              "rust"
+              "lua"
+              "python"
+            ];
+            databases = true;
+          };
+
+          # What an agent is launched into. Same shell, plus the agents
+          # themselves.
+          agent = mkShell {
+            name = "agent";
+            languages = [
+              "go"
+              "node"
+            ];
+            agents = true;
+          };
+
+          # One per language, for a micro VM that only does one thing.
+          go = mkShell {
+            name = "go";
+            languages = [ "go" ];
+            agents = true;
+          };
+          node = mkShell {
+            name = "node";
+            languages = [ "node" ];
+            agents = true;
+          };
+
+          # Working on this repository itself.
+          nix = pkgs.mkShellNoCC {
             packages = with pkgs; [
               nixd
               nixfmt
