@@ -1,0 +1,7 @@
+# sops-encrypted secrets are safe to commit; anything decrypted is not.
+secrets/*.dec.yaml
+*.dec.yaml
+
+# nix
+result
+result-*
