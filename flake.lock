@@ -3,17 +3,14 @@
     "dotfiles": {
       "flake": false,
       "locked": {
-        "lastModified": 1786977247,
-        "narHash": "sha256-bUnNuT0ShT1WTMdXmmsMT5mM9rZQ5c+qv3Bxd4mmLWA=",
-        "ref": "refs/heads/main",
-        "rev": "e0227ba8bcd29c016ef0f79be05517963976d4a2",
-        "revCount": 224,
-        "type": "git",
-        "url": "ssh://git@github.com/alexeightsix/dev-env.git"
+        "lastModified": 1787506851,
+        "narHash": "sha256-LmcBwfOEYxeqq1PK99TsYwgORa4d/4KfM/d08xIR3KQ=",
+        "path": "/home/alex/kickstart",
+        "type": "path"
       },
       "original": {
-        "type": "git",
-        "url": "ssh://git@github.com/alexeightsix/dev-env.git"
+        "path": "/home/alex/kickstart",
+        "type": "path"
       }
     },
     "home-manager": {
@@ -73,7 +70,8 @@
         "home-manager": "home-manager",
         "nix-flatpak": "nix-flatpak",
         "nixpkgs": "nixpkgs",
-        "sops-nix": "sops-nix"
+        "sops-nix": "sops-nix",
+        "weather-wallpaper": "weather-wallpaper"
       }
     },
     "sops-nix": {
@@ -94,6 +92,19 @@
         "owner": "Mic92",
         "repo": "sops-nix",
         "type": "github"
+      }
+    },
+    "weather-wallpaper": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1787507220,
+        "narHash": "sha256-FCCCRh2v2fyMqX16j7UlbYq/CYWjRSq0tliE0LTSf5Q=",
+        "path": "/home/alex/dev/archive/wealther-wallpaper",
+        "type": "path"
+      },
+      "original": {
+        "path": "/home/alex/dev/archive/wealther-wallpaper",
+        "type": "path"
       }
     }
   },

@@ -1,21 +1,21 @@
-# Pi.
+# Pi — installed, not managed.
 #
-# Two things make this different from the rest of the repository, and both are
-# reasons to keep Nix's hands off the contents.
+# Same rule as Neovim: Nix provides the environment, and the configuration
+# stays a working checkout. Nothing here writes into ~/.pi/agent from the
+# store, and no part of dotfiles/pi is copied into it.
 #
-# First, the extension set is a live TypeScript project — extensions/, lib/,
-# tests/ and a Docusaurus site under docs/ that is the acknowledged source of
-# truth for the setup. It is edited daily and its tests are run in place.
+# There are two reasons, and the second is the one that matters. The
+# configuration is a live TypeScript project — extensions/, lib/, tests/ and a
+# Docusaurus site under docs/ that is the acknowledged source of truth for the
+# setup — edited daily and reloaded with /reload inside a running session.
+# And Pi's runtime state (auth.json, sessions, models-store.json, npm packages
+# it installs itself) has to stay untracked in the same directory the tracked
+# files live in. A store path is read-only and cannot hold both halves.
 #
-# Second, pi/link.sh already solves the exact problem home-manager would: it
-# symlinks each tracked file into ~/.pi/agent, preserves anything that was
-# there, and prunes links whose source has been removed — because runtime
-# state (auth.json, sessions, models-store.json, installed npm packages) has
-# to stay untracked in that same directory. A store path cannot hold both.
-#
-# So this module puts Pi's dependencies in place and runs that script. The
-# links point at the working checkout, which is what makes `/reload` in a
-# running session pick up an edit.
+# dotfiles/pi/link.sh already does this correctly — it symlinks the tracked
+# files in, preserves anything already there, and prunes links whose source
+# has been deleted. It is left to do its job; run it by hand, or turn on
+# `linkConfig` below to have activation call it.
 {
   config,
   lib,
@@ -27,21 +27,38 @@ let
   piRepo = "${cfg.checkout}/dotfiles/pi";
 in
 {
+  options.kickstart.pi.linkConfig = lib.mkOption {
+    type = lib.types.bool;
+    default = false;
+    description = ''
+      Run dotfiles/pi/link.sh on activation, linking the tracked Pi
+      configuration into ~/.pi/agent from the working checkout.
+
+      Off by default: run it yourself once and Nix never touches the
+      directory. The links it creates point at the checkout either way, so
+      an edit is live in both cases.
+    '';
+  };
+
   config = lib.mkIf cfg.agents {
-    # .zshrc put a specific Node tarball on PATH for Pi:
-    # ~/.local/share/pi-node/node-v22.23.2-linux-x64/bin. That directory is an
-    # unpacked upstream release, which will not run here.
+    # .zshrc put an unpacked upstream Node tarball on PATH for Pi —
+    # ~/.local/share/pi-node/node-v22.23.2-linux-x64/bin — which is a
+    # dynamically linked binary that will not run on NixOS at all.
     home.packages = with pkgs; [
       nodejs
       bun
     ];
 
+    # The launcher, by symlink to the checkout rather than into the store, so
+    # editing pi-launcher does not need a rebuild.
     home.file.".local/bin/pi".source = config.lib.file.mkOutOfStoreSymlink "${piRepo}/pi-launcher";
 
-    home.activation.linkPi = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      if [ -x ${piRepo}/link.sh ]; then
-        run ${pkgs.bash}/bin/bash ${piRepo}/link.sh
-      fi
-    '';
+    home.activation.linkPi = lib.mkIf config.kickstart.pi.linkConfig (
+      lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+        if [ -x ${piRepo}/link.sh ]; then
+          run ${pkgs.bash}/bin/bash ${piRepo}/link.sh
+        fi
+      ''
+    );
   };
 }

@@ -48,7 +48,7 @@ in
       exec --no-startup-id ${lib.getExe pkgs.picom} --config ${
         config.xdg.configFile."picom/picom.conf".source
       } -b
-      exec --no-startup-id ${lib.getExe pkgs.feh} --bg-fill ${cfg.dotfiles}/../wallpapers/${desktop.wallpaper}
+      exec --no-startup-id ${lib.getExe pkgs.feh} --bg-fill ${desktop._resolvedWallpaper}
       exec --no-startup-id ${monitorScript}
 
       # vicinae is a systemd user unit now (modules/nixos/desktop/i3.nix), not

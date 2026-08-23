@@ -1,4 +1,4 @@
-# kickstart-nix
+# nixstart
 
 The NixOS half of `kickstart`. Two layers, deliberately kept apart:
 

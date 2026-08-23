@@ -13,6 +13,7 @@
 
     desktop.enable = true;
     apps.gui = true;
+    tailscale = true;
 
     virtualisation = {
       docker = true;
@@ -32,8 +33,9 @@
     checkout = "/home/alex/kickstart";
 
     user.email = "alexlatour@gmail.com";
+    desktop.weather.enable = true;
+    desktop.weather.location = "Montreal";
     desktop.statusBar = "desktop";
-    desktop.wallpaper = "wallpaper-2.png";
 
     # scripts/xrandr.sh, which was one commented-out line for every machine.
     desktop.monitors = ''

@@ -1,5 +1,5 @@
 {
-  description = "kickstart-nix — Alex's workstation, as NixOS";
+  description = "nixstart — Alex's workstation, as NixOS";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -19,16 +19,29 @@
 
     # The dotfiles repository — the other half of this configuration.
     #
-    # Files Nix reads at build time (tmux.conf, the zellij layouts, the alias
-    # files, copyline) come from here as a store path, so they are pinned by
-    # the lockfile like any other input. Trees that must stay editable at
-    # runtime — the Neovim config, the Pi extension set — do not; those are
-    # `kickstart.home.checkout`, a plain path on the machine.
+    # A path input, not a git URL, and deliberately: zellij/, ghostty-shaders/
+    # and zsh/copyline.plugin.zsh are untracked in the dev-env remote, so a
+    # git input silently produces a configuration missing all three. A path
+    # input takes the working tree as it is, which is also how the dotfiles
+    # are actually worked on.
     #
-    # While iterating on the dotfiles themselves:
-    #   nixos-rebuild switch --flake . --override-input dotfiles path:/home/alex/kickstart
+    # The cost is that this flake is only reproducible on a machine that has
+    # the checkout. Swap in the remote once the tree is committed:
+    #   url = "git+ssh://git@github.com/alexeightsix/dev-env.git";
+    #
+    # Files Nix reads at build time (tmux.conf, the zellij layouts, dunstrc,
+    # the shaders) come from here. Trees that must stay editable at runtime —
+    # the Neovim config, the Pi setup — do not; those are
+    # `kickstart.home.checkout`, a plain path on the machine.
     dotfiles = {
-      url = "git+ssh://git@github.com/alexeightsix/dev-env.git";
+      url = "path:/home/alex/kickstart";
+      flake = false;
+    };
+
+    # The weather wallpaper generator. Its remote is not reachable
+    # anonymously, so this is the working checkout, same as `dotfiles`.
+    weather-wallpaper = {
+      url = "path:/home/alex/dev/archive/wealther-wallpaper";
       flake = false;
     };
 
@@ -111,6 +124,7 @@
       nixosConfigurations = {
         desktop = mkHost { hostname = "desktop"; };
         laptop = mkHost { hostname = "laptop"; };
+        vm = mkHost { hostname = "vm"; };
       };
 
       homeConfigurations = {
@@ -124,7 +138,7 @@
           pkgs = pkgsFor system;
         in
         {
-          inherit (pkgs) fury-renegade-rgb dracula-zsh-theme;
+          inherit (pkgs) fury-renegade-rgb dracula-zsh-theme weather-wallpaper;
         }
       );
 

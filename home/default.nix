@@ -26,6 +26,9 @@
 
     ./desktop/i3.nix
     ./desktop/statusbar.nix
+    ./desktop/battery.nix
+    ./desktop/display.nix
+    ./desktop/wallpaper.nix
     ./desktop/picom.nix
     ./desktop/dunst.nix
     ./desktop/ghostty.nix

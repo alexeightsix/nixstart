@@ -1,8 +1,15 @@
 # Notifications.
 #
-# dunstrc was in the repository but link.sh never linked it — it is not in
-# either the shared or the desktop list — so the file has been tracked and
-# unused. Wiring it up is part of the port, not a change of behaviour.
+# dunstrc was tracked in the repository and link.sh never linked it — it is in
+# neither the shared nor the desktop list — so the file has sat there unused
+# and every notification has been rendered with dunst's built-in defaults.
+#
+# The tracked file is the configuration, not a transcription of it into Nix
+# attributes: it is a complete dunstrc with [icons] and three urgency sections,
+# and re-typing it as an attrset would create a second copy to keep in step
+# with the first. home-manager's `settings` option is bypassed for that reason
+# and the file is installed directly; the module is still what runs the
+# service, so `systemctl --user status dunst` behaves normally.
 {
   config,
   lib,
@@ -14,37 +21,20 @@ let
 in
 {
   config = lib.mkIf cfg.desktop.enable {
-    services.dunst = {
-      enable = true;
-      settings = {
-        global = {
-          monitor = 0;
-          follow = "mouse";
-          width = 320;
-          height = "(0, 120)";
-          origin = "top-right";
-          offset = "(20, 20)";
-          scale = 0;
-          transparency = 15;
+    services.dunst.enable = true;
 
-          font = "JetBrains Mono 10";
-          line_height = 4;
-          padding = 10;
-          horizontal_padding = 10;
-          frame_width = 2;
-          frame_color = "#bd93f9";
-          corner_radius = 8;
-
-          timeout = 5;
-          separator_height = 2;
-          separator_color = "#44475a";
-          mouse_left_click = "close_current";
-          mouse_middle_click = "do_action";
-          mouse_right_click = "close_all";
-
-          markup = "full";
-        };
-      };
+    # The module writes dunstrc from `settings`; with none set it writes an
+    # empty file, so the tracked one replaces it here. mkForce because both
+    # definitions target the same path.
+    xdg.configFile."dunst/dunstrc" = lib.mkForce {
+      source = "${cfg.dotfiles}/dunstrc";
     };
+
+    # dunstrc asks for "JetBrains Mono 10" and icon lookup; neither works
+    # without the font and an icon theme actually installed.
+    home.packages = with pkgs; [
+      libnotify
+      adwaita-icon-theme
+    ];
   };
 }

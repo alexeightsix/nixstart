@@ -23,8 +23,10 @@
     ./hardware/bluetooth.nix
     ./hardware/keychron.nix
     ./hardware/rgb.nix
+    ./hardware/xps13.nix
 
     ./services/openssh.nix
+    ./services/tailscale.nix
     ./services/docker.nix
     ./services/libvirt.nix
     ./services/snapshots.nix

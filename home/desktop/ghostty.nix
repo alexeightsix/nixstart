@@ -18,6 +18,7 @@
 }:
 let
   cfg = config.kickstart.home;
+  shader = cfg.desktop.ghosttyShader;
 in
 {
   config = lib.mkIf cfg.desktop.enable {
@@ -67,6 +68,11 @@ in
         window-save-state = "always";
         window-theme = "ghostty";
 
+        # Absolute store path rather than ~/.config/ghostty/bloom.glsl: the
+        # shader and the line that names it then move together, and a machine
+        # that has never had the file copied into place still gets it.
+        custom-shader = lib.mkIf (shader != null) "${cfg.dotfiles}/ghostty-shaders/${shader}.glsl";
+
         keybind = [
           "ctrl+shift+slash=start_search"
           "shift+enter=text:\\x1b[13;2u"
@@ -75,9 +81,11 @@ in
       };
     };
 
-    # `custom-shader = ~/.config/ghostty/bloom.glsl` referenced a file that is
-    # not in the repository — Ghostty logs a warning and carries on. Track the
-    # shader in the dotfiles checkout and it is picked up; until then the line
-    # is left out rather than pointing at nothing.
+    # Both tracked shaders are installed, not just the selected one, so
+    # switching is an option change rather than a file copy.
+    xdg.configFile = {
+      "ghostty/shaders/bloom.glsl".source = "${cfg.dotfiles}/ghostty-shaders/bloom.glsl";
+      "ghostty/shaders/water.glsl".source = "${cfg.dotfiles}/ghostty-shaders/water.glsl";
+    };
   };
 }

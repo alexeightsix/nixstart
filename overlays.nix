@@ -7,4 +7,7 @@
 inputs: final: prev: {
   fury-renegade-rgb = final.callPackage ./pkgs/fury-renegade-rgb { };
   dracula-zsh-theme = final.callPackage ./pkgs/dracula-zsh-theme { };
+  weather-wallpaper = final.callPackage ./pkgs/weather-wallpaper {
+    src = inputs.weather-wallpaper;
+  };
 }
