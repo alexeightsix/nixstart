@@ -154,6 +154,34 @@ already knows when the graphical session started. The same applies to `jk`,
 - Neither real host had a login password. An assertion now fails the build
   rather than producing an account that cannot log in.
 
+## Snapshots
+
+`/home` and nothing else. That is the point of doing this on NixOS rather than
+Fedora: the system is a generation and rolls back from the boot menu, and
+everything under `/nix/store` rebuilds from the flake. `/home` is the one
+directory that is neither reproducible nor disposable.
+
+```nix
+nixstart.system.snapshots.home = true;
+```
+
+Hourly timeline snapshots via snapper, cleaned up on a schedule — ten hourly,
+ten daily, four weekly, six monthly, two yearly by default, tunable with
+`snapshots.limits`. Creation stops if the filesystem passes 50% used or drops
+below 20% free, so a full disk does not get worse.
+
+`/home` must be its own btrfs subvolume; snapper snapshots a subvolume, not a
+directory. An assertion catches the wrong `fsType` at build time rather than
+letting it fail cryptically at activation.
+
+The layout is snapper's own `/home/.snapshots/<n>/snapshot/<path>`, which is
+exactly what the `restore` alias in `dotfiles/zsh/alias` already reads — it
+fzf-picks an old version of a file or directory and moves the current one
+aside. `ALLOW_USERS` and `SYNC_ACL` are set so that works without sudo.
+
+Snapshots are not backups: they die with the filesystem holding them. The
+off-disk half is still `scripts/backup.sh`.
+
 ## What is still a shell script
 
 - `scripts/backup.sh` — mounts `/dev/sda1` and rsyncs the system to it. An

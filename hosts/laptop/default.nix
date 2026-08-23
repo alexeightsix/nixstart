@@ -38,6 +38,10 @@
     };
   };
 
+  # /home only — the system is a generation and rolls back from the boot
+  # menu; /home is the part that does not.
+  nixstart.system.snapshots.home = true;
+
   home-manager.users.alex.nixstart.home = {
     checkout = "/home/alex/kickstart";
     user.email = "alexlatour@gmail.com";
