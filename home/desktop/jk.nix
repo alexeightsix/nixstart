@@ -21,6 +21,35 @@
 let
   cfg = config.nixstart.home;
   jk = cfg.desktop.jk;
+
+  # jk's own opted-in-by-default list, copied verbatim from `jk --help`.
+  # It has to be repeated here because passing --class at all discards it —
+  # "Naming any drops the default list below" — so "extra classes" is only
+  # true if the defaults are handed back explicitly alongside them. Without
+  # this, setting `classes` to a single entry silently stopped jk working in
+  # every browser, which is the one place it works out of the box.
+  browserDefaults = [
+    "google-chrome"
+    "chromium"
+    "brave-browser"
+    "vivaldi"
+    "opera"
+    "microsoft-edge"
+    "thorium"
+    "firefox"
+    "librewolf"
+    "waterfox"
+    "floorp"
+    "zen"
+    "tor browser"
+    "ladybird"
+    "epiphany"
+    "falkon"
+    "konqueror"
+    "midori"
+  ];
+
+  effectiveClasses = if jk.classes == [ ] then [ ] else browserDefaults ++ jk.classes;
 in
 {
   options.nixstart.home.desktop.jk = {
@@ -46,6 +75,10 @@ in
         Extra window classes to listen in, on top of jk's built-in browser
         default. Terminals and editors are deliberately not included: Esc
         already means something there.
+
+        Additive despite jk itself replacing its default list the moment any
+        --class is passed: the browsers are handed back alongside whatever is
+        named here, so naming one class no longer silently disables the rest.
       '';
     };
 
@@ -71,7 +104,7 @@ in
             (lib.getExe pkgs.jk)
             "--theme ${jk.theme}"
           ]
-          ++ map (c: "--class ${lib.escapeShellArg c}") jk.classes
+          ++ map (c: "--class ${lib.escapeShellArg c}") effectiveClasses
         );
         Restart = "on-failure";
         RestartSec = 2;
