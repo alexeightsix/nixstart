@@ -1,8 +1,8 @@
-# Pi — installed, not managed.
+# Pi — the binary is managed, the configuration is not.
 #
-# Same rule as Neovim: Nix provides the environment, and the configuration
-# stays a working checkout. Nothing here writes into ~/.pi/agent from the
-# store, and no part of dotfiles/pi is copied into it.
+# Nix provides the environment and, since it is packaged, the agent itself.
+# The configuration stays a working checkout: nothing here writes into
+# ~/.pi/agent from the store, and no part of dotfiles/pi is copied into it.
 #
 # There are two reasons, and the second is the one that matters. The
 # configuration is a live TypeScript project — extensions/, lib/, tests/ and a
@@ -18,6 +18,7 @@
 # `linkConfig` below to have activation call it.
 {
   config,
+  inputs,
   lib,
   pkgs,
   ...
@@ -44,9 +45,16 @@ in
     # .zshrc put an unpacked upstream Node tarball on PATH for Pi —
     # ~/.local/share/pi-node/node-v22.23.2-linux-x64/bin — which is a
     # dynamically linked binary that will not run on NixOS at all.
-    home.packages = with pkgs; [
-      nodejs
-      bun
+    home.packages = [
+      pkgs.nodejs
+      pkgs.bun
+
+      # pi itself. pi-launcher at ~/.local/bin/pi is only a dispatcher — it
+      # searches PATH for the real executable and re-execs it — so without a
+      # packaged pi anywhere it exited 127 with "real pi executable not found".
+      # kickstart never installed pi either; its own docs say Pi is installed
+      # separately, so a fresh machine had the launcher and nothing to launch.
+      inputs.coding-agents.packages.${pkgs.stdenv.hostPlatform.system}.pi-coding-agent
     ];
 
     # The launcher, by symlink to the checkout rather than into the store, so

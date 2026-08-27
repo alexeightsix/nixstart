@@ -41,6 +41,22 @@
       flake = false;
     };
 
+    # Pi. Not in nixpkgs, and its published npm tarball ships no lockfile,
+    # which is what blocks a plain buildNpmPackage — earendil-works/pi#701.
+    # This flake builds it from the tagged GitHub source with a generated
+    # lockfile, autoPatchelfs the native addons and restores the provider
+    # model data that is excluded from git, so the work is taken from there
+    # rather than repeated here.
+    #
+    # Only the package is used, never the overlay: the overlay also replaces
+    # claude-code and codex, which come from nixpkgs in home/dev/agents.nix
+    # and are fine as they are.
+    #
+    # Deliberately no `inputs.nixpkgs.follows`. The derivation pins an
+    # npmDepsHash computed against its own nixpkgs, and that hash does not
+    # survive being rebuilt with a different npm.
+    coding-agents.url = "github:kissgyorgy/coding-agents";
+
     # jk: vim-style keyboard scrolling for X11. i3config execs it as
     # $HOME/.local/bin/jk, which is a dynamically linked ELF that was built by
     # hand and would not run on NixOS at all. It ships its own flake, so this
