@@ -1,0 +1,1 @@
+alias git-auto='while true; do git add .; git commit -m "sync"; git push origin; sleep 1; done'

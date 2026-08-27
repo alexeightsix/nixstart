@@ -25,6 +25,18 @@
       # routes or runs as an exit node.
       useRoutingFeatures = "client";
       openFirewall = true;
+
+      # `sudo tailscale set --operator=$USER`, which otherwise has to be run
+      # by hand after every install and is forgotten after every reinstall.
+      # Without it `tailscale up`, `tailscale status` and friends all need
+      # sudo: the daemon only takes control commands from root or from the
+      # one account named as its operator.
+      #
+      # nixpkgs turns this list into a `tailscaled-set` oneshot, ordered
+      # after tailscaled and wanted by multi-user.target, so it is reasserted
+      # on every boot and every activation instead of being a one-time manual
+      # step. It follows the host's user rather than hardcoding a name.
+      extraSetFlags = [ "--operator=${config.nixstart.system.user.name}" ];
     };
 
     # Let the daemon's own DNS handling through; without this, MagicDNS

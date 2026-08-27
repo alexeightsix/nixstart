@@ -1,0 +1,218 @@
+set $mod Mod4
+
+workspace_layout default
+font pango:monospace 8
+
+new_window pixel 0
+
+gaps inner 0
+gaps outer 0
+
+floating_modifier $mod
+
+exec --no-startup-id dex-autostart --autostart --environment i3
+exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork
+exec --no-startup-id picom --config $HOME/kickstart/dotfiles/picom.conf -b
+exec --no-startup-id feh --bg-fill $HOME/kickstart/wallpapers/wallpaper-2.png
+exec --no-startup-id pkill nm-applet 
+exec --no-startup-id pkill blueman-applet
+exec --no-startup-id $HOME/kickstart/scripts/xrandr.sh
+exec --no-startup-id systemctl --user start --now vicinae.service
+# jk: keyboard scroll mode (double-press Shift, then j/k). rose pine by default
+exec_always --no-startup-id sh -c "pkill -x jk; exec $HOME/.local/bin/jk"
+
+# workspace popup: opened from tmux with prefix+w, Esc closes.
+# The double-Shift listener it used to ride on is retired; uncomment to revive
+# it (see dotfiles/workspace-listener.sh).
+# exec_always --no-startup-id $HOME/kickstart/dotfiles/workspace-listener.sh
+set $refresh_i3status killall -SIGUSR1 i3status
+bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ +10% && $refresh_i3status
+bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ -10% && $refresh_i3status
+bindsym XF86AudioMute exec --no-startup-id pactl set-sink-mute @DEFAULT_SINK@ toggle && $refresh_i3status
+bindsym XF86AudioMicMute exec --no-startup-id pactl set-source-mute @DEFAULT_SOURCE@ toggle && $refresh_i3status
+
+bindsym $mod+Return exec ghostty
+bindsym $mod+q kill
+
+bindsym $mod+Tab       focus right
+
+bindsym $mod+1    workspace number 1
+bindsym $mod+2    workspace number 2
+bindsym $mod+3    workspace number 3
+bindsym $mod+4    workspace number 4
+bindsym $mod+5    workspace number 5
+bindsym $mod+6    workspace number 6
+bindsym $mod+7    workspace number 7
+bindsym $mod+8    workspace number 8
+bindsym $mod+9    workspace number 9
+bindsym $mod+0    workspace number 10
+
+bindsym $mod+Shift+1    move container to workspace number 1
+bindsym $mod+Shift+2    move container to workspace number 2
+bindsym $mod+Shift+3    move container to workspace number 3
+bindsym $mod+Shift+4    move container to workspace number 4
+bindsym $mod+Shift+5    move container to workspace number 5
+bindsym $mod+Shift+6    move container to workspace number 6
+bindsym $mod+Shift+7    move container to workspace number 7
+bindsym $mod+Shift+8    move container to workspace number 8
+bindsym $mod+Shift+9    move container to workspace number 9
+bindsym $mod+Shift+0    move container to workspace number 10
+
+bindcode $mod+Shift+Mod2+87	move container to workspace number 1
+bindcode $mod+Shift+Mod2+88	move container to workspace number 2
+bindcode $mod+Shift+Mod2+89	move container to workspace number 3
+bindcode $mod+Shift+Mod2+83	move container to workspace number 4
+bindcode $mod+Shift+Mod2+84	move container to workspace number 5
+bindcode $mod+Shift+Mod2+85	move container to workspace number 6
+bindcode $mod+Shift+Mod2+79	move container to workspace number 7
+bindcode $mod+Shift+Mod2+80	move container to workspace number 8
+bindcode $mod+Shift+Mod2+81	move container to workspace number 9
+bindcode $mod+Shift+Mod2+90	move container to workspace number 10
+
+bindcode $mod+Shift+87	move container to workspace number 1
+bindcode $mod+Shift+88	move container to workspace number 2
+bindcode $mod+Shift+89	move container to workspace number 3
+bindcode $mod+Shift+83	move container to workspace number 4
+bindcode $mod+Shift+84	move container to workspace number 5
+bindcode $mod+Shift+85	move container to workspace number 6
+bindcode $mod+Shift+79	move container to workspace number 7
+bindcode $mod+Shift+80	move container to workspace number 8
+bindcode $mod+Shift+81	move container to workspace number 9
+bindcode $mod+Shift+90	move container to workspace number 10
+
+mode "resize" {
+    bindsym Left resize shrink width 10 px or 10 ppt
+    bindsym Down resize grow height 10 px or 10 ppt
+    bindsym Up resize shrink height 10 px or 10 ppt
+    bindsym Right resize grow width 10 px or 10 ppt
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+}
+
+bindsym $mod+r mode "resize"
+bindsym $mod+Shift+c reload
+bindsym $mod+Shift+r restart
+bindsym $mod+b focus up
+bindsym $mod+j focus left
+bindsym $mod+k focus down
+bindsym $mod+o focus right
+
+bindsym $mod+Down focus down
+bindsym $mod+Left focus left
+bindsym $mod+Right focus right
+bindsym $mod+Up focus up
+
+bindsym $mod+Shift+b move up
+bindsym $mod+Shift+j move left
+bindsym $mod+Shift+k move down
+bindsym $mod+Shift+o move right
+
+bindsym $mod+Shift+Left move left
+bindsym $mod+Shift+Down move down
+bindsym $mod+Shift+Up move up
+bindsym $mod+Shift+Right move right
+
+bindsym $mod+h split h
+bindsym $mod+v split v
+bindsym $mod+f fullscreen toggle
+
+bindsym $mod+s layout stacking
+bindsym $mod+g layout tabbed
+bindsym $mod+e layout toggle split
+
+bindsym $mod+Shift+space floating toggle
+bindsym $mod+space focus mode_toggle
+bindsym $mod+a focus parent
+
+set $ws1 "1"
+set $ws2 "2"
+set $ws3 "3"
+set $ws4 "4"
+set $ws5 "5"
+set $ws6 "6"
+set $ws7 "7"
+set $ws8 "8"
+set $ws9 "9"
+set $ws10 "10"
+
+assign [class="[zZ]oom.*"] $ws7
+assign [class="TelegramDesktop"] $ws7
+assign [class="^[Tt]elegram.*"] $ws7
+assign [class="^[tT]eams.*"] $ws7
+assign [class="^[sS]lack.*"] $ws7
+
+for_window [class=(?i)firefox] focus
+for_window [class=TelegramDesktop] focus
+
+# for_window [class="Zoom" instance="yad"] floating enable
+
+for_window [class="^.*"] border pixel 0
+#for_window [class="^[zZ]oom$"] floating enable
+
+assign [class="^[fF]irefox$"] $ws3
+assign [class="^[Tt]elegram.*"] $ws7
+assign [class="^[sS]lack$"] $ws7
+assign [class="^[zZ]oom$"] $ws9
+
+set $darkbluetrans	#08052be6
+set $darkblue		#08052b
+set $lightblue		#5294e2
+set $urgentred	  	#e53935
+set $white      	#ffffff
+set $black		#000000
+set $purple		#e345ff
+set $darkgrey		#383c4a
+set $grey		#b0b5bd
+set $mediumgrey		#8b8b8b
+set $yellowbrown	#e1b700
+
+# Rose Pine (main) — used by the bar only
+set $rp_base		#191724
+set $rp_overlay		#26233a
+set $rp_muted		#6e6a86
+set $rp_subtle		#908caa
+set $rp_text		#e0def4
+set $rp_love		#eb6f92
+set $rp_rose		#ebbcba
+set $rp_iris		#c4a7e7
+
+client.focused		    	$lightblue	$darkblue	$white		$mediumgrey	$mediumgrey
+client.unfocused	    	$darkblue	$darkblue	$grey		$darkgrey	$darkgrey
+client.focused_inactive		$darkblue	$darkblue	$grey		$black		$black
+client.urgent		    	$urgentred	$urgentred	$white		$yellowbrown	$yellowbrown
+
+bar {
+    mode hide
+    hidden_state hide
+    modifier $mod
+
+    padding 0 0 0 0
+    bindsym button1 nop
+    bindsym button4 nop
+    bindsym button5 nop
+    bindsym button6 nop
+    bindsym button7 nop		
+    status_command $HOME/kickstart/scripts/i3status-select.sh
+    position bottom
+    tray_padding 0
+    strip_workspace_numbers yes
+
+    colors {
+      active_workspace	 $rp_rose $rp_overlay $rp_subtle	$rp_iris
+      background         $rp_base
+      binding_mode       $rp_love $rp_love $rp_base
+      focused_workspace	 $rp_rose	$rp_rose $rp_base
+      inactive_workspace $rp_base $rp_base $rp_muted $rp_iris
+      separator          $rp_iris
+      statusline         $rp_text
+      urgent_workspace	 $rp_love $rp_love $rp_base $rp_iris
+    }
+}
+
+bindsym $mod+Shift+s exec --no-startup-id "systemctl suspend"
+bindsym $mod+d exec --no-startup-id "vicinae toggle"
+
+
+# flameshot: Ctrl+; -> interactive capture (took over oneshot's shortcut)
+bindsym Control+semicolon exec --no-startup-id flameshot gui
+bindsym F10 exec --no-startup-id flameshot gui

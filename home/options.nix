@@ -46,26 +46,29 @@ in
     dotfiles = mkOption {
       type = types.path;
       description = ''
-        Store path of the dotfiles checkout, from the `dotfiles` flake input.
-        Read at build time: tmux.conf, dunstrc, the Ghostty shaders and the
-        wallpapers.
+        Store path of dotfiles/ in this repository. Read at build time:
+        tmux.conf, dunstrc, the Ghostty shaders and the wallpapers.
       '';
     };
 
     checkout = mkOption {
       type = types.str;
-      default = "/home/alex/kickstart";
+      default = "/home/alex/nixstart";
       description = ''
         Working checkout on the machine, referred to by path and never read.
         This is where the trees that are edited far more often than the system
         is rebuilt live — dotfiles/nvim and dotfiles/pi — so that an edit
         takes effect on save rather than on `nixos-rebuild`.
+
+        This is the same repository the system is built from. It used to be a
+        second checkout (~/kickstart, the dev-env remote); the dotfiles moved
+        in here so that there is one tree to clone and one to back up.
       '';
     };
 
     wallpapers = mkOption {
       type = types.path;
-      description = "Store path of the wallpapers directory, from the dotfiles input.";
+      description = "Store path of wallpapers/ in this repository.";
     };
 
     desktop = {
@@ -178,7 +181,67 @@ in
           docked and undocked wants this.
 
           Save a layout once it looks right: `autorandr --save docked`.
+
+          Note that this only ever *applies* a profile you have already saved.
+          With no saved profiles — which is the state a fresh install is in —
+          `autorandr --change` matches nothing and exits successfully having
+          done nothing at all. `dock` below is the part that needs no profile.
         '';
+      };
+
+      dock = {
+        enable = mkOption {
+          type = types.bool;
+          default = false;
+          description = ''
+            Follow the external monitor: when one is connected, use it and
+            switch the internal panel off; when the last one is unplugged,
+            switch the panel back on. Applied at login and on every hotplug.
+
+            This is deliberately not autorandr. autorandr keys its profiles on
+            the EDID of the specific monitors it saw when you ran
+            `autorandr --save`, so it cannot do anything at all until a layout
+            has been saved by hand, and it does nothing for a monitor it has
+            not met before. The rule here is about the *kind* of output, not
+            which monitor it is, so it works on a display that has never been
+            plugged into this machine — including the first time.
+
+            The two coexist: a saved autorandr profile for a dock you use
+            often still wins, because autorandr runs first at login.
+          '';
+        };
+
+        internal = mkOption {
+          type = types.str;
+          default = "eDP-1";
+          example = "LVDS-1";
+          description = ''
+            The built-in panel — the output that gets switched off while an
+            external monitor is connected. `xrandr --query` names it.
+          '';
+        };
+
+        keepInternal = mkOption {
+          type = types.bool;
+          default = false;
+          description = ''
+            Keep the internal panel on when docked, extending onto it rather
+            than switching it off, positioned per `internalPosition`.
+          '';
+        };
+
+        internalPosition = mkOption {
+          type = types.enum [
+            "left-of"
+            "right-of"
+          ];
+          default = "right-of";
+          description = ''
+            Which side of the external monitor the built-in panel sits on
+            physically. Only consulted when `keepInternal` is true — when the
+            panel is off, it has no position.
+          '';
+        };
       };
 
       dpi = mkOption {

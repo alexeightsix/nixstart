@@ -41,7 +41,7 @@ let
       ];
       calculator.enabled = false;
       manage-shortcuts.entrypoints.create.enabled = true;
-      scripts.preferences.customDirs = [ "${cfg.dotfiles}/../scripts/vicinae" ];
+      scripts.preferences.customDirs = [ "${cfg.dotfiles}/../dev-env-scripts/vicinae" ];
       shortcuts = {
         enabled = true;
         entrypoints = {

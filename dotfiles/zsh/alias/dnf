@@ -1,0 +1,1 @@
+alias dnf='sudo snapper -c root create --description before-dnf && sudo dnf'

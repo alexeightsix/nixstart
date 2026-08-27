@@ -1,7 +1,7 @@
 # A full desktop account, applied without NixOS underneath it.
 {
   nixstart.home = {
-    checkout = "/home/alex/kickstart";
+    checkout = "/home/alex/nixstart";
 
     desktop.enable = true;
     desktop.statusBar = "desktop";

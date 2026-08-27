@@ -1,0 +1,1 @@
+alias db='bun run $HOME/dev/whisky/worktrees/main/packages/main/src/index.tsx'

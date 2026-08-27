@@ -184,14 +184,12 @@ grep -q "filesystems.nix" "$REPO/hosts/$HOST/default.nix" \
 step "installing $HOST (this takes a while)"
 export NIX_CONFIG="experimental-features = nix-command flakes"
 
-extra=()
-# The dotfiles input is a local path; if a checkout is next to this repo, use
-# it rather than failing on a path that does not exist in the installer.
-for candidate in "$REPO/../kickstart" /root/kickstart; do
-    [ -d "$candidate" ] && { extra+=(--override-input dotfiles "path:$(realpath "$candidate")"); break; }
-done
-
-nixos-install --flake "$REPO#$HOST" --no-root-password "${extra[@]}"
+# The dotfiles used to be a separate `path:` input, which meant hunting for a
+# ~/kickstart checkout here and passing --override-input so the installer did
+# not fail on a path that does not exist in the installer environment. They
+# live in this repository now, so there is nothing to find and nothing to
+# override.
+nixos-install --flake "$REPO#$HOST" --no-root-password
 
 step "done"
 echo "  Reboot, log in as the account in hosts/$HOST/default.nix, and run passwd."

@@ -1,0 +1,659 @@
+{
+  "workspaceMode": "multi",
+  "screenZoom": 1,
+  "miniMap": true,
+  "zenMode": false,
+  "grid": [],
+  "gridBounds": {
+    "scale": 1
+  },
+  "theme": "dark",
+  "screenFit": null,
+  "screens": [
+    {
+      "borderRadius": 0,
+      "borderRadiusSmoothing": 0,
+      "height": 500,
+      "id": "0a91a527-11f8-49ab-9131-be0d3b419cbb",
+      "name": "XS",
+      "padding": {
+        "bottom": 0,
+        "left": 0,
+        "right": 0,
+        "top": 0
+      },
+      "safe_area_top": 0,
+      "userAgent": "",
+      "visible": true,
+      "width": 320
+    },
+    {
+      "category": "apple",
+      "device": "iPhone 14 Pro",
+      "height": 671,
+      "highlighted": false,
+      "id": "e5bc7457-bea7-4559-97ea-0dfb33e3c8cb",
+      "name": "SM",
+      "originalSize": [
+        393,
+        852
+      ],
+      "userAgent": "iPhone",
+      "visible": false,
+      "width": 640
+    },
+    {
+      "category": "apple",
+      "height": 681,
+      "highlighted": false,
+      "id": "3de4da42-6780-4f4c-b6bc-a0766cde5e8e",
+      "name": "LG",
+      "originalSize": [
+        1024,
+        932
+      ],
+      "padding": {
+        "bottom": 0,
+        "left": 0,
+        "right": 0,
+        "top": 0
+      },
+      "userAgent": "iPhone",
+      "visible": false,
+      "width": 1024
+    },
+    {
+      "category": "apple",
+      "height": 844,
+      "id": "7f675ae3-1f91-4a5e-810f-addaf92df7c0",
+      "name": "iPhone 14",
+      "userAgent": "iPhone",
+      "visible": false,
+      "width": 390
+    },
+    {
+      "category": "apple",
+      "height": 844,
+      "id": "9ed1a48c-e04a-4130-a24a-8f5bec761ec5",
+      "name": "iPhone 13 Pro",
+      "userAgent": "iPhone",
+      "visible": false,
+      "width": 390
+    },
+    {
+      "category": "apple",
+      "height": 926,
+      "id": "e2dc992b-a8a9-4e7e-9c5a-2750665db5e1",
+      "name": "iPhone 13 Pro Max",
+      "userAgent": "iPhone",
+      "visible": false,
+      "width": 428
+    },
+    {
+      "category": "apple",
+      "height": 844,
+      "id": "ca4e7ffa-83ee-4a30-86a0-1ebd732c20e5",
+      "name": "iPhone 13",
+      "userAgent": "iPhone",
+      "visible": false,
+      "width": 390
+    },
+    {
+      "category": "apple",
+      "height": 780,
+      "id": "e3588f7d-a5cd-4a2d-8d9d-499088106acd",
+      "name": "iPhone 13 mini",
+      "userAgent": "iPhone",
+      "visible": false,
+      "width": 360
+    },
+    {
+      "category": "apple",
+      "height": 681,
+      "highlighted": false,
+      "id": "212199ef-92c2-4207-b1d4-377d37e08a84",
+      "name": "XL",
+      "originalSize": [
+        1280,
+        1180
+      ],
+      "padding": {
+        "bottom": 0,
+        "left": 0,
+        "right": 0,
+        "top": 0
+      },
+      "userAgent": "iPhone",
+      "visible": false,
+      "width": 1280
+    },
+    {
+      "category": "apple",
+      "height": 926,
+      "id": "248b9926-2e38-4221-b05f-4db0c2ecb8ea",
+      "name": "iPad mini",
+      "userAgent": "iPhone",
+      "visible": false,
+      "width": 608
+    },
+    {
+      "category": "apple",
+      "height": 767,
+      "id": "6a76e4fd-a049-4bb5-84cd-dbd8d7763dbc",
+      "name": "iPad",
+      "userAgent": "iPhone",
+      "visible": false,
+      "width": 575
+    },
+    {
+      "category": "apple",
+      "height": 832,
+      "id": "f1d47bfc-bc0f-4ca5-a86b-02593b68255e",
+      "name": "iPad Pro 11",
+      "userAgent": "iPhone",
+      "visible": false,
+      "width": 581
+    },
+    {
+      "category": "apple",
+      "height": 824,
+      "id": "437ccb33-186e-4f9b-834c-84fb662809b9",
+      "name": "iPad Air 4",
+      "userAgent": "iPhone",
+      "visible": false,
+      "width": 573
+    },
+    {
+      "category": "apple",
+      "height": 667,
+      "id": "eaa69f3d-0ae0-4538-9b03-eab04e91e662",
+      "name": "iPhone SE",
+      "userAgent": "iPhone",
+      "visible": false,
+      "width": 375
+    },
+    {
+      "category": "apple",
+      "height": 812,
+      "id": "161ad690-4013-45a0-893d-fc542158fe20",
+      "name": "iPhone 11 Pro",
+      "userAgent": "iPhone",
+      "visible": false,
+      "width": 375
+    },
+    {
+      "category": "apple",
+      "height": 820,
+      "id": "1df4d7e2-4bd5-41a4-b7d5-57d196d1bbc8",
+      "name": "iPhone 12 Mini",
+      "userAgent": "iPhone",
+      "visible": false,
+      "width": 379
+    },
+    {
+      "category": "apple",
+      "height": 820,
+      "id": "0a9ea90b-47f4-447e-9e9c-c7bfa107bfdf",
+      "name": "iPhone 12 Pro Max",
+      "userAgent": "iPhone",
+      "visible": false,
+      "width": 379
+    },
+    {
+      "height": 689,
+      "highlighted": false,
+      "id": "79b72b41-b6c8-4571-a70f-e37bb8b11b2f",
+      "name": "2XL",
+      "originalSize": [
+        1536,
+        975
+      ],
+      "padding": {
+        "bottom": 0,
+        "left": 0,
+        "right": 0,
+        "top": 0
+      },
+      "visible": false,
+      "width": 1536
+    },
+    {
+      "category": "apple",
+      "device": "Macbook Pro 16",
+      "height": 1117,
+      "id": "dd30b0db-ff70-40d2-9a04-1c6a26f9f7c6",
+      "name": "Macbook Pro 16",
+      "userAgent": "iPhone",
+      "visible": false,
+      "width": 1728
+    },
+    {
+      "category": "apple",
+      "height": 720,
+      "id": "9399e534-a92f-43c4-a7e3-ae8cd42b4256",
+      "name": "Studio Display",
+      "userAgent": "iPhone",
+      "visible": false,
+      "width": 1280
+    },
+    {
+      "category": "apple",
+      "height": 846,
+      "id": "0f5d7a08-3b9c-433f-937c-32542706e0ac",
+      "name": "Pro Display XDR",
+      "userAgent": "iPhone",
+      "visible": false,
+      "width": 1504
+    },
+    {
+      "category": "apple",
+      "height": 630,
+      "id": "6ccd37ad-fd03-422e-a841-ec61f88b47e2",
+      "name": "iMac 24",
+      "userAgent": "iPhone",
+      "visible": false,
+      "width": 1120
+    },
+    {
+      "category": "google",
+      "device": "Pixel 7 Pro",
+      "height": 673,
+      "highlighted": false,
+      "id": "8659bad2-5f2e-4e02-9104-a671a1687156",
+      "name": "MD",
+      "originalSize": [
+        768,
+        1040
+      ],
+      "userAgent": "iPhone",
+      "visible": false,
+      "width": 768
+    },
+    {
+      "category": "google",
+      "height": 950,
+      "id": "249c6ab7-bac8-47e9-a7ea-5462a58b99cf",
+      "name": "Pixel 7a",
+      "userAgent": "iPhone",
+      "visible": false,
+      "width": 427
+    },
+    {
+      "category": "google",
+      "height": 1040,
+      "id": "c23119f7-39b2-4daa-a1d9-39761df76826",
+      "name": "Pixel 6 Pro",
+      "userAgent": "iPhone",
+      "visible": false,
+      "width": 480
+    },
+    {
+      "category": "google",
+      "height": 984,
+      "id": "c742c7e0-1d74-4100-8a17-c93daece74dc",
+      "name": "Pixel Tablet",
+      "userAgent": "iPhone",
+      "visible": false,
+      "width": 1575
+    },
+    {
+      "category": "google",
+      "height": 750,
+      "id": "4df41013-c561-497c-b12f-c1e0fb30cdcc",
+      "name": "Pixel 2 XL",
+      "userAgent": "iPhone",
+      "visible": false,
+      "width": 375
+    },
+    {
+      "category": "google",
+      "height": 667,
+      "id": "48cd41a9-7332-460e-905b-8473004320b0",
+      "name": "Pixel 2",
+      "userAgent": "iPhone",
+      "visible": false,
+      "width": 375
+    },
+    {
+      "category": "google",
+      "height": 781,
+      "id": "33f3fc26-a95e-4201-98e1-eb94a8b0758f",
+      "name": "Pixel 4",
+      "userAgent": "iPhone",
+      "visible": false,
+      "width": 370
+    },
+    {
+      "category": "google",
+      "height": 805,
+      "id": "dd4a92d4-e5e5-45b3-ab80-71c951fbd236",
+      "name": "Pixel 4a",
+      "userAgent": "iPhone",
+      "visible": false,
+      "width": 372
+    },
+    {
+      "category": "google",
+      "height": 815,
+      "id": "a4e2c0dc-1348-4c61-b907-86f1518318e2",
+      "name": "Pixel 5",
+      "userAgent": "iPhone",
+      "visible": false,
+      "width": 376
+    },
+    {
+      "category": "samsung",
+      "height": 800,
+      "id": "7efbbbeb-09db-4bd6-a949-98ddedb89ac9",
+      "name": "Galaxy A50",
+      "userAgent": "iPhone",
+      "visible": false,
+      "width": 372
+    },
+    {
+      "category": "samsung",
+      "height": 822,
+      "id": "b5f10705-3237-452d-b909-46634ea627ac",
+      "name": "Galaxy S20",
+      "userAgent": "iPhone",
+      "visible": false,
+      "width": 370
+    },
+    {
+      "category": "samsung",
+      "height": 824,
+      "id": "5be5a470-6822-43cc-89be-16718dd91013",
+      "name": "Galaxy Note20",
+      "userAgent": "iPhone",
+      "visible": false,
+      "width": 371
+    },
+    {
+      "category": "samsung",
+      "height": 830,
+      "id": "fb64ba02-c599-4db7-97e0-8017dd807980",
+      "name": "Galaxy Note20 Ultra",
+      "userAgent": "iPhone",
+      "visible": false,
+      "width": 390
+    },
+    {
+      "category": "google",
+      "height": 813,
+      "id": "a7efec79-e0dc-47c1-af54-da89c55ce5cd",
+      "name": "Pixel Slate",
+      "userAgent": "iPhone",
+      "visible": false,
+      "width": 542
+    },
+    {
+      "category": "samsung",
+      "height": 842,
+      "id": "8f518dcb-4a34-4255-979f-8a1cb091ff84",
+      "name": "Galaxy Tab S7",
+      "userAgent": "iPhone",
+      "visible": false,
+      "width": 526
+    },
+    {
+      "category": "amazon",
+      "height": 749,
+      "id": "7285da04-3796-451f-a86a-2f3f952a70fc",
+      "name": "Fire HD 10",
+      "userAgent": "iPhone",
+      "visible": false,
+      "width": 468
+    },
+    {
+      "category": "microsoft",
+      "height": 862,
+      "id": "5fda07a4-362d-48f0-92d5-49cd932fe6c1",
+      "name": "Surface Pro X",
+      "userAgent": "iPhone",
+      "visible": false,
+      "width": 575
+    },
+    {
+      "category": "apple",
+      "height": 975,
+      "id": "49b25578-e429-49bf-8555-0477f2e3b7ef",
+      "name": "Macbook Air",
+      "userAgent": "iPhone",
+      "visible": false,
+      "width": 1559
+    },
+    {
+      "category": "google",
+      "height": 924,
+      "id": "6b77a665-34c3-4bfe-8fb8-6004d60c7450",
+      "name": "Pixelbook Go",
+      "userAgent": "iPhone",
+      "visible": false,
+      "width": 1643
+    },
+    {
+      "borderRadius": 0,
+      "borderRadiusSmoothing": 0,
+      "height": 1024,
+      "highlighted": false,
+      "id": "28ed59d7-8106-4237-8a06-151cb44ad787",
+      "name": "MD",
+      "originalSize": [
+        768,
+        1024
+      ],
+      "padding": {
+        "bottom": 0,
+        "left": 0,
+        "right": 0,
+        "top": 0
+      },
+      "safe_area_top": 0,
+      "userAgent": "",
+      "visible": true,
+      "width": 857
+    }
+  ],
+  "userAgents": [
+    {
+      "name": "Google Chrome",
+      "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36"
+    },
+    {
+      "name": "Mozilla Firefox",
+      "value": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:66.0) Gecko/20100101 Firefox/66.0"
+    },
+    {
+      "name": "Microsoft Edge",
+      "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.79 Safari/537.36 Edge/14.14393"
+    },
+    {
+      "name": "iPhone",
+      "value": "Mozilla/5.0 (iPhone; CPU iPhone OS 10_3_1 like Mac OS X) AppleWebKit/603.1.30 (KHTML, like Gecko) Version/10.0 Mobile/14E304 Safari/602.1"
+    },
+    {
+      "name": "iPad",
+      "value": "Mozilla/5.0 (iPad; CPU OS 8_4_1 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) Version/8.0 Mobile/12H321 Safari/600.1.4"
+    },
+    {
+      "name": "Samsung Phone",
+      "value": "Mozilla/5.0 (Linux; Android 6.0.1; SAMSUNG SM-G570Y Build/MMB29K) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/4.0 Chrome/44.0.2403.133 Mobile Safari/537.36"
+    },
+    {
+      "name": "Google Pixel",
+      "value": "Mozilla/5.0 (Linux; Android 7.1.1; Pixel Build/NOF27B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.132 Mobile Safari/537.36"
+    }
+  ],
+  "pan": {
+    "x": 0,
+    "y": 0
+  },
+  "viewMode": "horizontal",
+  "zoom": 1,
+  "screenDirection": "portrait",
+  "tab": "default",
+  "tabs": [
+    {
+      "name": "default",
+      "screens": [
+        "0a91a527-11f8-49ab-9131-be0d3b419cbb",
+        "e5bc7457-bea7-4559-97ea-0dfb33e3c8cb",
+        "8659bad2-5f2e-4e02-9104-a671a1687156",
+        "3de4da42-6780-4f4c-b6bc-a0766cde5e8e",
+        "212199ef-92c2-4207-b1d4-377d37e08a84",
+        "79b72b41-b6c8-4571-a70f-e37bb8b11b2f"
+      ]
+    }
+  ],
+  "singleView": true,
+  "showMockups": false,
+  "showOS": false,
+  "selectedScreenIndex": 0,
+  "layoutDirection": "standard",
+  "scrollbars": false,
+  "highlightBorders": {
+    "active": false,
+    "color": "rgba(59, 130, 246, 1)"
+  },
+  "isolationMode": {
+    "enabled": false,
+    "selector": ""
+  },
+  "ruler": {
+    "active": false,
+    "color": "rgba(59, 130, 246, 1)"
+  },
+  "rulerLines": [],
+  "imageOverlay": {
+    "activeIndex": 0,
+    "enabled": false,
+    "presets": [
+      {
+        "id": "0",
+        "images": [
+          {
+            "condition": {
+              "left": {
+                "operator": ">=",
+                "value": 0
+              },
+              "right": {
+                "operator": "<=",
+                "value": 767
+              }
+            },
+            "id": "0",
+            "image": "",
+            "opacity": 0.7,
+            "visible": true
+          }
+        ]
+      }
+    ]
+  },
+  "screenGrids": {
+    "active": 0,
+    "enabled": false,
+    "presets": [
+      {
+        "grids": [
+          {
+            "align": "stretch",
+            "color": "rgba(212,0, 255,.2)",
+            "condition": {
+              "left": {
+                "operator": ">=",
+                "value": 0
+              },
+              "right": {
+                "operator": "<=",
+                "value": 767
+              }
+            },
+            "count": 8,
+            "id": "1",
+            "offset": 16,
+            "size": 32,
+            "spacing": 16,
+            "type": "columns",
+            "visible": true
+          },
+          {
+            "align": "stretch",
+            "color": "rgba(212,0, 255,.2)",
+            "condition": {
+              "left": {
+                "operator": ">=",
+                "value": 767
+              },
+              "right": {
+                "operator": "<=",
+                "value": 1024
+              }
+            },
+            "count": 8,
+            "id": "2",
+            "offset": 16,
+            "size": 25,
+            "spacing": 24,
+            "type": "columns",
+            "visible": true
+          },
+          {
+            "align": "stretch",
+            "color": "rgba(212,0, 255,.2)",
+            "condition": {
+              "left": {
+                "operator": ">=",
+                "value": 1025
+              },
+              "right": {
+                "operator": "<=",
+                "value": 1280
+              }
+            },
+            "count": 12,
+            "gridSize": 1280,
+            "id": "3",
+            "offset": 32,
+            "size": 32,
+            "spacing": 32,
+            "type": "columns",
+            "visible": true
+          },
+          {
+            "align": "center",
+            "color": "rgba(212,0, 255,.2)",
+            "condition": {
+              "left": {
+                "operator": ">=",
+                "value": 1280
+              },
+              "right": {
+                "operator": "<=",
+                "value": 0
+              }
+            },
+            "count": 12,
+            "gridSize": 1440,
+            "id": "4",
+            "offset": 32,
+            "size": 32,
+            "spacing": 32,
+            "type": "columns",
+            "visible": true
+          }
+        ],
+        "id": "0",
+        "name": "default"
+      }
+    ]
+  },
+  "dimensions": {
+    "enabled": false,
+    "guides": [
+      "auto"
+    ],
+    "selectors": []
+  }
+}

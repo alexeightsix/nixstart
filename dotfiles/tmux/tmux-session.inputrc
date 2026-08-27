@@ -1,0 +1,8 @@
+# readline config for tmux-session.sh (prefix + n popup)
+
+# Don't wait long to decide whether a lone ESC is really Escape or the start of
+# an arrow-key sequence (\e[A etc). Arrows still work; Escape feels instant.
+set keyseq-timeout 40
+
+# Escape: wipe the line and accept it, so read returns empty and the script aborts.
+"\e": "\C-a\C-k\C-m"

@@ -1,0 +1,158 @@
+# restore <file|dir> — fzf-pick an old version of a file or directory from
+# btrfs (snapper) snapshots or the rsync backup drive; current version moves
+# to /tmp/<name>.old
+restore() {
+  local backup_device=/dev/sda1
+  local backup_mount="/run/media/$(id -un)/Timeshift"
+
+  if [[ $# -ne 1 ]]; then
+    echo "usage: restore <file|dir>" >&2
+    return 1
+  fi
+
+  local target
+  target=$(realpath -m -- "$1")
+
+  # snapper config layout: /home is its own subvolume with its own snapshots
+  local snapshot_root relative_path
+  if [[ $target == /home/* ]]; then
+    snapshot_root=/home/.snapshots
+    relative_path=${target#/home/}
+  else
+    snapshot_root=/.snapshots
+    relative_path=${target#/}
+  fi
+
+  sudo -v || return 1
+
+  local mounted_by_us=0
+  if ! findmnt -rn "$backup_mount" >/dev/null 2>&1; then
+    if sudo mkdir -p "$backup_mount" 2>/dev/null && sudo mount "$backup_device" "$backup_mount" 2>/dev/null; then
+      mounted_by_us=1
+    else
+      echo "note: backup drive not available, searching snapshots only" >&2
+    fi
+  fi
+
+  {
+    # Enumerate every candidate version in a single sudo call.
+    # Output: label \t mtime_epoch \t size_bytes \t path
+    local versions
+    versions=$(sudo bash -s -- "$snapshot_root" "$relative_path" "$backup_mount" "$target" <<'ENUMERATE'
+shopt -s nullglob
+snapshot_root=$1
+relative_path=$2
+backup_mount=$3
+target=$4
+
+# For a directory: mtime = newest entry in the tree, size = total bytes
+describe() {
+    local candidate=$1 label=$2 newest
+    if [[ -f $candidate ]]; then
+        printf '%s\t%s\t%s\n' "$label" "$(stat -c '%Y	%s' "$candidate")" "$candidate"
+    elif [[ -d $candidate ]]; then
+        newest=$(find "$candidate" -mindepth 1 -printf '%T@\n' 2>/dev/null | sort -nr | head -1)
+        newest=${newest%%.*}
+        [[ -z $newest ]] && newest=$(stat -c '%Y' "$candidate")
+        printf '%s\t%s\t%s\t%s\n' "$label" "$newest" "$(du -sb "$candidate" | cut -f1)" "$candidate"
+    fi
+}
+
+for snapshot_dir in "$snapshot_root"/*/; do
+    number=$(basename "$snapshot_dir")
+    describe "$snapshot_dir/snapshot/$relative_path" "snapshot #$number"
+done
+
+describe "$backup_mount$target" 'backup drive'
+ENUMERATE
+    )
+
+    if [[ -z $versions ]]; then
+      echo "restore: no versions of $target found in snapshots or backup drive" >&2
+      return 1
+    fi
+
+    # Newest first; collapse versions with identical mtime+size into one entry.
+    local unique_versions
+    unique_versions=$(sort -t $'\t' -k2,2nr <<<"$versions" | awk -F '\t' '!seen[$2 FS $3]++')
+
+    # Build fzf lines: label, date, size, marker, hidden path
+    local fzf_input="" label mtime size version_path formatted_date human_size marker
+    while IFS=$'\t' read -r label mtime size version_path; do
+      formatted_date=$(date -d "@$mtime" '+%Y-%m-%d %H:%M')
+      human_size=$(numfmt --to=iec --suffix=B "$size")
+      marker=""
+      if [[ -f $target ]] && sudo cmp -s -- "$version_path" "$target"; then
+        marker="(same as current)"
+      elif [[ -d $target ]] && sudo diff -rq -- "$version_path" "$target" >/dev/null 2>&1; then
+        marker="(same as current)"
+      fi
+      fzf_input+=$(printf '%-14s\t%s\t%7s\t%s\t%s' "$label" "$formatted_date" "$human_size" "$marker" "$version_path")$'\n'
+    done <<<"$unique_versions"
+
+    local selection
+    selection=$(RESTORE_TARGET=$target fzf --delimiter='\t' --with-nth=1,2,3,4 \
+      --header="restore: $target" \
+      --preview-window=right:60% \
+      --preview 'if sudo test -d {5}; then
+          if [ -d "$RESTORE_TARGET" ]; then
+            changes=$(sudo diff -rq {5} "$RESTORE_TARGET" 2>/dev/null | head -200)
+            if [ -z "$changes" ]; then
+              echo "(identical to current)"
+            else
+              echo "$changes"
+            fi
+          else
+            sudo find {5} -maxdepth 2 2>/dev/null | head -200
+          fi
+        elif sudo grep -Iq . {5} 2>/dev/null; then
+          if [ -f "$RESTORE_TARGET" ]; then
+            if sudo cmp -s {5} "$RESTORE_TARGET"; then
+              echo "(identical to current)"
+            else
+              sudo diff -u {5} "$RESTORE_TARGET" | delta --paging=never --width=${FZF_PREVIEW_COLUMNS:-120} | head -500
+            fi
+          else
+            sudo bat --color=always --style=numbers --terminal-width=${FZF_PREVIEW_COLUMNS:-120} --file-name "$RESTORE_TARGET" {5} | head -500
+          fi
+        else
+          sudo file -b {5}
+        fi' \
+      <<<"$fzf_input") || {
+      echo "restore: cancelled" >&2
+      return 130
+    }
+
+    local selected_path
+    selected_path=$(cut -f5 <<<"$selection")
+
+    # Move the current version out of the way into /tmp as <name>.old
+    local previous_owner="" backup_name counter
+    if [[ -e $target ]]; then
+      previous_owner=$(stat -c '%u:%g' "$target")
+      backup_name="/tmp/$(basename "$target").old"
+      counter=1
+      while [[ -e $backup_name ]]; do
+        backup_name="/tmp/$(basename "$target").old.$counter"
+        counter=$((counter + 1))
+      done
+      sudo mv -- "$target" "$backup_name" || return 1
+      echo "current version moved to $backup_name"
+    fi
+
+    sudo cp -a -- "$selected_path" "$target" || return 1
+    if [[ -d $target ]]; then
+      : # cp -a already preserved per-file ownership from the snapshot
+    elif [[ -n $previous_owner ]]; then
+      sudo chown "$previous_owner" -- "$target"
+    else
+      sudo chown "$(id -u):$(id -g)" -- "$target"
+    fi
+
+    echo "restored: $target  <-  $selected_path"
+  } always {
+    if [[ $mounted_by_us -eq 1 ]]; then
+      sudo umount "$backup_mount" 2>/dev/null
+    fi
+  }
+}

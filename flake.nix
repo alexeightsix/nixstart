@@ -17,26 +17,21 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # The dotfiles repository — the other half of this configuration.
+    # The dotfiles used to be a separate input — a `path:/home/alex/kickstart`
+    # pointing at a dev-env checkout, because ghostty-shaders/ and
+    # zsh/copyline.plugin.zsh were untracked in the dev-env remote and a git
+    # input would have silently produced a configuration missing both.
     #
-    # A path input, not a git URL, and deliberately: ghostty-shaders/ and
-    # zsh/copyline.plugin.zsh are untracked in the dev-env remote, so a git
-    # input silently produces a configuration missing both. A path input takes
-    # the working tree as it is, which is also how the dotfiles are actually
-    # worked on.
+    # They now live in this repository, under dotfiles/ and wallpapers/, so
+    # there is no input at all: `${self}/dotfiles`. That removes the last
+    # reason this flake was only buildable on a machine that happened to have
+    # a second checkout next to it, and the untracked files are tracked here.
     #
-    # The cost is that this flake is only reproducible on a machine that has
-    # the checkout. Swap in the remote once the tree is committed:
-    #   url = "git+ssh://git@github.com/alexeightsix/dev-env.git";
-    #
-    # Files Nix reads at build time (tmux.conf, dunstrc, the shaders) come
-    # from here. Trees that must stay editable at runtime —
-    # the Neovim config, the Pi setup — do not; those are
-    # `nixstart.home.checkout`, a plain path on the machine.
-    dotfiles = {
-      url = "path:/home/alex/kickstart";
-      flake = false;
-    };
+    # The build-time/runtime distinction survives the move. Files Nix reads at
+    # build time (tmux.conf, dunstrc, the shaders) come from the store path.
+    # Trees that must stay editable at runtime — the Neovim config, the Pi
+    # setup — do not; those go through `nixstart.home.checkout`, a plain path
+    # on the machine, which is now this repository's own working tree.
 
     # The weather wallpaper generator — the base image with the current
     # temperature drawn on it. Was a `go build` in a checkout under
@@ -52,6 +47,16 @@
     # takes the package rather than repackaging it.
     jk = {
       url = "github:upbeatdevelopment/jk";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # witr — "why is this running?": traces a process, port, container or file
+    # back to the chain that started it. stage-12 installed it with
+    # `curl ... | bash`, which drops a binary into /usr/local/bin outside any
+    # package manager. It ships its own flake, so like jk this takes the
+    # package rather than repackaging it.
+    witr = {
+      url = "github:pranshuparmar/witr";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -209,6 +214,7 @@
             dracula-zsh-theme
             weather-wallpaper
             glow-rose-pine
+            witr
             jk
             ;
 
@@ -244,7 +250,7 @@
             }:
             import ./lib/dev-shell.nix {
               inherit pkgs lib name;
-              dotfiles = "${inputs.dotfiles}/dotfiles";
+              dotfiles = "${self}/dotfiles";
               devEnv = import ./lib/dev-env.nix {
                 inherit
                   pkgs
@@ -294,13 +300,20 @@
           };
 
           # Working on this repository itself.
+          #
+          # Not `with pkgs; [ ... home-manager ... ]`: `with` binds looser than
+          # the `outputs = inputs@{ self, nixpkgs, home-manager, ... }` argument
+          # above, so a bare `home-manager` here resolves to the flake input —
+          # an attrset, not a derivation — and the shell fails to build with
+          # "Dependency is not of a valid type". Qualified, so it is the
+          # package.
           nix = pkgs.mkShellNoCC {
-            packages = with pkgs; [
-              nixd
-              nixfmt
-              home-manager
-              sops
-              age
+            packages = [
+              pkgs.nixd
+              pkgs.nixfmt
+              pkgs.home-manager
+              pkgs.sops
+              pkgs.age
             ];
           };
         }

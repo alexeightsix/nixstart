@@ -69,7 +69,7 @@
   virtualisation.incus.agent.enable = true;
 
   home-manager.users.alex.nixstart.home = {
-    checkout = "/home/alex/kickstart";
+    checkout = "/home/alex/nixstart";
     user.email = "alexlatour@gmail.com";
     desktop.weather.enable = true;
     desktop.weather.location = "Montreal";

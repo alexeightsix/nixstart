@@ -1,0 +1,23 @@
+# Kill processes and docker containers matching a prefix, e.g. `dkill pf*`.
+# Drop the alias below first, or re-sourcing expands it in the function name.
+unalias dkill 2>/dev/null
+
+dkill() {
+  local prefix=${1%\*}
+  if [ -z "$prefix" ]; then
+    echo "usage: dkill <prefix>" >&2
+    return 1
+  fi
+
+  pkill -e "^${prefix}" 2>/dev/null
+
+  local ids
+  ids=$(docker ps -aq --filter "name=^${prefix}")
+  if [ -n "$ids" ]; then
+    docker stop -t 2 ${=ids} >/dev/null 2>&1
+    docker kill ${=ids} >/dev/null 2>&1
+    docker rm -f ${=ids}
+  fi
+}
+# Let `dkill pf*` work without the glob erroring on no file matches.
+alias dkill='noglob dkill'

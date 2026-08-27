@@ -1,18 +1,5 @@
 {
   "nodes": {
-    "dotfiles": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1787506851,
-        "narHash": "sha256-LmcBwfOEYxeqq1PK99TsYwgORa4d/4KfM/d08xIR3KQ=",
-        "path": "/home/alex/kickstart",
-        "type": "path"
-      },
-      "original": {
-        "path": "/home/alex/kickstart",
-        "type": "path"
-      }
-    },
     "glow-rose-pine": {
       "flake": false,
       "locked": {
@@ -102,14 +89,14 @@
     },
     "root": {
       "inputs": {
-        "dotfiles": "dotfiles",
         "glow-rose-pine": "glow-rose-pine",
         "home-manager": "home-manager",
         "jk": "jk",
         "nix-flatpak": "nix-flatpak",
         "nixpkgs": "nixpkgs",
         "sops-nix": "sops-nix",
-        "weather-wallpaper": "weather-wallpaper"
+        "weather-wallpaper": "weather-wallpaper",
+        "witr": "witr"
       }
     },
     "sops-nix": {
@@ -145,6 +132,26 @@
       "original": {
         "owner": "upbeatdevelopment",
         "repo": "wealther-wallpaper",
+        "type": "github"
+      }
+    },
+    "witr": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1786160034,
+        "narHash": "sha256-fkj3Usg1YsoBa+K/kPDdEIjr8si8GX8qjIq8aRE8Kgc=",
+        "owner": "pranshuparmar",
+        "repo": "witr",
+        "rev": "dc4fa1da82d3e266fcbd928641b4f30b3077c64f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "pranshuparmar",
+        "repo": "witr",
         "type": "github"
       }
     }

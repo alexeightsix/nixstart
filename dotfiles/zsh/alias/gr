@@ -1,0 +1,12 @@
+# Pick from the last 10 commits and hard-reset after confirmation.
+gr() {
+  local commit
+  commit=$(git log -10 --color=always --format='%C(auto)%h %C(green)%cr%C(reset) %s' \
+    | fzf --ansi --no-sort --height=40% --reverse \
+        --preview 'git show --stat --color=always {1}' \
+    | awk '{print $1}')
+  [[ -z "$commit" ]] && { echo "No commit selected."; return 1; }
+  printf 'git reset --hard %s ? [y/N] ' "$commit"
+  read -r reply
+  [[ "$reply" == [yY] ]] && git reset --hard "$commit" || echo "Aborted."
+}

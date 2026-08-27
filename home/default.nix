@@ -7,7 +7,7 @@
 {
   config,
   lib,
-  inputs,
+  self,
   ...
 }:
 {
@@ -34,16 +34,17 @@
     ./desktop/ghostty.nix
     ./desktop/flameshot.nix
     ./desktop/vicinae.nix
+    ./desktop/dock.nix
 
     ./dev/toolchains.nix
     ./dev/agents.nix
     ./dev/pi.nix
   ];
 
-  # The store path comes from the flake input; a profile or host can still
-  # override it (--override-input, or a checkout on a machine with no network).
-  nixstart.home.dotfiles = lib.mkDefault "${inputs.dotfiles}/dotfiles";
-  nixstart.home.wallpapers = lib.mkDefault "${inputs.dotfiles}/wallpapers";
+  # Both live in this repository now, so the store path is this flake's own
+  # source. A profile or host can still override either.
+  nixstart.home.dotfiles = lib.mkDefault "${self}/dotfiles";
+  nixstart.home.wallpapers = lib.mkDefault "${self}/wallpapers";
 
   home.username = config.nixstart.home.user.name;
   home.homeDirectory = "/home/${config.nixstart.home.user.name}";

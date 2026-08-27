@@ -1,0 +1,14 @@
+# Pick a branch or one of the last 50 commits and check it out.
+gc() {
+  local target
+  target=$( { \
+      git branch --all --color=always --format='%(color:yellow)branch%(color:reset) %(refname:short)' \
+        | grep -v 'origin/HEAD' ; \
+      git log -50 --color=always --format='%C(magenta)commit%C(reset) %C(auto)%h %C(green)%cr%C(reset) %s' ; \
+    } \
+    | fzf --ansi --no-sort --height=40% --reverse \
+        --preview 'git log -10 --color=always --format="%C(auto)%h %C(green)%cr%C(reset) %s" $(echo {} | awk "{print \$2}")' \
+    | awk '{print $2}' | sed 's#^origin/##')
+  [[ -z "$target" ]] && { echo "Nothing selected."; return 1; }
+  git checkout "$target"
+}

@@ -1,0 +1,8 @@
+# Fuzzy-pick a file and restore it from main.
+gcm() {
+  local file
+  file=$(git ls-files | fzf --query="$1" --select-1 --exit-0 --height=40% --reverse \
+    --preview 'git diff --color=always main -- {}') || return
+  [[ -z "$file" ]] && { echo "No file selected."; return 1; }
+  git checkout main -- "$file" && echo "Restored $file from main."
+}

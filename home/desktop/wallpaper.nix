@@ -34,11 +34,71 @@ let
   base = "${cfg.wallpapers}/${chosen}";
 
   dynamic = "${config.home.homeDirectory}/.cache/wallpaper-dynamic.jpg";
+  # The base image is 1920x1080. `feh --bg-fill` scales to *cover* the screen
+  # and crops whatever overflows, so on the 1920x1200 laptop panel it scales
+  # to 2133x1200 and takes 106px off each side. The temperature is drawn 30px
+  # from the right edge of the image, so all but the first few pixels of it
+  # land in the cropped-off strip: cut off on the laptop, fine on the 1920x1080
+  # monitor, which needs no scaling at all.
+  #
+  # Rather than nudge the padding until it happens to survive — which only
+  # holds for one panel geometry — the input is cropped to the aspect ratio of
+  # the display *before* the text goes on. feh then has nothing left to crop,
+  # and the text sits where the program put it on any screen.
+  #
+  # Geometry comes from the primary output at run time, so this follows the
+  # dock: undocked it matches the panel, docked it matches the monitor and the
+  # panel is off anyway (see desktop/dock.nix). If xrandr cannot be reached —
+  # no X yet, no primary flagged — it falls back to the image untouched, which
+  # is the behaviour before this existed.
+  wallpaperFor = pkgs.writeShellApplication {
+    name = "weather-wallpaper-fit";
+    runtimeInputs = [
+      pkgs.xrandr
+      pkgs.imagemagick
+      pkgs.weather-wallpaper
+    ];
+    text = ''
+      base=${lib.escapeShellArg base}
+      fitted="$(mktemp --suffix=.jpg)"
+      trap 'rm -f "$fitted"' EXIT
+
+      # "1920x1200" for the primary output, empty if anything is missing.
+      geometry=$(xrandr --query 2>/dev/null \
+        | awk '/ connected primary/ { if (match($0, /[0-9]+x[0-9]+\+/)) print substr($0, RSTART, RLENGTH - 1); exit }')
+
+      if [ -n "$geometry" ]; then
+        # ^ scales to cover, then a centred extent crops the overflow — the
+        # same transform feh --bg-fill would have applied, done here where the
+        # text has not been drawn yet.
+        magick "$base" -resize "$geometry^" -gravity center -extent "$geometry" "$fitted"
+        WALLPAPER_INPUT="$fitted"
+      else
+        WALLPAPER_INPUT="$base"
+      fi
+      export WALLPAPER_INPUT
+
+      exec wallpaper
+    '';
+  };
 in
 {
   config = lib.mkIf desktop.enable {
     # What i3's feh line uses. Read by home/desktop/i3.nix.
-    nixstart.home.desktop._resolvedWallpaper = if desktop.weather.enable then dynamic else base;
+    #
+    # Always the base image, even when the weather wallpaper is on, and that
+    # is deliberate. This used to resolve to `dynamic`, which is a path in
+    # ~/.cache that nothing guarantees exists: the timer first fires 30s into
+    # the session, so a fresh login had no wallpaper until it did, and a
+    # single failing run left the desktop bare indefinitely. That is exactly
+    # what happened — see the font patch in pkgs/weather-wallpaper.
+    #
+    # The base image is a store path, so it is always there. i3 draws it
+    # immediately at login and the weather run — which calls feh itself once
+    # it has written the file — replaces it a few seconds later. The failure
+    # mode of the weather half is now a wallpaper without a temperature on
+    # it, rather than no wallpaper.
+    nixstart.home.desktop._resolvedWallpaper = base;
 
     systemd.user.services.weather-wallpaper = lib.mkIf desktop.weather.enable {
       Unit = {
@@ -50,9 +110,9 @@ in
       };
       Service = {
         Type = "oneshot";
-        ExecStart = lib.getExe pkgs.weather-wallpaper;
+        ExecStart = lib.getExe wallpaperFor;
         Environment = [
-          "WALLPAPER_INPUT=${base}"
+          # WALLPAPER_INPUT is set by the wrapper, from the cropped copy.
           "WALLPAPER_OUTPUT=${dynamic}"
           "WALLPAPER_LOCATION=${desktop.weather.location}"
         ];

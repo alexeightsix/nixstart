@@ -1,0 +1,12 @@
+# Pi runtime state that link.sh never touches
+npm/node_modules
+
+# Python
+__pycache__/
+*.pyc
+
+# Docusaurus
+docs/node_modules
+docs/build
+docs/.docusaurus
+docs/.cache-loader

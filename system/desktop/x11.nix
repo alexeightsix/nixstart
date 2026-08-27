@@ -25,6 +25,23 @@ in
     services.upower.enable = true;
     services.libinput.enable = true;
 
+    # The desktop portal. This was only turned on by desktop/flatpak.nix, as
+    # part of the Flatpak stack, so on a host with `apps.flatpak = false` —
+    # the laptop — nothing provided org.freedesktop.portal.Desktop at all.
+    #
+    # Flameshot is what makes that visible: `flameshot gui`, the Ctrl+;
+    # binding in desktop/i3.nix, exits with "Could not locate the
+    # `org.freedesktop.portal.Desktop` service / Unable to capture screen",
+    # so the key appears to do nothing. Screen capture is not a Flatpak
+    # feature, so the portal belongs here, with the session.
+    #
+    # flatpak.nix still sets its own `extraPortals`; both definitions merge.
+    xdg.portal = {
+      enable = true;
+      extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+      config.common.default = "gtk";
+    };
+
     environment.systemPackages = with pkgs; [
       arandr
       xrandr

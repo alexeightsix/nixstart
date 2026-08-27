@@ -1,0 +1,10 @@
+{
+  "app.interrupt": "ctrl+escape",
+  "tui.input.newLine": "enter",
+  "tui.input.submit": "ctrl+enter",
+
+  "app.session.resume": "ctrl+alt+s",
+  "app.session.new": "ctrl+alt+n",
+  "app.session.fork": "ctrl+alt+f",
+  "app.session.tree": "ctrl+alt+t"
+}

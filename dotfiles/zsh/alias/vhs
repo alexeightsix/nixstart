@@ -1,0 +1,11 @@
+# Record a terminal to a GIF with vhs. Prefer the real binary when it is
+# installed: a tape can only drive tools the recorder can see, and the vhs
+# image ships no git, so anything reading a repository finds nothing there.
+if [ -x "$HOME/go/bin/vhs" ]; then
+  export PATH="$HOME/go/bin:$PATH"
+else
+  # Falling back to the image: mount the folder the tape is run from, and
+  # write as you rather than as root — an output owned by root is one you
+  # cannot overwrite on the next recording.
+  alias vhs='docker run --rm -u "$(id -u):$(id -g)" -e HOME=/tmp -v "$PWD:/vhs" ghcr.io/charmbracelet/vhs'
+fi

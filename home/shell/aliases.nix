@@ -58,6 +58,7 @@ in
     jq
     gettext
     ncdu
+    witr # "why is this running?" — traces a process/port/container to its origin
     btop
     fastfetch
     tree

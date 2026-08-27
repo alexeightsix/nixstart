@@ -1,0 +1,32 @@
+# Create a review branch with the current branch's changes unstaged from main.
+rb() {
+  local current_branch review_branch
+  current_branch=$(git branch --show-current) || return
+
+  if [[ -z "$current_branch" ]]; then
+    echo 'Cannot create a review branch from a detached HEAD.' >&2
+    return 1
+  fi
+
+  if [[ "$current_branch" == review/* ]]; then
+    echo "Already on a review branch: $current_branch" >&2
+    return 1
+  fi
+
+  if ! git rev-parse --verify --quiet 'main^{commit}' >/dev/null; then
+    echo 'Local branch main does not exist.' >&2
+    return 1
+  fi
+
+  review_branch="review/$current_branch"
+
+  if git show-ref --verify --quiet "refs/heads/$review_branch"; then
+    echo "Branch already exists: $review_branch" >&2
+    return 1
+  fi
+
+  git switch --create "$review_branch" || return
+  git reset --mixed main || return
+
+  echo "Created $review_branch with changes from main left unstaged."
+}

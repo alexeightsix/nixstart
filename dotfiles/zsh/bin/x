@@ -1,0 +1,233 @@
+#!/usr/bin/env bash
+#
+# x - extract any archive, whatever it is.
+#
+#   x archive.tar.zst          extract into the current directory
+#   x -d out/ archive.7z       extract into out/ (created if needed)
+#   x -l archive.zip           list contents, extract nothing
+#   x a.zip b.tar.gz c.rar     extract several archives
+#
+# The type is taken from the file extension; if the extension is unknown or
+# lying, the file's magic bytes decide (via `file`).
+
+set -o errexit
+set -o nounset
+set -o pipefail
+
+readonly PROG=${0##*/}
+readonly SELF=$(readlink -f -- "$0" 2>/dev/null || printf '%s' "$0")
+
+die() { printf '%s: %s\n' "$PROG" "$*" >&2; exit 1; }
+note() { printf '%s: %s\n' "$PROG" "$*" >&2; }
+
+usage() {
+    sed -n '3,12p' "$SELF" | sed 's/^# \{0,1\}//'
+    exit "${1:-0}"
+}
+
+# Resolve a real binary on PATH, skipping this script (so a copy of this script
+# named after one of its own helpers cannot shell out to itself forever).
+real_bin() {
+    local name=$1 candidate
+    while read -r candidate; do
+        [[ -x $candidate ]] || continue
+        [[ $(readlink -f -- "$candidate" 2>/dev/null || printf '%s' "$candidate") == "$SELF" ]] && continue
+        printf '%s' "$candidate"
+        return 0
+    done < <(type -aP "$name" 2>/dev/null)
+    return 1
+}
+
+need() {
+    local bin
+    bin=$(real_bin "$1") || die "'$1' is not installed, needed to handle $2"
+    printf '%s' "$bin"
+}
+
+# ---------------------------------------------------------------- type lookup
+
+# Map a filename to a canonical archive kind. Longest extensions first, so
+# `.tar.gz` never gets mistaken for a bare `.gz`.
+kind_from_name() {
+    local lower=${1,,}
+    case $lower in
+        *.tar.gz|*.tgz|*.taz)                 echo tar ;;
+        *.tar.bz2|*.tbz|*.tbz2|*.tb2)         echo tar ;;
+        *.tar.xz|*.txz)                       echo tar ;;
+        *.tar.zst|*.tzst)                     echo tar ;;
+        *.tar.lz4|*.tar.lz|*.tar.lzma|*.tlz)  echo tar ;;
+        *.tar.z|*.tar)                        echo tar ;;
+        *.zip|*.jar|*.war|*.ear|*.apk|*.ipa|*.xpi|*.crx|*.whl|*.egg|*.epub|*.odt|*.ods|*.odp|*.docx|*.xlsx|*.pptx|*.nupkg)
+                                              echo zip ;;
+        *.7z|*.iso|*.cab|*.msi|*.dmg|*.vhd|*.wim|*.chm|*.arj|*.lzh|*.lha|*.exe)
+                                              echo 7z ;;
+        *.rar|*.r00|*.cbr)                    echo rar ;;
+        *.gz)                                 echo gz ;;
+        *.bz2)                                echo bz2 ;;
+        *.xz)                                 echo xz ;;
+        *.zst)                                echo zst ;;
+        *.lzma)                                echo lzma ;;
+        *.lz4)                                echo lz4 ;;
+        *.z)                                  echo compress ;;
+        *.deb)                                echo deb ;;
+        *.rpm)                                echo rpm ;;
+        *.cpio)                               echo cpio ;;
+        *.a|*.ar)                             echo ar ;;
+        *)                                    return 1 ;;
+    esac
+}
+
+# Fall back to content sniffing when the name tells us nothing useful.
+kind_from_magic() {
+    local f=$1 mime
+    mime=$(file --brief --mime-type --dereference -- "$f" 2>/dev/null) || return 1
+    case $mime in
+        application/zip|application/java-archive|application/vnd.*openxmlformats*|application/epub*)
+                                                echo zip ;;
+        application/x-tar|application/x-gtar)   echo tar ;;
+        application/gzip|application/x-gzip)    echo gz ;;
+        application/x-bzip2)                    echo bz2 ;;
+        application/x-xz)                       echo xz ;;
+        application/zstd)                       echo zst ;;
+        application/x-lzma)                     echo lzma ;;
+        application/x-lz4)                      echo lz4 ;;
+        application/x-compress)                 echo compress ;;
+        application/x-7z-compressed|application/x-iso9660-image|application/vnd.ms-cab-compressed|application/x-msi|application/x-dosexec)
+                                                echo 7z ;;
+        application/x-rar*|application/vnd.rar) echo rar ;;
+        application/vnd.debian*|application/x-debian-package)
+                                                echo deb ;;
+        application/x-rpm)                      echo rpm ;;
+        application/x-cpio)                     echo cpio ;;
+        application/x-archive)                  echo ar ;;
+        *)                                      return 1 ;;
+    esac
+}
+
+# A compressed tar keeps its `tar` kind but the payload is still gzip/xz/...;
+# tar sorts that out itself with --auto-compress on extraction.
+
+# ------------------------------------------------------------------- actions
+
+# Single-stream compressors (.gz, .xz, ...) have no member list; the result is
+# one file named after the archive minus its extension.
+stream_target() {
+    local base=${1##*/}
+    printf '%s' "${base%.*}"
+}
+
+extract_stream() {
+    local file=$1 dest=$2 decompressor=$3 out
+    out=$dest/$(stream_target "$file")
+    [[ -e $out ]] && die "refusing to overwrite $out"
+    "$decompressor" -dc -- "$file" > "$out"
+}
+
+list_archive() {
+    local file=$1 kind=$2
+    case $kind in
+        tar)      "$(need tar tar)" --list --verbose --file "$file" ;;
+        zip)      "$(need unzip zip)" -l -- "$file" ;;
+        7z)       "$(need 7z 7z)" l -- "$file" ;;
+        rar)      { real_bin unrar >/dev/null && "$(need unrar rar)" l -- "$file"; } \
+                  || "$(need 7z rar)" l -- "$file" ;;
+        cpio)     "$(need cpio cpio)" --list < "$file" ;;
+        ar|deb)   "$(need ar ar)" t "$file" ;;
+        rpm)      "$(need rpm2cpio rpm)" "$file" | "$(need cpio cpio)" --list ;;
+        gz|bz2|xz|zst|lzma|lz4|compress)
+                  printf '%s\n' "$(stream_target "$file")" ;;
+        *)        die "cannot list $kind archives" ;;
+    esac
+}
+
+extract_archive() {
+    local file=$1 dest=$2 kind=$3
+
+    case $kind in
+        tar)
+            "$(need tar tar)" --extract --file "$file" --directory "$dest"
+            ;;
+        zip)
+            "$(need unzip zip)" -q -o -- "$file" -d "$dest"
+            ;;
+        7z)
+            "$(need 7z 7z)" x -y -o"$dest" -- "$file" >/dev/null
+            ;;
+        rar)
+            if real_bin unrar >/dev/null; then
+                "$(need unrar rar)" x -y -- "$file" "$dest/"
+            else
+                "$(need 7z rar)" x -y -o"$dest" -- "$file" >/dev/null
+            fi
+            ;;
+        gz)       extract_stream "$file" "$dest" "$(need gzip gzip)" ;;
+        bz2)      extract_stream "$file" "$dest" "$(need bzip2 bzip2)" ;;
+        xz|lzma)  extract_stream "$file" "$dest" "$(need xz xz)" ;;
+        zst)      extract_stream "$file" "$dest" "$(need zstd zstd)" ;;
+        lz4)      extract_stream "$file" "$dest" "$(need lz4 lz4)" ;;
+        compress) extract_stream "$file" "$dest" "$(need gzip 'compress (.Z)')" ;;
+        cpio)
+            ( cd -- "$dest" && "$(need cpio cpio)" --extract --make-directories --preserve-modification-time ) < "$file"
+            ;;
+        ar)
+            ( cd -- "$dest" && "$(need ar ar)" x "$(readlink -f -- "$file")" )
+            ;;
+        deb)
+            # dpkg-deb gives the payload; ar gives the raw members.
+            if real_bin dpkg-deb >/dev/null; then
+                "$(need dpkg-deb deb)" -x "$file" "$dest"
+            else
+                ( cd -- "$dest" && "$(need ar deb)" x "$(readlink -f -- "$file")" )
+            fi
+            ;;
+        rpm)
+            ( cd -- "$dest" \
+              && "$(need rpm2cpio rpm)" "$(readlink -f -- "$file")" \
+                 | "$(need cpio cpio)" --extract --make-directories --preserve-modification-time )
+            ;;
+        *)
+            die "no extractor for kind '$kind'"
+            ;;
+    esac
+}
+
+# ---------------------------------------------------------------------- main
+
+dest=.
+mode=extract
+files=()
+
+while (($#)); do
+    case $1 in
+        -d|--dest)   [[ ${2-} ]] || die "-d needs a directory"; dest=$2; shift 2 ;;
+        -l|--list)   mode=list; shift ;;
+        -h|--help)   usage 0 ;;
+        --)          shift; files+=("$@"); break ;;
+        -*)          die "unknown option '$1' (try --help)" ;;
+        *)           files+=("$1"); shift ;;
+    esac
+done
+
+((${#files[@]})) || usage 1
+
+for file in "${files[@]}"; do
+    [[ -e $file ]] || die "no such file: $file"
+    [[ -f $file ]] || die "not a regular file: $file"
+    [[ -r $file ]] || die "not readable: $file"
+
+    if ! kind=$(kind_from_name "$file"); then
+        kind=$(kind_from_magic "$file") \
+            || die "don't know how to open '$file' (unrecognised extension and contents)"
+        note "'${file##*/}' has no known extension, going by its contents: $kind"
+    fi
+
+    if [[ $mode == list ]]; then
+        printf '== %s (%s)\n' "$file" "$kind"
+        list_archive "$file" "$kind"
+        continue
+    fi
+
+    [[ -d $dest ]] || mkdir -p -- "$dest"
+    extract_archive "$file" "$dest" "$kind"
+    printf '%s -> %s\n' "$file" "${dest%/}/"
+done

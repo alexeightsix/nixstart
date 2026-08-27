@@ -44,6 +44,12 @@ in
   config = lib.mkIf cfg.desktop.enable {
     home.packages = [ pkgs.flameshot ];
 
+    # savePath points here, and flameshot does not create it: with the
+    # directory missing a capture is taken and then silently fails to save.
+    # link.sh never made it either — it existed on the old machine because
+    # something else had happened to create it.
+    home.file."Pictures/.keep".text = "";
+
     # checkForUpdates and ignoreUpdateToVersion=14.0.0 were in the tracked
     # file; an update check is meaningless when the version is pinned by the
     # lockfile, so it is off.

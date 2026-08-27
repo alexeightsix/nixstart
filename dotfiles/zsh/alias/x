@@ -1,0 +1,4 @@
+# Extract any archive: zip, tar.*, 7z, rar, gz, deb, rpm, iso, ...
+# Type comes from the extension, or from the file's magic bytes.
+#   x foo.tar.zst / x -d out/ foo.7z / x -l foo.zip
+alias x="$DOTFILES/zsh/bin/x"

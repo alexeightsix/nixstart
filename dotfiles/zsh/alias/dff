@@ -1,0 +1,7 @@
+# Fuzzy-pick two branches, then diff them with the hunk viewer.
+dff() {
+  local first second
+  first=$(git branch --format='%(refname:short)' | fzf --prompt='first branch> ') || return
+  second=$(git branch --format='%(refname:short)' | fzf --prompt='second branch> ') || return
+  hunk diff "$first".."$second"
+}

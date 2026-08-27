@@ -1,0 +1,201 @@
+# Hand the current work off to another coding agent. Resolves a session ID to
+# its transcript, writes a briefing (including project-scoped Pi context when
+# handing off from Pi), and launches the chosen agent with it.
+
+# Encode a directory the way Claude Code names its project session folders.
+_handoff_claude_project() {
+  print -r -- "${1//[\/.]/-}"
+}
+
+# Encode a directory the way Pi names its project session folders.
+_handoff_pi_project() {
+  print -r -- "--${${1#/}//\//-}--"
+}
+
+# Print every transcript whose filename contains the given (possibly partial) ID.
+_handoff_locate() {
+  local id=$1
+  print -l -- \
+    $HOME/.pi/agent/sessions/*/*${id}*.jsonl(N) \
+    $HOME/.claude/projects/*/*${id}*.jsonl(N) \
+    $HOME/.claude-account2/projects/*/*${id}*.jsonl(N) \
+    $HOME/.codex/sessions/*/*/*/*${id}*.jsonl(N)
+}
+
+# Name the agent that owns a transcript path.
+_handoff_agent_of() {
+  case $1 in
+    $HOME/.pi/*) print -r -- pi ;;
+    $HOME/.claude-account2/*) print -r -- claude2 ;;
+    $HOME/.claude/*) print -r -- claude ;;
+    $HOME/.codex/*) print -r -- codex ;;
+    *) print -r -- unknown ;;
+  esac
+}
+
+# Show where sessions live and list recent ones for the current directory.
+_handoff_where() {
+  local project=$(_handoff_claude_project "$PWD") file
+  local pi_project=$(_handoff_pi_project "$PWD")
+
+  print -r -- ""
+  print -r -- "Session stores:"
+  print -r -- "  pi        ~/.pi/agent/sessions/${pi_project}/<timestamp>_<id>.jsonl"
+  print -r -- "  claude    ~/.claude/projects/${project}/<id>.jsonl"
+  print -r -- "  claude2   ~/.claude-account2/projects/${project}/<id>.jsonl"
+  print -r -- "  codex     ~/.codex/sessions/<yyyy>/<mm>/<dd>/rollout-<ts>-<id>.jsonl"
+  print -r -- "  opencode  sqlite (~/.local/share/opencode/opencode.db) — list with 'opencode session'"
+  print -r -- ""
+  print -r -- "Recent sessions for ${PWD}:"
+  zmodload -F zsh/stat b:zstat
+  for file in $HOME/.pi/agent/sessions/${pi_project}/*.jsonl(Nom[1,5]) \
+              $HOME/.claude/projects/${project}/*.jsonl(Nom[1,5]) \
+              $HOME/.claude-account2/projects/${project}/*.jsonl(Nom[1,5]); do
+    printf '  %-8s %s  %s\n' "$(_handoff_agent_of $file)" \
+      "${${file:t:r}##*_}" "$(zstat -F '%Y-%m-%d %H:%M' +mtime $file)"
+  done
+  print -r -- ""
+  print -r -- "Newest codex sessions:"
+  for file in $HOME/.codex/sessions/*/*/*/*.jsonl(Nom[1,5]); do
+    printf '  %-8s %s\n' codex "${${file:t:r}##rollout-????-??-??T??-??-??-}"
+  done
+}
+
+# Summarize project-scoped Pi context that a non-Pi agent would otherwise miss.
+_handoff_pi_scope() {
+  local skill name description global_skills=$HOME/.pi/agent/skills
+
+  [[ -d .pi ]] || return 0
+
+  print -r -- ""
+  print -r -- "## Project-scoped Pi context (${PWD}/.pi)"
+
+  if [[ -f .pi/APPEND_SYSTEM.md ]]; then
+    print -r -- ""
+    print -r -- "### Appended system instructions (.pi/APPEND_SYSTEM.md)"
+    print -r -- "These governed the previous session and still govern this repository."
+    print -r -- ""
+    print -r -- '```markdown'
+    cat .pi/APPEND_SYSTEM.md
+    print -r -- '```'
+  fi
+
+  for skill in .pi/skills/*/SKILL.md(N); do
+    name=${${skill:h}:t}
+    [[ -e $global_skills/$name ]] && continue
+    description=$(sed -n 's/^description: *//p' $skill | head -1)
+    print -r -- ""
+    print -r -- "### Project-only skill: ${name}"
+    print -r -- "Path: ${PWD}/${skill}"
+    [[ -n $description ]] && print -r -- "${description}"
+    print -r -- "Read this file — no other agent loads it automatically."
+  done
+
+  if [[ -n ${(f)"$(print -l -- .pi/extensions/*(N))"} ]]; then
+    print -r -- ""
+    print -r -- "### Pi extensions (not available outside Pi)"
+    print -l -- .pi/extensions/*(N)
+    print -r -- "Behavior these provided must be done by hand or ignored."
+  fi
+}
+
+# Resume a session in its own agent rather than briefing a new one.
+_handoff_resume() {
+  case $1 in
+    pi) pi --session "$2" ;;
+    claude) claude --resume "$2" ;;
+    claude2) claude2 --resume "$2" ;;
+    codex) codex resume "$2" ;;
+    opencode) opencode --session "$2" ;;
+  esac
+}
+
+handoff() {
+  local -a agents choice
+  local target source id transcript brief prompt reply
+
+  agents=(claude claude2 opencode codex pi)
+
+  print -r -- "Which agent takes control?"
+  local index=1
+  for target in $agents; do
+    printf '  %d) %s\n' $index $target
+    (( index++ ))
+  done
+  printf 'agent [1]: '
+  read -r reply
+  [[ -z $reply ]] && reply=1
+  if [[ $reply == <-> && $reply -ge 1 && $reply -le $#agents ]]; then
+    target=$agents[$reply]
+  elif (( ${agents[(I)$reply]} )); then
+    target=$reply
+  else
+    print -u2 -r -- "Unknown agent: ${reply}"
+    return 1
+  fi
+
+  id=$1
+  if [[ -z $id ]]; then
+    printf 'session ID of the session being handed off: '
+    read -r id
+  fi
+  if [[ -z $id ]]; then
+    print -u2 -r -- "No session ID given."
+    _handoff_where
+    return 1
+  fi
+
+  local -a matches
+  matches=(${(f)"$(_handoff_locate $id)"})
+  if (( $#matches == 0 )); then
+    print -u2 -r -- "No transcript found for session '${id}'."
+    _handoff_where
+    return 1
+  fi
+  if (( $#matches > 1 )); then
+    print -u2 -r -- "'${id}' matches ${#matches} transcripts; use a longer ID:"
+    print -u2 -l -- $matches
+    return 1
+  fi
+
+  transcript=$matches[1]
+  source=$(_handoff_agent_of $transcript)
+  print -r -- "Handing off ${source} → ${target}"
+  print -r -- "  transcript: ${transcript}"
+
+  if [[ $source == $target ]]; then
+    print -r -- "  same agent — resuming instead of briefing"
+    _handoff_resume $target $id
+    return
+  fi
+
+  brief=${TMPDIR:-/tmp}/handoff-${id}.md
+  {
+    print -r -- "# Session handoff: ${source} → ${target}"
+    print -r -- ""
+    print -r -- "- Previous agent: ${source}"
+    print -r -- "- Session ID: ${id}"
+    print -r -- "- Transcript: ${transcript}"
+    print -r -- "- Working directory: ${PWD}"
+    print -r -- "- Git branch: $(git branch --show-current 2>/dev/null || print -r -- 'not a git repository')"
+    print -r -- ""
+    print -r -- "## What to do"
+    print -r -- ""
+    print -r -- "1. Read the transcript. It is JSONL, one record per line; parse it rather than reading it raw."
+    print -r -- "2. Establish what the previous session was asked to do and what it actually finished."
+    print -r -- "3. Verify the working tree matches those claims before trusting them."
+    print -r -- "4. Continue the work, or report what is left."
+    [[ $source == pi ]] && _handoff_pi_scope
+  } > $brief
+
+  print -r -- "  briefing:   ${brief}"
+  prompt="Continue my previous ${source} session. Read the handoff briefing at ${brief} first — it names the transcript and the project context. Review what was done, then continue."
+
+  case $target in
+    claude) claude "$prompt" ;;
+    claude2) claude2 "$prompt" ;;
+    codex) codex "$prompt" ;;
+    pi) pi "$prompt" ;;
+    opencode) opencode --prompt "$prompt" ;;
+  esac
+}

@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# Dispatch `pi` through the compatible bundled Node runtime when available.
+set -euo pipefail
+
+self=$(realpath "$0")
+real_pi=""
+while IFS= read -r candidate; do
+	[ "$(realpath "$candidate" 2>/dev/null || true)" = "$self" ] && continue
+	real_pi=$candidate
+	break
+done < <(type -a -p pi)
+
+if [ -z "$real_pi" ]; then
+	printf 'pi launcher: real pi executable not found after %s\n' "$self" >&2
+	exit 127
+fi
+
+# pi's shebang is `#!/usr/bin/env node`, so it picks up whatever node PATH offers
+# first -- currently nvm's 22.14.0, which predates zlib.createZstdDecompress
+# (added in 22.15.0) and crashes undici on zstd-encoded responses. Pin pi to the
+# node shipped alongside it instead.
+bundled_node=""
+if [ -x "$(dirname "$real_pi")/node" ]; then
+	# `pi` lives in the same bin/ as the node that shipped with it.
+	bundled_node=$(realpath "$(dirname "$real_pi")/node")
+else
+	# Fall back to walking up from the resolved cli.js to the install root.
+	dir=$(dirname "$(realpath "$real_pi")")
+	while [ "$dir" != "/" ]; do
+		if [ -x "$dir/bin/node" ]; then
+			bundled_node=$(realpath "$dir/bin/node")
+			break
+		fi
+		dir=$(dirname "$dir")
+	done
+fi
+
+if [ -n "$bundled_node" ]; then
+	run_pi() { exec "$bundled_node" "$real_pi" "$@"; }
+else
+	run_pi() { exec "$real_pi" "$@"; }
+fi
+
+run_pi "$@"

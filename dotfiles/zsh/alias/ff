@@ -1,0 +1,7 @@
+# Fuzzy-pick a file and open it in Neovim from the Git root.
+ff() {
+  local root file
+  root=$(git rev-parse --show-toplevel 2>/dev/null) || root=$PWD
+  file=$(fd --type f --hidden --exclude .git . "$root" | fzf --query="$1" --select-1 --exit-0) || return
+  [ -n "$file" ] && (cd "$root" && nvim "$file")
+}

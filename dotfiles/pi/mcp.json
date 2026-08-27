@@ -1,0 +1,42 @@
+{
+  "settings": {
+    "autoAuth": true,
+    "hostConfigDiscovery": "off",
+    "mcpFooterStatus": "compact"
+  },
+  "mcpServers": {
+    "figma": {
+      "url": "https://mcp.figma.com/mcp",
+      "auth": "oauth",
+      "lifecycle": "lazy"
+    },
+    "linear": {
+      "url": "https://mcp.linear.app/mcp",
+      "auth": "oauth",
+      "lifecycle": "lazy",
+      "approveTools": [
+        "create_*",
+        "update_*",
+        "delete_*",
+        "save_*",
+        "archive_*",
+        "merge_*"
+      ]
+    },
+    "fathom": {
+      "url": "https://api.fathom.ai/mcp",
+      "auth": "oauth",
+      "lifecycle": "lazy"
+    },
+    "trello": {
+      "url": "https://mcp.trello.com/v1",
+      "auth": "oauth",
+      "lifecycle": "lazy"
+    },
+    "chrome-devtools": {
+      "command": "npx",
+      "args": ["-y", "chrome-devtools-mcp@latest"],
+      "lifecycle": "lazy"
+    }
+  }
+}

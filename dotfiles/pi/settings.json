@@ -1,0 +1,42 @@
+{
+  "theme": "rose-pine",
+  "tuiMode": "fullscreen",
+  "outputPad": 1,
+  "quietStartup": true,
+  "collapseChangelog": true,
+  "enableSkillCommands": true,
+  "defaultProvider": "openai-codex",
+  "defaultModel": "gpt-5.6-sol",
+  "defaultThinkingLevel": "high",
+  "enabledModels": [
+    "openai-codex/gpt-5.6-sol",
+    "openai-codex/gpt-5.6-terra",
+    "openai-codex/gpt-5.5",
+    "xai-oauth/grok-4.6",
+    "xai-oauth/grok-build"
+  ],
+  "doubleEscapeAction": "fork",
+  "autocompleteMaxVisible": 10,
+  "httpIdleTimeoutMs": 600000,
+  "compaction": {
+    "enabled": true,
+    "reserveTokens": 32768,
+    "keepRecentTokens": 30000
+  },
+  "retry": {
+    "enabled": true,
+    "maxRetries": 3,
+    "baseDelayMs": 2000,
+    "provider": {
+      "timeoutMs": 3600000,
+      "maxRetries": 0,
+      "maxRetryDelayMs": 60000
+    }
+  },
+  "packages": [
+    "npm:pi-vim",
+    "npm:pi-mcp-adapter",
+    "git:github.com/stnly/pi-grok@v0.10.1"
+  ],
+  "lastChangelogVersion": "0.84.2"
+}

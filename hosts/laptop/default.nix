@@ -39,7 +39,7 @@
   nixstart.system.snapshots.home = true;
 
   home-manager.users.alex.nixstart.home = {
-    checkout = "/home/alex/kickstart";
+    checkout = "/home/alex/nixstart";
     user.email = "alexlatour@gmail.com";
 
     desktop = {
@@ -51,6 +51,23 @@
       # No fixed xrandr line: this machine gets docked and undocked, so the
       # layout follows what is actually plugged in.
       autorandr = true;
+
+      # Laptop only — the desktop drives a single monitor and has no built-in
+      # panel to switch off, so it leaves this at its default of false.
+      #
+      # autorandr alone was not enough: with no saved profiles it matches
+      # nothing and does nothing, and home-manager's unit only fires at login.
+      # See home/desktop/dock.nix.
+      dock = {
+        enable = true;
+        internal = "eDP-1"; # `xrandr --query` on this machine
+
+        # The panel goes off while a monitor is connected. The position below
+        # is the physical arrangement — the laptop sits to the right of the
+        # monitor — and only takes effect if keepInternal is turned on.
+        keepInternal = false;
+        internalPosition = "right-of";
+      };
 
       # The 9350 ships with FHD+ (1920x1200), QHD+ (2560x1600) or 2.8K OLED
       # (2880x1800) and the invoice does not say which. 1920x1200 on 13.4" is

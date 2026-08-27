@@ -1,0 +1,1 @@
+alias dls='docker container ls'
