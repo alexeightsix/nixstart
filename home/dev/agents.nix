@@ -20,21 +20,19 @@ let
 in
 {
   config = lib.mkIf cfg.agents {
+    # grok-cli is in nixpkgs now, so `grok` comes from the store like the other
+    # three. It was previously carried as a PATH entry pointing at ~/.grok/bin,
+    # where its curl installer had put a Node application on Fedora — but
+    # nothing on a NixOS install ever creates that directory, so the export and
+    # the fpath line beside it silently added nothing and `grok` was the one
+    # agent that simply was not installed. The package ships bin/grok and no
+    # zsh completions, so the fpath line has no replacement and is dropped
+    # rather than left pointing at a path that will never exist.
     home.packages = with pkgs; [
       claude-code
       codex
       opencode
+      grok-cli
     ];
-
-    # grok-cli is not in nixpkgs. Its installer puts a Node application in
-    # ~/.grok, which is exactly the kind of thing nix-ld exists for, so the
-    # PATH entry and the completions are kept rather than pretending the tool
-    # is gone. .zshrc ended with this block; it ends up in the same place.
-    programs.zsh.initContent = lib.mkOrder 1200 ''
-      if [ -d "$HOME/.grok/bin" ]; then
-        export PATH="$HOME/.grok/bin:$PATH"
-        fpath=("$HOME/.grok/completions/zsh" $fpath)
-      fi
-    '';
   };
 }
