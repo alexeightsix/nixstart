@@ -41,6 +41,22 @@ in
       description = "Vicinae launcher daemon";
       wantedBy = [ "graphical-session.target" ];
       partOf = [ "graphical-session.target" ];
+
+      # Desktop entries name their binaries bare — `Exec=ghostty`, `Exec=btop`,
+      # `Exec=nvim`, `Exec=pavucontrol` — and vicinae execs them directly rather
+      # than through a shell, so they have to be found on this unit's PATH.
+      # NixOS gives a user unit coreutils, findutils, grep, sed and systemd and
+      # nothing else, so every one of those lookups failed with
+      #
+      #   Failed to start app: "Child process set up failed: execve: No such file or directory"
+      #
+      # and the launcher could start only the few entries whose Exec is already
+      # an absolute store path (Chrome, flameshot). These two profiles are where
+      # a user's applications actually live.
+      path = [
+        "/run/current-system/sw"
+        "/etc/profiles/per-user/${config.nixstart.system.user.name}"
+      ];
       serviceConfig = {
         ExecStart = "${lib.getExe pkgs.vicinae} server";
         Restart = "on-failure";

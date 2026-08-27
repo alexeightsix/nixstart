@@ -38,6 +38,15 @@
   # menu; /home is the part that does not.
   nixstart.system.snapshots.home = true;
 
+  # The two configurations that stay working checkouts rather than store paths.
+  # Both options default to off, on the reasoning "link it yourself once with
+  # ln -s and Nix never touches the directory" — but nobody ever did, so
+  # ~/.config/nvim did not exist at all and neovim ran with no configuration
+  # despite dotfiles/nvim being fully ported, and ~/.pi did not exist either.
+  # Turning them on makes activation keep both links in place.
+  home-manager.users.alex.nixstart.neovim.linkConfig = true;
+  home-manager.users.alex.nixstart.pi.linkConfig = true;
+
   home-manager.users.alex.nixstart.home = {
     checkout = "/home/alex/nixstart";
     user.email = "alexlatour@gmail.com";
@@ -61,10 +70,11 @@
       dock = {
         enable = true;
         internal = "eDP-1"; # `xrandr --query` on this machine
-
-        # The panel goes off while a monitor is connected. The position below
-        # is the physical arrangement — the laptop sits to the right of the
-        # monitor — and only takes effect if keepInternal is turned on.
+        # An external display replaces the panel, it does not extend onto it:
+        # whenever one is connected the built-in panel is switched off, and it
+        # comes back only when the last external is unplugged. internalPosition
+        # is therefore unused here — a panel that is off has no position — and
+        # is kept only so turning keepInternal on later lands it correctly.
         keepInternal = false;
         internalPosition = "right-of";
       };

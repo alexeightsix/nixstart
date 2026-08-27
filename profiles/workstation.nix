@@ -17,5 +17,9 @@
     agents = true;
   };
 
+  # Same two links as the NixOS hosts — see hosts/laptop/default.nix.
+  nixstart.neovim.linkConfig = true;
+  nixstart.pi.linkConfig = true;
+
   home.stateVersion = "25.05";
 }

@@ -17,6 +17,18 @@ let
   cfg = config.nixstart.home;
   helpers = import ../lib.nix { inherit lib config; };
 
+  # useX11LegacyScreenshot below is what makes ctrl+; work at all. flameshot 14
+  # routes every capture through the XDG screenshot portal, and the only backend
+  # installed here — xdg-desktop-portal-gtk 1.15.3 — does not implement
+  # org.freedesktop.impl.portal.Screenshot. Nothing answers, so each capture sat
+  # for 30 seconds and then logged "Screenshot portal timed out after 30
+  # seconds" / "Unable to capture screen".
+  #
+  # No backend in nixpkgs implements Screenshot for plain X11: wlr is Wayland
+  # only, gnome and cosmic need their shells, lxqt has only Access and
+  # FileChooser, and xapp runs only in cinnamon/mate/xfce mode. The option is
+  # upstream's answer for exactly this case — grab the screen the pre-14 way and
+  # skip the portal. See https://wiki.nixos.org/wiki/Flameshot.
   ini = pkgs.writeText "flameshot.ini" ''
     [General]
     autoCloseIdleDaemon=true
@@ -38,6 +50,7 @@ let
     startupLaunch=true
     uiColor=#eb6f92
     uiLanguage=auto
+    useX11LegacyScreenshot=true
   '';
 in
 {

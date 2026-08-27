@@ -40,6 +40,15 @@
   # menu; /home is the part that does not.
   nixstart.system.snapshots.home = true;
 
+  # The two configurations that stay working checkouts rather than store paths.
+  # Both options default to off, on the reasoning "link it yourself once with
+  # ln -s and Nix never touches the directory" — but nobody ever did, so
+  # ~/.config/nvim did not exist at all and neovim ran with no configuration
+  # despite dotfiles/nvim being fully ported, and ~/.pi did not exist either.
+  # Turning them on makes activation keep both links in place.
+  home-manager.users.alex.nixstart.neovim.linkConfig = true;
+  home-manager.users.alex.nixstart.pi.linkConfig = true;
+
   home-manager.users.alex.nixstart.home = {
     checkout = "/home/alex/nixstart";
 
@@ -49,12 +58,19 @@
     desktop.statusBar = "desktop";
 
     # scripts/xrandr.sh, which was one commented-out line for every machine.
+    #
+    # --primary is load-bearing beyond xrandr: weather-wallpaper-fit finds the
+    # screen geometry with `awk '/ connected primary/'`, and with no output
+    # flagged it silently fell back to the uncropped base image, which feh then
+    # cropped itself — taking the temperature off the right edge. That is the
+    # cut-off text on this host; the laptop was unaffected because dock.nix
+    # always flags one. See home/desktop/wallpaper.nix.
     desktop.monitors = ''
       xrandr --output eDP-1 --off \
              --output DP-1 --off \
              --output HDMI-1 --off \
              --output DP-2 --off \
-             --output HDMI-2 --mode 1920x1080 --pos 0x0 --rotate normal
+             --output HDMI-2 --primary --mode 1920x1080 --pos 0x0 --rotate normal
     '';
 
     languages = [

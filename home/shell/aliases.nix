@@ -60,6 +60,7 @@ in
     ncdu
     witr # "why is this running?" — traces a process/port/container to its origin
     btop
+    htop # kickstart only ever installed btop; htop added on request
     fastfetch
     tree
     unzip
