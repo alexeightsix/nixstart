@@ -12,6 +12,7 @@
 # negotiation.
 {
   config,
+  inputs,
   lib,
   pkgs,
   ...
@@ -25,6 +26,12 @@ in
     programs.ghostty = {
       enable = true;
       enableZshIntegration = true;
+
+      # main, pinned by revision in flake.nix, rather than the tagged release
+      # in nixpkgs. home/desktop/i3.nix binds $mod+Return to this same
+      # attribute rather than pkgs.ghostty, so the terminal i3 opens and the
+      # one this configures cannot drift apart.
+      package = inputs.ghostty.packages.${pkgs.stdenv.hostPlatform.system}.ghostty;
 
       settings = {
         app-notifications = "no-clipboard-copy";

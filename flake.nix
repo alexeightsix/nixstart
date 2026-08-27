@@ -57,6 +57,25 @@
     # survive being rebuilt with a different npm.
     coding-agents.url = "github:kissgyorgy/coding-agents";
 
+    # Ghostty from main rather than the tagged release. nixpkgs is not behind
+    # here — it carries 1.3.1, which is the newest tag — so this is a choice to
+    # track the development branch, not a workaround.
+    #
+    # Deliberately no `inputs.nixpkgs.follows`. Ghostty's flake pins
+    # nixpkgs-unstable on purpose, for the Zig 0.16, GTK 4.22 and fontconfig
+    # 2.18 its package.nix needs, and says so in its own comment. Following
+    # ours would build it against a nixpkgs it is not tested against.
+    #
+    # The matching binary cache is in system/core/nix.nix: ghostty's flake
+    # declares it in nixConfig, but a dependency's nixConfig has no effect on
+    # the flake consuming it, so it has to be repeated there or every bump
+    # compiles Zig and GTK from source.
+    # Pinned to an explicit main commit rather than the branch. A branch input
+    # is pinned in flake.lock anyway; naming the revision here makes the
+    # version visible in the file and means `nix flake update` cannot move it
+    # on its own — bumping ghostty is an edit to this line.
+    ghostty.url = "github:ghostty-org/ghostty/5aeb693b7727b0dc6fcc9193bc1d2453af3bcb9a";
+
     # jk: vim-style keyboard scrolling for X11. i3config execs it as
     # $HOME/.local/bin/jk, which is a dynamically linked ELF that was built by
     # hand and would not run on NixOS at all. It ships its own flake, so this

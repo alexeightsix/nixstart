@@ -22,6 +22,14 @@
       ];
       auto-optimise-store = true;
       warn-dirty = false;
+
+      # Ghostty is tracked from main (see flake.nix), which is a from-source Zig
+      # and GTK build without this. Ghostty declares the cache in its own
+      # flake nixConfig, but that does not carry to a flake consuming it.
+      extra-substituters = [ "https://ghostty.cachix.org" ];
+      extra-trusted-public-keys = [
+        "ghostty.cachix.org-1:QB389yTa6gTyneehvqG58y0WnHjQOqgnA+wBnpWWxns="
+      ];
     };
 
     # scripts/update-packages.sh ran `dnf upgrade`, `atuin update`, `claude

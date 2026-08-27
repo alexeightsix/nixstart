@@ -63,7 +63,7 @@ in
       bindsym XF86AudioMute exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-sink-mute @DEFAULT_SINK@ toggle && $refresh_i3status
       bindsym XF86AudioMicMute exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-source-mute @DEFAULT_SOURCE@ toggle && $refresh_i3status
 
-      bindsym $mod+Return exec ${lib.getExe pkgs.ghostty}
+      bindsym $mod+Return exec ${lib.getExe config.programs.ghostty.package}
       bindsym $mod+q kill
       bindsym $mod+Tab focus right
 
