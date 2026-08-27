@@ -184,6 +184,14 @@ in
       # flameshot: Ctrl+; -> interactive capture
       bindsym Control+semicolon exec --no-startup-id ${lib.getExe pkgs.flameshot} gui
       bindsym F10 exec --no-startup-id ${lib.getExe pkgs.flameshot} gui
+
+      # jk scroll mode, by key as well as by Esc Esc. jk is a daemon that
+      # grabs the keyboard itself, so this is not "run jk" — it is the SIGUSR1
+      # toggle jk documents, sent to the instance the user unit is already
+      # running. Esc Esc keeps working; this is a second way in, and unlike
+      # Esc Esc it fires in any focused window rather than only the classes
+      # jk is opted into.
+      bindsym Control+k exec --no-startup-id ${pkgs.procps}/bin/pkill -USR1 -x jk
     '';
   };
 }
