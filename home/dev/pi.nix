@@ -49,17 +49,35 @@ in
       pkgs.nodejs
       pkgs.bun
 
-      # pi itself. pi-launcher at ~/.local/bin/pi is only a dispatcher — it
-      # searches PATH for the real executable and re-execs it — so without a
-      # packaged pi anywhere it exited 127 with "real pi executable not found".
-      # kickstart never installed pi either; its own docs say Pi is installed
-      # separately, so a fresh machine had the launcher and nothing to launch.
+      # pi itself. Nothing installed it before: kickstart only ever placed the
+      # launcher, and its own docs say Pi is installed separately, so a fresh
+      # machine had a dispatcher and nothing to dispatch to — bare `pi` exited
+      # 127 with "real pi executable not found".
       inputs.coding-agents.packages.${pkgs.stdenv.hostPlatform.system}.pi-coding-agent
     ];
 
-    # The launcher, by symlink to the checkout rather than into the store, so
-    # editing pi-launcher does not need a rebuild.
-    home.file.".local/bin/pi".source = config.lib.file.mkOutOfStoreSymlink "${piRepo}/pi-launcher";
+    # dotfiles/pi/pi-launcher is deliberately NOT linked to ~/.local/bin/pi.
+    #
+    # It exists to solve a problem this configuration no longer has. pi used to
+    # be an npm global whose shebang is `#!/usr/bin/env node`, so it picked up
+    # whatever node came first on PATH — nvm's 22.14.0, which predates
+    # zlib.createZstdDecompress and crashed undici on zstd responses. The
+    # launcher found the real pi, then re-exec'd it under the node shipped
+    # beside it.
+    #
+    # The packaged pi is not a node script. It is a makeBinaryWrapper ELF that
+    # already has the right node baked in, so the launcher's
+    #
+    #   exec "$bundled_node" "$real_pi"
+    #
+    # hands a binary to node, which parses it as JavaScript and dies with
+    # "SyntaxError: Invalid or unexpected token" after printing the ELF header.
+    # ~/.local/bin is ahead of the profile on PATH, so this broke every bare
+    # `pi` even though the package underneath was fine — `${profile}/bin/pi
+    # --version` printed 0.84.3 throughout.
+    #
+    # The file stays in the repository: it is still what a non-Nix machine
+    # wants, and dotfiles/pi/docs describes it. It just is not on PATH here.
 
     home.activation.linkPi = lib.mkIf config.nixstart.pi.linkConfig (
       lib.hm.dag.entryAfter [ "writeBoundary" ] ''
