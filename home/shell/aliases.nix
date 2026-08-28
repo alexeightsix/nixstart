@@ -36,6 +36,18 @@ in
     # One lockfile moves now.
     update = "nix flake update --flake ${config.home.homeDirectory}/nixstart && rebuild";
 
+    # The whole cycle, in the order the pieces actually depend on each other:
+    # move the lockfile, build and activate it, then reclaim what that
+    # superseded. `update` above stops after the rebuild; this is that plus the
+    # collection, for when the store has grown rather than as a routine.
+    #
+    # The collection is deliberately --delete-older-than 30d rather than -d.
+    # `-d` removes every older generation, which is the rollback target for the
+    # generation this alias just built and has not yet proven — and a
+    # generation that builds is not a generation that boots. 30d matches the
+    # policy nix.gc already runs weekly, so this only pulls that sweep forward.
+    sync-laptop = "nix flake update --flake ${config.home.homeDirectory}/nixstart && rebuild && sudo nix-collect-garbage --delete-older-than 30d";
+
     # `zsh` opened ~/.zshrc and re-sourced it. That file is a store path now,
     # so the thing to edit is the module that generates it.
     zsh = "nvim ${config.home.homeDirectory}/nixstart/home/shell/zsh.nix";
