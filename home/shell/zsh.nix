@@ -41,7 +41,8 @@ in
       custom = "${pkgs.dracula-zsh-theme}";
     };
 
-    autosuggestion.enable = true;
+    # Ghost text off — the grey inline suggestion that completes from history.
+    autosuggestion.enable = false;
     syntaxHighlighting.enable = true;
 
     history = {
