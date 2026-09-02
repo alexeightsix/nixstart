@@ -3,7 +3,6 @@
 # install.sh — install a host from this flake onto a disk.
 #
 #   install.sh <host> <device> [options]
-#   install.sh desktop /dev/nvme0n1
 #   install.sh laptop  /dev/nvme0n1 --luks --swap 40G
 #
 #   --luks          encrypt everything but the ESP (asks for a passphrase)

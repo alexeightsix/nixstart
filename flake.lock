@@ -368,9 +368,26 @@
         "jk": "jk",
         "nix-flatpak": "nix-flatpak",
         "nixpkgs": "nixpkgs_3",
+        "rose-pine-gtk-theme": "rose-pine-gtk-theme",
         "sops-nix": "sops-nix",
         "weather-wallpaper": "weather-wallpaper",
         "witr": "witr"
+      }
+    },
+    "rose-pine-gtk-theme": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1761253404,
+        "narHash": "sha256-eeBuGvJKdv/puMg2FN3Ue52OU1LgipEte/OhRwIDDs8=",
+        "owner": "Fausto-Korpsvart",
+        "repo": "Rose-Pine-GTK-Theme",
+        "rev": "c4fdfa62a9eb6941a36b2cd5026fc64123aaa0dd",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Fausto-Korpsvart",
+        "repo": "Rose-Pine-GTK-Theme",
+        "type": "github"
       }
     },
     "sops-nix": {

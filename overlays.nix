@@ -13,6 +13,17 @@ inputs: final: prev: {
   glow-rose-pine = final.callPackage ./pkgs/glow-rose-pine {
     src = inputs.glow-rose-pine;
   };
+  rose-pine-gtk-theme = final.callPackage ./pkgs/rose-pine-gtk-theme {
+    src = inputs.rose-pine-gtk-theme;
+  };
+
+  # Not a derivation but an attrset: the SDK, plus the handful of paths inside
+  # it that Expo and Gradle need spelled out — ANDROID_HOME, the NDK root, the
+  # aapt2 that AGP has to be pointed at. All three are built from versions the
+  # package pins, so exporting the derivation alone would put
+  # "build-tools/36.0.0/aapt2" in lib/dev-env.nix as a second place to edit
+  # whenever Expo moves.
+  android-sdk = final.callPackage ./pkgs/android-sdk { };
 
   # jk builds itself; this only lifts its package into the same namespace as
   # everything else so modules do not have to reach into `inputs`.

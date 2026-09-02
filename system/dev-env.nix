@@ -1,9 +1,10 @@
 # The dev environment as a NixOS module, for guests that have no home-manager.
 #
-# This is what a micro VM running an agent imports. It is the same definition
-# the desktop and the dev shell use — lib/dev-env.nix — put into
-# environment.systemPackages instead of home.packages, so a VM's shell has the
-# same tools without carrying the whole desktop configuration.
+# Exported as `nixosModules.devEnv`, so a guest built outside this flake can
+# take it on its own. It is the same definition the laptop and the dev shell
+# use — lib/dev-env.nix — put into environment.systemPackages instead of
+# home.packages, so the guest's shell has the same tools without carrying the
+# whole desktop configuration.
 {
   config,
   lib,
@@ -25,7 +26,7 @@ in
       default = false;
       description = ''
         Install the shared development environment system-wide. For machines
-        with no per-user home-manager generation — micro VMs, dev boxes.
+        with no per-user home-manager generation — dev boxes, containers.
       '';
     };
 

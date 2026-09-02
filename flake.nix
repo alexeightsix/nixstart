@@ -102,6 +102,16 @@
       flake = false;
     };
 
+    # Rose Pine for GTK, so Thunar and the other GTK applications match
+    # Ghostty, the bar, vicinae and Neovim. nixpkgs had this and removed it —
+    # see pkgs/rose-pine-gtk-theme for what that was about — so it is built
+    # from the same upstream here. The icons are still nixpkgs'
+    # `rose-pine-icon-theme`, which survived.
+    rose-pine-gtk-theme = {
+      url = "github:Fausto-Korpsvart/Rose-Pine-GTK-Theme";
+      flake = false;
+    };
+
     # Declarative Flathub, for the applications that genuinely ship no other
     # way. stage-04's eight are all in nixpkgs.
     nix-flatpak.url = "github:gmodena/nix-flatpak";
@@ -127,7 +137,18 @@
         system:
         import nixpkgs {
           inherit system overlays;
-          config.allowUnfreePredicate = import ./lib/unfree.nix lib;
+          config = {
+            allowUnfreePredicate = import ./lib/unfree.nix lib;
+
+            # A second gate in front of the Android SDK, and naming a package
+            # in lib/unfree.nix does not open it: androidenv reads this
+            # attribute directly and every one of its derivations refuses to
+            # build while it is false. It stands for having read Google's SDK
+            # terms, so it is a statement about a licence rather than a build
+            # flag — which is why it is here beside the allowlist and not in
+            # pkgs/android-sdk.
+            android_sdk.accept_license = true;
+          };
         };
 
       # ---------------------------------------------------------- system ---
@@ -179,27 +200,18 @@
     in
     {
       nixosConfigurations = {
-        desktop = mkHost { hostname = "desktop"; };
         laptop = mkHost { hostname = "laptop"; };
-        vm = mkHost { hostname = "vm"; };
       };
 
       homeConfigurations = {
-        "alex@desktop" = mkHome { profile = "workstation"; };
         "alex@headless" = mkHome { profile = "headless"; };
       };
 
-      # Incus images for the agent guest. Both are built from hosts/agent, so
-      # the container and the VM cannot drift apart.
-      #
-      #   nix build .#agent-container
-      #   scripts/agent build   does the build and the import
-      #   scripts/agent new foo  launches an instance from it
-      # Reusable pieces, for guests built outside this flake — a microvm.nix
-      # host, an Incus VM image, another machine's configuration.
+      # A reusable piece, for a guest built outside this flake — a dev box, a
+      # container, another machine's configuration. It is the dev environment
+      # as a NixOS module, with no home-manager generation behind it.
       nixosModules = {
         devEnv = ./system/dev-env.nix;
-        agentVm = ./profiles/agent-vm.nix;
       };
 
       # The dev environment as a plain function, for anything that is not a
@@ -210,38 +222,6 @@
         system:
         let
           pkgs = pkgsFor system;
-
-          # Both images come from the same guest configuration, so the
-          # container and the VM cannot drift apart. nixpkgs carries the Incus
-          # image modules itself — nixos-generators is deprecated for exactly
-          # this, having been upstreamed.
-          agentGuest =
-            extra:
-            lib.nixosSystem {
-              inherit system;
-              specialArgs = { inherit inputs self; };
-              # Not the whole ./system tree: that imports the home-manager
-              # bridge, and a guest has no per-user generation — its dev
-              # environment comes in through nixstart.devEnv instead.
-              modules = [
-                { nixpkgs.pkgs = pkgs; }
-                ./system/options.nix
-                ./system/core/nix.nix
-                ./system/core/nix-ld.nix
-                ./system/dev-env.nix
-                ./hosts/agent
-              ]
-              ++ extra;
-            };
-
-          container = agentGuest [
-            "${inputs.nixpkgs}/nixos/modules/virtualisation/lxc-container.nix"
-            "${inputs.nixpkgs}/nixos/modules/virtualisation/lxc-image-metadata.nix"
-          ];
-
-          vm = agentGuest [
-            "${inputs.nixpkgs}/nixos/modules/virtualisation/incus-virtual-machine.nix"
-          ];
         in
         {
           inherit (pkgs)
@@ -252,16 +232,6 @@
             witr
             jk
             ;
-
-          # An Incus container: shares the host kernel, boots in under a
-          # second, costs almost nothing to throw away.
-          agent-container = container.config.system.build.tarball;
-          agent-container-metadata = container.config.system.build.metadata;
-
-          # An Incus virtual machine: its own kernel, so code the agent runs
-          # cannot reach the host through a shared one. Prefer this when the
-          # agent is running code you have not read.
-          agent-vm = vm.config.system.build.qemuImage;
         }
       );
 
@@ -269,7 +239,7 @@
 
       # The dev shells. This is where agents are started: `nix develop
       # .#agent` gives them the same tools, aliases and shell they would have
-      # on the desktop, without needing a NixOS host underneath.
+      # on the laptop, without needing a NixOS host underneath.
       devShells = forAllSystems (
         system:
         let
@@ -322,7 +292,7 @@
             agents = true;
           };
 
-          # One per language, for a micro VM that only does one thing.
+          # One per language, for a shell that only does one thing.
           go = mkShell {
             name = "go";
             languages = [ "go" ];

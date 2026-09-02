@@ -58,6 +58,40 @@ in
       };
     };
 
+    trustLocalNetwork = mkOption {
+      type = types.bool;
+      default = false;
+      description = ''
+        Accept everything arriving from a private address — 10/8, 172.16/12,
+        192.168/16, and IPv6 ULA and link-local — rather than naming ports.
+
+        This is what makes developing against real hardware workable. A phone
+        running the app needs the Metro bundler on 8081 and the local API on
+        6969, and the next thing tried needs the frontend on 6173, or pgweb,
+        or a port that does not exist yet; each one is a rebuild, and each
+        failure looks the same from the phone — a request that hangs rather
+        than one that is refused, because the firewall drops rather than
+        rejects. A port list turns a day of that into a day of edits here.
+
+        What it gives up is real and worth being plain about. This is not "the
+        home network": it is every private network the machine ever joins, and
+        on cafe wifi the other customers are inside 192.168/16 too. Behind it
+        on this machine sit a bundler serving the project's source, an API,
+        pgweb, and Postgres on 5432 — none of which are written to be exposed
+        to strangers. Docker's own bridges live in 172.17/16 and 172.18/16 and
+        so are covered by this as well.
+
+        Tailscale is the version of this with none of that cost: tailscale0 is
+        already a trusted interface, so a phone on the tailnet reaches every
+        one of these ports on 100.x with the firewall untouched, on any
+        network, with no rule here at all. Prefer it where the phone can be
+        enrolled; this option is for the phone that cannot.
+
+        Outbound traffic and established connections are unaffected either
+        way — this only changes what may start a connection *to* this machine.
+      '';
+    };
+
     hardware = {
       keychron = mkOption {
         type = types.bool;

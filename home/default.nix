@@ -28,6 +28,7 @@
     ./desktop/statusbar.nix
     ./desktop/battery.nix
     ./desktop/display.nix
+    ./desktop/gtk.nix
     ./desktop/wallpaper.nix
     ./desktop/picom.nix
     ./desktop/dunst.nix
@@ -38,6 +39,7 @@
 
     ./dev/toolchains.nix
     ./dev/agents.nix
+    ./dev/claude-plugins.nix
     ./dev/pi.nix
   ];
 

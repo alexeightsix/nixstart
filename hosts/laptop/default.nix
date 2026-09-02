@@ -26,6 +26,12 @@
     # running off a 60W charger.
     virtualisation.docker = true;
 
+    # Reachable from a phone on the same network: Metro, the local API, and
+    # whatever the next thing turns out to be. This is the machine the Expo
+    # project is developed on and testing it on real hardware is the point —
+    # see `languages = [ ... "android" ]` below.
+    trustLocalNetwork = true;
+
     hardware = {
       xps13 = true; # Lunar Lake: kernel, Xe2, SOF audio, fprintd, upower
       keychron = true;
@@ -97,6 +103,11 @@
       "node"
       "rust"
       "lua"
+
+      # The Expo project in ~/dev/spotlight. This is the machine it is built
+      # on, and it is the only one — the desktop does not have it, so the SDK
+      # and its system image are not in that machine's closure.
+      "android"
     ];
     databases = true;
     agents = true;

@@ -1,211 +1,83 @@
 # nixstart
 
-NixOS for a desktop, an XPS 13, and a throwaway VM.
+NixOS for a Dell XPS 13 9350. `nixosConfigurations.laptop` is the only host.
 
-```
-system/     what a machine is   — boot, hardware, daemons, X
-home/       what a person has   — shell, git, i3, terminal, toolchains
-hosts/      one file per machine
-profiles/   home without NixOS  — an account on a box this repo doesn't own
-pkgs/       jk, glow-rose-pine, weather-wallpaper, dracula-zsh-theme, fury-renegade-rgb
-```
+## Setting up a new machine
+
+### 1. Write an installer USB
+
+From a machine you already have:
 
 ```sh
-sudo nixos-rebuild switch --flake .#desktop     # a machine this repo owns
-home-manager switch --flake .#alex@headless     # an account, anywhere
-```
-
-`system/` and `home/` never import each other; `system/home.nix` is the one
-link and runs one way. `home/` reads only `nixstart.home.*`, which is why the
-second command works at all.
-
-## Hosts
-
-|                    | desktop | laptop | vm |
-|--------------------|---------|--------|----|
-| battery in the bar | —       | ✓      | —  |
-| docker             | ✓       | ✓      | ✓  |
-| libvirt            | ✓       | —      | —  |
-| incus              | ✓       | —      | —  |
-| tailscale          | ✓       | ✓      | —  |
-| /home snapshots    | ✓       | ✓      | ✓  |
-
-`laptop` is a Dell XPS 13 9350 — Lunar Lake, Arc 140V, Killer BE201. See
-`system/hardware/xps13.nix`.
-
-## Options
-
-`nixstart.system.*` (`system/options.nix`) and `nixstart.home.*`
-(`home/options.nix`). Every module is always imported and inert until its
-option is set, so adding a machine never means editing a module.
-
-```nix
-nixstart.system = {
-  desktop.enable = true;
-  apps.gui = true;
-  tailscale = true;
-  virtualisation = { docker = true; libvirt = true; incus = true; };
-  hardware = { keychron = true; rgb = true; bluetooth = true; };
-};
-```
-
-A few options live beside the module that owns them rather than in
-`options.nix`: `virtualisation`, `tailscale`, `hardware.xps13`,
-`snapshots.home`, `user.initialPassword`, `desktop.jk`, `neovim.linkConfig`,
-`pi.linkConfig`.
-
-## Two kinds of path
-
-- `nixstart.home.dotfiles` — a **store path** from the `dotfiles` input. What
-  Nix reads at build time: `tmux.conf`, `dunstrc`, the Ghostty shaders, the
-  wallpapers. Pinned, frozen until the next rebuild.
-- `nixstart.home.checkout` — a **path on the machine**, never read. What is
-  edited far more often than the system is rebuilt: `nvim`, `pi`, `zsh/alias`.
-  Edits take effect on save.
-
-## Dev environment
-
-`lib/dev-env.nix` is a plain function, not a module, so everything can use it:
-
-| consumer | how |
-|----------|-----|
-| desktop / laptop | `home/dev/toolchains.nix` → `home.packages` |
-| micro VM | `nixosModules.devEnv` → `environment.systemPackages` |
-| dev shell | `lib/dev-shell.nix` → `mkShell` |
-| anything else | `nixstart.lib.devEnv` |
-
-Tiers (`base`, `toolchains`, `agentPackages`, `databasePackages`) are separate
-so a VM running one agent takes `base ++ agents ++ one language`.
-
-```sh
-nix develop .#agent    # agents + go/node — what agents are started in
-nix develop            # everything, by hand
-nix develop .#node     # one language
-nix develop .#nix      # working on this repo
-```
-
-`nix develop` gives you bash with no shell config, so `lib/dev-shell.nix`
-generates the rc files as store paths and points zsh at them with `ZDOTDIR`,
-then execs zsh. Nothing is written to the real home directory, so it is safe
-on a machine whose shell setup you do not want touched — including one that is
-not NixOS. Aliases are sourced at runtime, so adding one needs no rebuild.
-
-## Agent guests
-
-`hosts/agent` builds two Incus images from one definition, so they cannot
-drift:
-
-| | boots | isolation |
-|---|-------|-----------|
-| `agent-container` | under a second | shares the host kernel |
-| `agent-vm` | a few seconds | its own kernel |
-
-The default is the VM. An agent running code you have not read is where a
-shared kernel stops being an acceptable trade; containers are for when you are
-driving it yourself and want it now.
-
-```sh
-scripts/agent build             # build + import
-scripts/agent new work-01       # launch
-scripts/agent shell work-01     # zsh inside
-scripts/agent rm-all
-```
-
-`AGENT_WORKSPACE=~/dev/foo scripts/agent new work-01` mounts the project at
-`/workspace` as a disk device rather than a copy, so what the agent changes is
-visible on the host immediately. The shell opens there.
-
-Instances live in their own `agents` Incus project with
-`features.profiles=false`, inheriting the existing bridge and storage pool
-without touching the default project's limits. Keys only, no account password,
-no X, no man pages, and `nix-gc --delete-older-than 3d` daily so a disposable
-image does not grow into its own disk.
-
-## Neovim and Pi are unmanaged
-
-Installed, not configured. No generated `init.lua`, no `programs.neovim`,
-nothing written to `~/.config/nvim` or `~/.pi/agent`. Nix owns the environment
-— compilers, language servers, formatters — not the config. Opt in with
-`nixstart.neovim.linkConfig` / `nixstart.pi.linkConfig`.
-
-`programs.nix-ld` is on so Mason's prebuilt binaries still run.
-
-## Snapshots
-
-`/home` only. The system is a generation and rolls back from the boot menu;
-`/home` is the part that doesn't. Hourly snapper timeline, 10 hourly / 10 daily
-/ 4 weekly / 6 monthly / 2 yearly, tunable via `snapshots.limits`. Stops at 50%
-used or 20% free.
-
-`/home` must be its own btrfs subvolume. `snapper-home-subvolume.service`
-creates `/home/.snapshots`; nothing else does.
-
-No qgroups. `SPACE_LIMIT` would need them, and they are the most reliable way
-to make a btrfs filesystem stall — every delete walks the quota tree.
-`FREE_LIMIT` plus the retention counts bound the space without them. Cleanup
-runs at idle IO and CPU priority so a pass can never be what makes the desktop
-stutter, and both timers are jittered off the hour.
-
-Disk is bounded elsewhere too: `min-free`/`max-free` make the Nix daemon
-collect on its own below 5 GiB, weekly `nix-optimise` hard-links duplicates,
-journald is capped at 2 GB, and `/tmp` is cleared on boot.
-
-## Trying it without installing
-
-```sh
-nixos-rebuild build-vm --flake .#desktop
-./result/bin/run-desktop-vm          # user alex, password vm
-```
-
-Boots the real configuration in a window against a throwaway disk. Nothing is
-installed; delete the `.qcow2` it leaves behind and it never happened.
-`system/vm-variant.nix` forces off what a VM has no business running — RGB,
-Keychron, Bluetooth, tailscale, snapshots, the fixed xrandr line — and
-autologins straight to i3. Software rendering, so expect it to feel slow.
-
-## Installing
-
-```sh
-scripts/install.sh desktop /dev/nvme0n1
-scripts/install.sh laptop  /dev/nvme0n1 --luks --swap 40G
-scripts/install.sh desktop /dev/nvme0n1 --dry-run
-```
-
-btrfs with subvolumes, because `snapshots.home` needs `/home` to be one:
-1GiB vfat ESP, optional swap, then `@` `@home` `@nix` `@log`. `@nix` and
-`@log` are separate so neither lands inside a snapshot of `/`.
-
-Generates a real `hardware-configuration.nix` into `hosts/<host>/`, replacing
-the placeholder, plus a `filesystems.nix` with by-label devices and the LUKS
-UUID when encrypted.
-
-Checks every tool it needs *before* printing the plan — a `parted` that turns
-out to be missing halfway through leaves a disk partitioned but not formatted,
-which is worse than not starting. Then it refuses the disk this system is
-running from, and makes you type the device name back.
-
-`--keep-home` reuses an existing `@home` rather than formatting it. Check that
-uid 1000 still owns it afterwards.
-
-## Installer USB
-
-```sh
-scripts/install-iso.sh               # list acceptable devices
+scripts/install-iso.sh               # list the devices it will accept
 scripts/install-iso.sh /dev/sdX      # download, verify, write
 ```
 
-Refuses anything that is not removable, is mounted, or holds a filesystem this
-system is running from, then makes you type the device name back. Verifies the
-published sha256 before writing — an image that is subtly wrong produces a
-machine that boots and then misbehaves, which is far worse to debug than one
-that refuses to start.
+Removable, unmounted devices only, and it makes you type the device name back.
 
-## Before the first switch
+### 2. Add a host, if it is not the laptop
 
-1. Replace `hosts/*/hardware-configuration.nix` — they are placeholders that
-   exist only so the flake evaluates.
-2. Change `user.initialPassword` (`"changeme"`), or add a `user-password`
-   secret to `secrets/<hostname>.yaml`, which wins over it.
-3. Set the laptop's `dpi` once `xrandr --query` says which panel it has.
-4. The `dotfiles` input is a local path, so this flake only evaluates on a
-   machine that has that checkout. Point it at a git URL to change that.
+`hosts/<name>/default.nix` holds the facts true of that machine and nothing
+else — every module is inert until an option turns it on, so copy
+`hosts/laptop/default.nix` and delete what does not apply. Then register it:
+
+```nix
+# flake.nix
+nixosConfigurations = {
+  laptop = mkHost { hostname = "laptop"; };
+  <name> = mkHost { hostname = "<name>"; };
+};
+```
+
+The installer writes `hardware-configuration.nix` for you in step 3.
+
+### 3. Install
+
+Boot the USB on the target, get this repo onto it, then:
+
+```sh
+scripts/install.sh <host> /dev/nvme0n1 --dry-run          # print the plan
+scripts/install.sh <host> /dev/nvme0n1                    # plain
+scripts/install.sh <host> /dev/nvme0n1 --luks --swap 40G  # encrypted, hibernate
+```
+
+btrfs with subvolumes — 1GiB vfat ESP, optional swap, then `@` `@home` `@nix`
+`@log` — because `snapshots.home` needs `/home` to be its own subvolume.
+
+It generates `hosts/<host>/hardware-configuration.nix` and a `filesystems.nix`
+with by-label devices and the LUKS UUID, adds the import, and runs
+`nixos-install`. Commit both files afterwards.
+
+`--keep-home` reuses an existing `@home` instead of formatting it; check that
+uid 1000 still owns it. `--dry-run` stops before touching the disk.
+
+### 4. First boot
+
+1. Log in with `user.initialPassword` from the host file (`"changeme"`) and run
+   `passwd`. To skip the placeholder entirely, put a `user-password` secret in
+   `secrets/<hostname>.yaml` — sops wins over the option whenever it exists.
+2. Set `nixstart.home.desktop.dpi` once `xrandr --query` says which panel the
+   machine has. It defaults to null, which is 96dpi.
+3. Rebuild.
+
+## Rebuilding
+
+```sh
+scripts/apply.sh            # stage for the next boot — the default
+scripts/apply.sh switch     # apply live
+scripts/apply.sh test       # apply live, leave the boot menu alone
+```
+
+`boot` is the default because anything that moves the system path restarts
+display-manager, which kills X and the terminal you ran it from. Use `switch`
+from a TTY if you want it live without rebooting.
+
+## Trying it first
+
+```sh
+nixos-rebuild build-vm --flake .#laptop
+./result/bin/run-laptop-vm           # user alex, password vm
+```
+
+Boots the real configuration in a window against a throwaway disk. Delete the
+`.qcow2` it leaves behind and nothing happened.

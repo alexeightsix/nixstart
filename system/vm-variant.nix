@@ -1,7 +1,7 @@
 # Booting a host's configuration in a window, without installing it.
 #
-#   nixos-rebuild build-vm --flake .#desktop
-#   ./result/bin/run-desktop-vm
+#   nixos-rebuild build-vm --flake .#laptop
+#   ./result/bin/run-laptop-vm
 #
 # `system.build.vm` takes the real configuration and boots it under qemu
 # against a throwaway disk image, so what you are looking at is the actual
