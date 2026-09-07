@@ -72,12 +72,18 @@ scripts/apply.sh test       # apply live, leave the boot menu alone
 display-manager, which kills X and the terminal you ran it from. Use `switch`
 from a TTY if you want it live without rebooting.
 
-## Trying it first
+## Updating
 
 ```sh
-nixos-rebuild build-vm --flake .#laptop
-./result/bin/run-laptop-vm           # user alex, password vm
+update          # move flake.lock, then rebuild
+sync-nix        # the above, plus nix-collect-garbage --delete-older-than 30d
+bump-ghostty    # move the pinned ghostty revision to current main
 ```
 
-Boots the real configuration in a window against a throwaway disk. Delete the
-`.qcow2` it leaves behind and nothing happened.
+Shell aliases, defined in `home/shell/aliases.nix`.
+
+`nix flake update` moves every input except ghostty, which is pinned to an
+explicit revision in `flake.nix` precisely so the sweep leaves it alone —
+tracking a development branch is a choice, not something a routine update
+should make on your behalf. `bump-ghostty` rewrites that one line and stops;
+building it is still a separate, deliberate `sync-nix`.

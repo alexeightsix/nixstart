@@ -26,8 +26,8 @@ in
     # `dnf` was aliased to take a snapper snapshot and then run dnf, because a
     # Fedora package transaction cannot be undone. Both halves are one command
     # here, and its rollback is a boot menu entry.
-    rebuild = "sudo nixos-rebuild switch --flake ${config.home.homeDirectory}/nixstart#$(hostname)";
-    rebuild-test = "sudo nixos-rebuild test --flake ${config.home.homeDirectory}/nixstart#$(hostname)";
+    rebuild = "sudo nixos-rebuild switch --flake ${config.home.homeDirectory}/nixstart";
+    rebuild-test = "sudo nixos-rebuild test --flake ${config.home.homeDirectory}/nixstart";
     generations = "nixos-rebuild list-generations";
 
     # scripts/update-packages.sh ran nine updaters in sequence — dnf, atuin,
@@ -46,7 +46,14 @@ in
     # generation this alias just built and has not yet proven — and a
     # generation that builds is not a generation that boots. 30d matches the
     # policy nix.gc already runs weekly, so this only pulls that sweep forward.
-    sync-laptop = "nix flake update --flake ${config.home.homeDirectory}/nixstart && rebuild && sudo nix-collect-garbage --delete-older-than 30d";
+    sync-nix = "nix flake update --flake ${config.home.homeDirectory}/nixstart && rebuild && sudo nix-collect-garbage --delete-older-than 30d";
+
+    # The one input `nix flake update` cannot move. ghostty is pinned to an
+    # explicit main revision in flake.nix precisely so the lockfile sweep
+    # leaves it alone, which means bumping it is an edit to that line — this
+    # is that edit, not a way around it. It rewrites the pin and stops; the
+    # rebuild is still a separate, deliberate `sync-nix`.
+    bump-ghostty = "rev=$(git ls-remote https://github.com/ghostty-org/ghostty main | cut -f1) && sed -i \"s|github:ghostty-org/ghostty/[0-9a-f]*|github:ghostty-org/ghostty/$rev|\" ${config.home.homeDirectory}/nixstart/flake.nix && echo \"ghostty pinned to $rev — run sync-nix to build it\"";
 
     # `zsh` opened ~/.zshrc and re-sourced it. That file is a store path now,
     # so the thing to edit is the module that generates it.
