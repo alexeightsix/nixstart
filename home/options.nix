@@ -78,20 +78,6 @@ in
         description = "i3, the bar, the compositor, notifications, the terminal.";
       };
 
-      statusBar = mkOption {
-        type = types.enum [
-          "laptop"
-          "desktop"
-        ];
-        default = "desktop";
-        description = ''
-          Which i3status-rust configuration the bar runs.
-          scripts/i3status-select.sh decided this at runtime by looking for
-          /sys/class/power_supply/BAT0. A host knows which it is at build
-          time, so it says so.
-        '';
-      };
-
       ghosttyShader = mkOption {
         type = types.nullOr (
           types.enum [

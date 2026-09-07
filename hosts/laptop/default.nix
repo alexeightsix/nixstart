@@ -58,8 +58,6 @@
     user.email = "alexlatour@gmail.com";
 
     desktop = {
-      # Adds the battery block, with thresholds, and starts batsignal.
-      statusBar = "laptop";
       weather.enable = true;
       weather.location = "Montreal";
 

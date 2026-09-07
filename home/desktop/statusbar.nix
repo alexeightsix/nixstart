@@ -3,8 +3,8 @@
 # scripts/i3status-select.sh chose between i3status.toml and
 # i3status-desktop.toml at runtime by testing for /sys/class/power_supply/BAT0,
 # and exec'd /usr/bin/i3status-rs — a path that does not exist here. The two
-# files differ by one block (battery), so the shared part is expressed once and
-# the host says which variant it is.
+# files differed by one block (battery), so there is one config now and the
+# battery block detects its own absence.
 {
   config,
   lib,
@@ -33,6 +33,11 @@ let
     };
   };
 
+  # One list, unconditionally. The battery block used to be gated on a host
+  # option saying "this is a laptop", which was a build-time guess at a
+  # runtime fact. i3status-rust already answers the question itself: with no
+  # battery device present it renders `missing_format`, and that is empty
+  # here, so the block occupies nothing on a machine that has no battery.
   blocks = [
     {
       block = "cpu";
@@ -41,25 +46,23 @@ let
       critical_cpu = 90;
     }
     { block = "temperature"; }
-  ]
-  ++ lib.optional (cfg.desktop.statusBar == "laptop") {
-    block = "battery";
-    device = "BAT0";
-    # The tracked file had no thresholds at all, so the block never left the
-    # idle colour and the Rose Pine warning/critical entries below it were
-    # unreachable. These are the same numbers batsignal notifies on, so the
-    # bar turning amber and the popup arriving are one event, not two.
-    warning = 25.0;
-    critical = 15.0;
-    info = 60.0;
-    good = 90.0;
-    format = " $icon $percentage {$time_remaining.dur(hms:true, min_unit:m) |}";
-    full_format = " $icon ";
-    # A missing battery is normal on the desktop variant and should not be an
-    # error line in the bar.
-    missing_format = "";
-  }
-  ++ [
+    {
+      block = "battery";
+      device = "BAT0";
+      # The tracked file had no thresholds at all, so the block never left the
+      # idle colour and the Rose Pine warning/critical entries below it were
+      # unreachable. These are the same numbers batsignal notifies on, so the
+      # bar turning amber and the popup arriving are one event, not two.
+      warning = 25.0;
+      critical = 15.0;
+      info = 60.0;
+      good = 90.0;
+      format = " $icon $percentage {$time_remaining.dur(hms:true, min_unit:m) |}";
+      full_format = " $icon ";
+      # The self-detection. No BAT0 means no output rather than an error line
+      # in the bar, which is what makes the host option unnecessary.
+      missing_format = "";
+    }
     {
       block = "memory";
       format = " $icon $mem_total_used_percents.eng(w:2) ";
