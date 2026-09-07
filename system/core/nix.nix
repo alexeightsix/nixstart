@@ -88,11 +88,11 @@
   };
 
   # Logs are the other thing that grows without anyone watching it.
-  services.journald.extraConfig = ''
-    SystemMaxUse=2G
-    SystemMaxFileSize=128M
-    MaxRetentionSec=1month
-  '';
+  services.journald.settings.Journal = {
+    SystemMaxUse = "2G";
+    SystemMaxFileSize = "128M";
+    MaxRetentionSec = "1month";
+  };
 
   boot.tmp.cleanOnBoot = true;
 

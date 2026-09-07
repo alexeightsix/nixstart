@@ -74,7 +74,7 @@
     # is pinned in flake.lock anyway; naming the revision here makes the
     # version visible in the file and means `nix flake update` cannot move it
     # on its own — bumping ghostty is an edit to this line.
-    ghostty.url = "github:ghostty-org/ghostty/5aeb693b7727b0dc6fcc9193bc1d2453af3bcb9a";
+    ghostty.url = "github:ghostty-org/ghostty/82938b633ba646db38591d969c3c526332bd7e65";
 
     # jk: vim-style keyboard scrolling for X11. i3config execs it as
     # $HOME/.local/bin/jk, which is a dynamically linked ELF that was built by
@@ -148,6 +148,19 @@
             # flag — which is why it is here beside the allowlist and not in
             # pkgs/android-sdk.
             android_sdk.accept_license = true;
+
+            # beekeeper-studio 6.0.5 bundles Electron 39.8.1, EOL since March
+            # 2026 and carrying known CVEs; nixpkgs marked it insecure in the
+            # 2026-09-05 bump. It is a database client pointed at hosts this
+            # machine already holds credentials for, so the realistic exposure
+            # is content rendered inside it, not the network. Kept rather than
+            # dropped, with the risk stated. Remove this once nixpkgs ships a
+            # build on a supported Electron.
+            #
+            # It has to live here and not in a module: `nixpkgs.pkgs` is set
+            # from pkgsFor, which makes the module-level `nixpkgs.config`
+            # options inert.
+            permittedInsecurePackages = [ "beekeeper-studio-6.0.5" ];
           };
         };
 
