@@ -99,6 +99,7 @@
     languages = [
       "go"
       "node"
+      "python"
       "rust"
       "lua"
 

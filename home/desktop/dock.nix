@@ -31,31 +31,78 @@ let
   desktop = cfg.desktop;
   dock = desktop.dock;
 
-  # `xrandr --query` prints one line per output; the connected ones say
-  # "connected" and never "disconnected", which is why the match is anchored
-  # on the word with a space in front of it rather than a substring test.
+  # `xrandr --query` prints a header line per output with the connector name
+  # first and the word connected/disconnected second, then one indented line
+  # per available mode. Both facts are needed below, so the parsing is on the
+  # second field rather than a substring match — "disconnected" contains
+  # "connected", and telling them apart by anchoring on a leading space is a
+  # trick that works right up until it does not.
   script = pkgs.writeShellApplication {
     name = "display-dock";
-    runtimeInputs = [ pkgs.xrandr ];
+    runtimeInputs = [
+      pkgs.xrandr
+      pkgs.gawk
+      pkgs.gnugrep
+    ];
     text = ''
       internal=${lib.escapeShellArg dock.internal}
 
-      connected=$(xrandr --query | awk '/ connected/ { print $1 }')
-      external=$(printf '%s\n' "$connected" | grep -vx "$internal" || true)
+      all=$(xrandr --query | awk '$2 ~ /^(dis)?connected$/ { print $1 }')
+
+      # Connected *and* carrying at least one mode. A DisplayPort connector
+      # reports itself connected as soon as the link is up, which can be a
+      # moment before the sink has handed over an EDID; in that window the
+      # output has no modes, --auto cannot bring it up, and treating it as a
+      # working monitor would switch the panel off in favour of a display
+      # that shows nothing. Waiting for modes costs nothing — another drm
+      # event arrives when the EDID lands, and the watcher below re-runs.
+      usable=$(xrandr --query | awk '
+        /^[^ ]/            { out = ($2 == "connected") ? $1 : ""; next }
+        out != ""          { print out; out = "" }
+      ')
+
+      external=$(printf '%s\n' "$usable" | grep -vx "$internal" || true)
+
+      args=()
+
+      # Hand back the CRTC of anything that is no longer usable, before
+      # deciding on the rest.
+      #
+      # An unplugged monitor keeps the mode and position it had until
+      # something explicitly takes them away: xrandr goes on listing it as
+      # "DP-1 disconnected 1920x1080+0+0" with its old modeline attached. i3
+      # then sees two outputs sharing the origin, treats them as clones, and
+      # clamps the panel to the stale geometry — a 1920x1200 screen laid out
+      # as 1920x1080, with the bottom 120px of every window and the bar
+      # falling off the end of it. Turning the panel back on is not enough to
+      # clear that, which is what the undocked branch below used to do and
+      # all it used to do.
+      #
+      # The panel is skipped here because both branches below give it an
+      # explicit state of its own, and naming one output twice in a single
+      # xrandr invocation is ambiguous.
+      for output in $all; do
+        if [ "$output" = "$internal" ]; then
+          continue
+        fi
+        if ! printf '%s\n' "$usable" | grep -qx "$output"; then
+          args+=(--output "$output" --off)
+        fi
+      done
 
       if [ -z "$external" ]; then
         # Undocked. The panel is the only thing left, so it had better be on —
         # this is the branch that recovers from unplugging the last monitor
         # while the panel was off, which otherwise leaves a machine with no
         # enabled output at all and no way to fix it from the GUI.
-        xrandr --output "$internal" --auto --primary
+        args+=(--output "$internal" --auto --primary)
+        xrandr "''${args[@]}"
         exit 0
       fi
 
       # Docked. The first external output is primary; any further ones extend
       # to its right, in the order xrandr lists them.
       last=""
-      args=()
       for output in $external; do
         if [ -z "$last" ]; then
           args+=(--output "$output" --auto --primary)

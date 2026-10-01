@@ -35,6 +35,7 @@
     ./desktop/ghostty.nix
     ./desktop/flameshot.nix
     ./desktop/vicinae.nix
+    ./desktop/network.nix
     ./desktop/dock.nix
 
     ./dev/toolchains.nix

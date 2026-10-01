@@ -181,6 +181,14 @@ in
       bindsym $mod+Shift+s exec --no-startup-id "systemctl suspend"
       bindsym $mod+d exec --no-startup-id "${lib.getExe pkgs.vicinae} toggle"
 
+      # Wifi. nmtui rather than a tray applet: i3bar's tray is XEmbed only and
+      # nixpkgs builds nm-applet with -Dappindicator=yes, so an applet would
+      # need a snixembed shim to appear in a bar that is `mode hide` anyway.
+      # The net block in statusbar.nix is the at-a-glance half of this; $mod+w
+      # is the half that can actually change networks. $mod+d stays the
+      # launcher.
+      bindsym $mod+w exec --no-startup-id ${lib.getExe config.programs.ghostty.package} -e ${lib.getExe' pkgs.networkmanager "nmtui"}
+
       # flameshot: Ctrl+; -> interactive capture
       bindsym Control+semicolon exec --no-startup-id ${lib.getExe pkgs.flameshot} gui
       bindsym F10 exec --no-startup-id ${lib.getExe pkgs.flameshot} gui

@@ -76,14 +76,33 @@ from a TTY if you want it live without rebooting.
 
 ```sh
 update          # move flake.lock, then rebuild
-sync-nix        # the above, plus nix-collect-garbage --delete-older-than 30d
+sync-nix        # update/rebuild, pi update --extensions, then collect generations older than 30d
 bump-ghostty    # move the pinned ghostty revision to current main
 ```
 
-Shell aliases, defined in `home/shell/aliases.nix`.
+Shell aliases, defined in `home/shell/aliases.nix`. `sync-nix` runs
+`pi update --extensions` as the normal user after a successful rebuild and
+before garbage collection. Each step must succeed before the next runs.
+Nix still owns the Pi binary; this extra step updates its user-managed packages.
 
 `nix flake update` moves every input except ghostty, which is pinned to an
 explicit revision in `flake.nix` precisely so the sweep leaves it alone —
 tracking a development branch is a choice, not something a routine update
 should make on your behalf. `bump-ghostty` rewrites that one line and stops;
 building it is still a separate, deliberate `sync-nix`.
+
+## Development toolchains
+
+The laptop enables Python through `nixstart.home.languages` in
+`hosts/laptop/default.nix`. The shared `lib/dev-env.nix` definition installs
+`python3` and `uv`; Python 3 is available on the user PATH after rebuilding.
+
+## Changelog
+
+### 2026-09-10 — Python and Pi package maintenance
+
+**Why:** Python 3 is needed outside a development shell, and updating the Nix
+lockfile does not update Pi's separately installed extension packages.
+
+- **README** — the laptop includes Python 3 and uv; `sync-nix` updates Pi packages
+  after rebuilding and before garbage collection, without self-updating Pi.

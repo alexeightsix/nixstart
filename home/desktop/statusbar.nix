@@ -64,6 +64,32 @@ let
       missing_format = "";
     }
     {
+      block = "net";
+      # The bar is `mode hide`, so this is a pull rather than a push: hold $mod
+      # to see which network you are on, the same way you already read battery
+      # and time. That is also why there is no tray applet — i3bar's tray is
+      # XEmbed only and nixpkgs builds nm-applet with -Dappindicator=yes, so it
+      # would have needed a snixembed shim to render in a bar that is hidden
+      # by default anyway.
+      #
+      # `missing_format` renders text rather than nothing. The battery block
+      # above hides itself because a missing battery is a permanent hardware
+      # fact; "no network" is a transient state, and the whole point of the
+      # block is to show it.
+      #
+      # No `$icon` in `missing_format`: the block leaves the icon unset when
+      # there is no device, and the line then fails as "Failed to render full
+      # text" rather than falling back. Literal text is the only safe form.
+      format = " $icon {$ssid $signal_strength|Wired} ";
+      missing_format = " offline ";
+      click = [
+        {
+          button = "left";
+          cmd = "${lib.getExe config.programs.ghostty.package} -e ${lib.getExe' pkgs.networkmanager "nmtui"}";
+        }
+      ];
+    }
+    {
       block = "memory";
       format = " $icon $mem_total_used_percents.eng(w:2) ";
       format_alt = " $icon_swap $swap_used_percents.eng(w:2) ";

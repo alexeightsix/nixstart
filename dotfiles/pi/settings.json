@@ -6,7 +6,7 @@
   "collapseChangelog": true,
   "enableSkillCommands": true,
   "defaultProvider": "openai-codex",
-  "defaultModel": "gpt-5.6-sol",
+  "defaultModel": "gpt-5.5",
   "defaultThinkingLevel": "high",
   "enabledModels": [
     "openai-codex/gpt-5.6-sol",
@@ -38,5 +38,5 @@
     "npm:pi-mcp-adapter",
     "git:github.com/stnly/pi-grok@v0.10.1"
   ],
-  "lastChangelogVersion": "0.84.3"
+  "lastChangelogVersion": "0.85.1"
 }

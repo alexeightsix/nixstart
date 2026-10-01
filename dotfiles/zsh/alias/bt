@@ -1,0 +1,59 @@
+# Power on Bluetooth, connect the Blue Matrix headphones, and make them the
+# default audio out/in. Drop the alias first so re-sourcing doesn't expand it.
+unalias bt 2>/dev/null
+
+bt() {
+  # Declared once: re-running `local` on a set variable echoes it unless
+  # TYPESET_SILENT is on.
+  local mac=BC:87:FA:BC:1A:4B
+  local node i sink source
+  node=${mac//:/_}
+
+  # Only reach for sudo when the radio or the service is actually down.
+  if [ "$(rfkill list bluetooth -o SOFT -n 2>/dev/null | tr -d ' ')" = blocked ]; then
+    sudo rfkill unblock bluetooth || return 1
+  fi
+  systemctl is-active --quiet bluetooth || sudo systemctl start bluetooth || return 1
+
+  bluetoothctl power on >/dev/null
+
+  # Connect, retrying while the headphones wake up.
+  if ! bluetoothctl info "$mac" 2>/dev/null | grep -q 'Connected: yes'; then
+    for i in 1 2 3 4 5; do
+      bluetoothctl connect "$mac" >/dev/null 2>&1 && break
+      if [ "$i" = 5 ]; then
+        echo "Blue Matrix didn't connect — powered on and out of its case?" >&2
+        return 1
+      fi
+      sleep 2
+    done
+  fi
+
+  # PipeWire publishes the bluez nodes a beat after the audio profile lands.
+  for i in 1 2 3 4 5 6 7 8 9 10; do
+    sink=$(_bt_node "bluez_output.$node")
+    [ -n "$sink" ] && break
+    sleep 1
+  done
+
+  if [ -z "$sink" ]; then
+    echo "Linked, but no audio profile — toggle the headphones off and on" >&2
+    return 1
+  fi
+  wpctl set-default "$sink"
+
+  # The mic node only exists on the HSP/HFP profile; A2DP is output-only.
+  source=$(_bt_node "bluez_input.$node")
+  if [ -n "$source" ]; then
+    wpctl set-default "$source"
+    echo "Blue Matrix connected — default output and input"
+  else
+    echo "Blue Matrix connected — default output (no mic on this profile)"
+  fi
+}
+
+# First PipeWire node id whose node.name starts with $1.
+_bt_node() {
+  pw-dump 2>/dev/null | jq -r --arg p "$1" \
+    'first(.[] | select((.info.props["node.name"] // "") | startswith($p)) | .id) // empty'
+}
