@@ -25,11 +25,8 @@ inputs: final: prev: {
   # whenever Expo moves.
   android-sdk = final.callPackage ./pkgs/android-sdk { };
 
-  # jk builds itself; this only lifts its package into the same namespace as
-  # everything else so modules do not have to reach into `inputs`.
-  jk = inputs.jk.packages.${prev.stdenv.hostPlatform.system}.default;
-
-  # Same for witr, which also builds itself.
+  # witr builds itself; this only lifts its package into the same namespace
+  # as everything else so modules do not have to reach into `inputs`.
   #
   # Its checkPhase does not survive a Linux sandbox, so the tests are off.
   # Both failures are in the harness rather than the program — every

@@ -26,6 +26,24 @@ buildGoModule {
 
   nativeBuildInputs = [ makeWrapper ];
 
+  # The temperature went in the top-right corner of the *image*, and the image
+  # was then handed to `feh --bg-fill`, which with Xinerama scales and crops it
+  # once per screen. On a layout whose screens are not all the same shape that
+  # crop is different on each of them, so a corner that survives on one is cut
+  # off on the next: 1920x1080 on the monitor, cropped 93px either side on the
+  # 1680x1050 panel, which takes most of the number with it.
+  #
+  # The patch moves the decision from "the corner of the image" to "the corner
+  # of each screen": it reads the layout from WALLPAPER_MONITORS as a list of X
+  # geometries, draws the temperature once per screen, and switches feh to
+  # --no-xinerama so the image it is given — already laid out for the whole
+  # root window by home/desktop/wallpaper.nix — is applied as-is rather than
+  # re-cropped. With the variable unset it draws one corner and runs plain
+  # --bg-fill, exactly as before.
+  #
+  # Only the standard library is added, so vendorHash is unaffected.
+  patches = [ ./multi-monitor.patch ];
+
   # loadFont() searches four hardcoded FHS paths — Fedora's, Debian's, Arch's
   # and google-noto's — and `panic`s when it finds none. On NixOS none of them
   # exist, so the program aborted every run, ~/.cache/wallpaper-dynamic.jpg

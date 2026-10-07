@@ -31,6 +31,16 @@ let
   desktop = cfg.desktop;
   dock = desktop.dock;
 
+  # Emitted conditionally rather than unconditionally: writeShellApplication
+  # runs shellcheck, and a row_width assigned on every docked run but read
+  # only by the centring branch trips SC2034, which fails the build.
+  below = dock.keepInternal && dock.internalPosition == "below";
+
+  # The panel's mode, for every branch that turns it on. --auto takes its
+  # preferred mode; internalMode overrides it, which is how the panel gets
+  # driven below native to enlarge text without touching the monitor.
+  internalModeArg = if dock.internalMode == null then "--auto" else "--mode ${dock.internalMode}";
+
   # `xrandr --query` prints a header line per output with the connector name
   # first and the word connected/disconnected second, then one indented line
   # per available mode. Both facts are needed below, so the parsing is on the
@@ -46,6 +56,25 @@ let
     ];
     text = ''
       internal=${lib.escapeShellArg dock.internal}
+      ${lib.optionalString below ''
+        # The mode --auto would pick, as WxH, so the centred placement
+        # further down can do arithmetic on a layout not yet applied.
+        #
+        # The preferred mode is the one xrandr marks with "+", which is
+        # neither always the first listed nor always the current one: this
+        # panel reports "1920x1200  60.00 + 120.00" with the + as a field of
+        # its own, while the monitor reports "1920x1080  144.00*+" with it
+        # welded to the refresh rate. Matching a + anywhere on the line
+        # covers both; a field position, or the first-line shortcut, covers
+        # one of them and quietly picks the wrong mode on the other.
+        preferred_mode() {
+          xrandr --query | awk -v out="$1" '
+            $1 == out        { inblock = 1; next }
+            /^[^ ]/          { inblock = 0 }
+            inblock && /\+/ { print $1; exit }
+          '
+        }
+      ''}
 
       all=$(xrandr --query | awk '$2 ~ /^(dis)?connected$/ { print $1 }')
 
@@ -95,7 +124,7 @@ let
         # this is the branch that recovers from unplugging the last monitor
         # while the panel was off, which otherwise leaves a machine with no
         # enabled output at all and no way to fix it from the GUI.
-        args+=(--output "$internal" --auto --primary)
+        args+=(--output "$internal" ${internalModeArg} --primary)
         xrandr "''${args[@]}"
         exit 0
       fi
@@ -103,6 +132,10 @@ let
       # Docked. The first external output is primary; any further ones extend
       # to its right, in the order xrandr lists them.
       last=""
+      ${lib.optionalString below ''
+        row_width=0
+        row_height=0
+      ''}
       for output in $external; do
         if [ -z "$last" ]; then
           args+=(--output "$output" --auto --primary)
@@ -110,6 +143,16 @@ let
           args+=(--output "$output" --auto --right-of "$last")
         fi
         last="$output"
+      ${lib.optionalString below ''
+        # The row runs left to right from +0+0, so its width is the sum of
+        # the external widths and its lower edge is the tallest of them —
+        # which is exactly where the panel's top edge belongs.
+        mode=$(preferred_mode "$output")
+        row_width=$(( row_width + ''${mode%x*} ))
+        if [ "''${mode#*x}" -gt "$row_height" ]; then
+          row_height=''${mode#*x}
+        fi
+      ''}
       done
 
       # The panel: off, or kept on at the end of the chain it sits next to.
@@ -121,13 +164,35 @@ let
         ''
       }${
         lib.optionalString (dock.keepInternal && dock.internalPosition == "right-of") ''
-          args+=(--output "$internal" --auto --right-of "$last")
+          args+=(--output "$internal" ${internalModeArg} --right-of "$last")
         ''
       }${
         lib.optionalString (dock.keepInternal && dock.internalPosition == "left-of") ''
-          args+=(--output "$internal" --auto --left-of "$(printf '%s\n' "$external" | head -n1)")
+          args+=(--output "$internal" ${internalModeArg} --left-of "$(printf '%s\n' "$external" | head -n1)")
         ''
-      }
+      }${lib.optionalString below ''
+        # Centred under the row rather than left-aligned against it: the
+        # panel's left edge is inset by half the difference in width.
+        # Clamped at zero so a panel wider than the row above it starts at
+        # the origin instead of a negative x, which xrandr rejects.
+        # The width to centre is the one the panel is actually driven at, so
+        # a forced internalMode is read from the config rather than from the
+        # mode the panel would have preferred.
+        int_mode=${
+          if dock.internalMode == null then
+            "$(preferred_mode \"$internal\")"
+          else
+            lib.escapeShellArg dock.internalMode
+        }
+        int_width=''${int_mode%x*}
+
+        x=$(( (row_width - int_width) / 2 ))
+        if [ "$x" -lt 0 ]; then
+          x=0
+        fi
+
+        args+=(--output "$internal" ${internalModeArg} --pos "''${x}x''${row_height}")
+      ''}
 
       xrandr "''${args[@]}"
     '';
@@ -141,7 +206,11 @@ in
     # profile is the starting point and this only has to correct it.
     systemd.user.services.display-dock = {
       Unit = {
-        Description = "Use the external monitor and switch the built-in panel off";
+        Description =
+          if dock.keepInternal then
+            "Use the external monitor and extend onto the built-in panel"
+          else
+            "Use the external monitor and switch the built-in panel off";
         PartOf = [ "graphical-session.target" ];
         After = [
           "graphical-session.target"

@@ -24,7 +24,6 @@
     ./editor/neovim.nix
 
     ./desktop/i3.nix
-    ./desktop/jk.nix
     ./desktop/statusbar.nix
     ./desktop/battery.nix
     ./desktop/display.nix
@@ -37,6 +36,7 @@
     ./desktop/vicinae.nix
     ./desktop/network.nix
     ./desktop/dock.nix
+    ./desktop/bluetooth-headphones.nix
 
     ./dev/toolchains.nix
     ./dev/agents.nix

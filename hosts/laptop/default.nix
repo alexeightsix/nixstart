@@ -65,6 +65,17 @@
       # layout follows what is actually plugged in.
       autorandr = true;
 
+      # One bar, on the monitor while there is one, on the panel when there
+      # is not. With no `output` at all i3 draws a bar on every screen, so
+      # docked there were two of them — the status line duplicated on the
+      # panel below the monitor showing the same clock and the same battery.
+      #
+      # "primary" rather than naming DP-1: `dock` below already marks exactly
+      # one output primary in each of its two branches — the first external
+      # when docked, the panel when undocked — which is precisely the rule
+      # wanted here, and it holds for a monitor this machine has not met.
+      barOutputs = [ "primary" ];
+
       # Laptop only — the desktop drives a single monitor and has no built-in
       # panel to switch off, so it leaves this at its default of false.
       #
@@ -74,13 +85,24 @@
       dock = {
         enable = true;
         internal = "eDP-1"; # `xrandr --query` on this machine
-        # An external display replaces the panel, it does not extend onto it:
-        # whenever one is connected the built-in panel is switched off, and it
-        # comes back only when the last external is unplugged. internalPosition
-        # is therefore unused here — a panel that is off has no position — and
-        # is kept only so turning keepInternal on later lands it correctly.
-        keepInternal = false;
-        internalPosition = "right-of";
+        # An external display extends onto the panel rather than replacing it:
+        # both stay on, the first external is primary at +0+0 and the panel
+        # sits to its right, each at its own native mode — DP-1 keeps 144Hz at
+        # 1920x1080 and the panel keeps 1920x1200, which a mirrored layout
+        # could not do.
+        #
+        # internalPosition is load-bearing now rather than aspirational, and
+        # it describes where the panel physically is, not a preference: the
+        # laptop sits under the monitor on this desk, centred on it, so the
+        # pointer crosses between the two where the screens actually meet.
+        keepInternal = true;
+        internalPosition = "below";
+
+        # Driven below native to enlarge text, and only here: the panel is
+        # 169dpi against the monitor's 81dpi, and `dpi` is Xft.dpi, which is
+        # global — raising it would grow text on the monitor too. 1680x1050
+        # keeps the panel's 16:10, so nothing stretches.
+        internalMode = "1680x1050";
       };
 
       # The 9350 ships with FHD+ (1920x1200), QHD+ (2560x1600) or 2.8K OLED

@@ -76,20 +76,11 @@
     # on its own — bumping ghostty is an edit to this line.
     ghostty.url = "github:ghostty-org/ghostty/82938b633ba646db38591d969c3c526332bd7e65";
 
-    # jk: vim-style keyboard scrolling for X11. i3config execs it as
-    # $HOME/.local/bin/jk, which is a dynamically linked ELF that was built by
-    # hand and would not run on NixOS at all. It ships its own flake, so this
-    # takes the package rather than repackaging it.
-    jk = {
-      url = "github:upbeatdevelopment/jk";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     # witr — "why is this running?": traces a process, port, container or file
     # back to the chain that started it. stage-12 installed it with
     # `curl ... | bash`, which drops a binary into /usr/local/bin outside any
-    # package manager. It ships its own flake, so like jk this takes the
-    # package rather than repackaging it.
+    # package manager. It ships its own flake, so this takes the package
+    # rather than repackaging it.
     witr = {
       url = "github:pranshuparmar/witr";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -243,7 +234,6 @@
             weather-wallpaper
             glow-rose-pine
             witr
-            jk
             ;
         }
       );

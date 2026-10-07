@@ -1,0 +1,134 @@
+--- a/main.go
++++ b/main.go
+@@ -13,6 +13,7 @@
+ 	"os"
+ 	"os/exec"
+ 	"path/filepath"
++	"strings"
+ 	"time"
+ 
+ 	"github.com/golang/freetype"
+@@ -119,6 +120,45 @@
+ 	return nil
+ }
+ 
++// parseMonitors reads WALLPAPER_MONITORS — a comma-separated list of X
++// geometries, "1920x1080+0+0,1680x1050+120+1080" — as the rectangles the
++// screens of a multi-head layout occupy on the image. Unset or empty gives a
++// single rectangle covering the whole image, which is the single-screen case
++// and the behaviour before this existed.
++func parseMonitors(bounds image.Rectangle) ([]image.Rectangle, error) {
++	spec := os.Getenv("WALLPAPER_MONITORS")
++	if spec == "" {
++		return []image.Rectangle{bounds}, nil
++	}
++
++	var rects []image.Rectangle
++	for _, field := range strings.Split(spec, ",") {
++		field = strings.TrimSpace(field)
++		if field == "" {
++			continue
++		}
++
++		var w, h, x, y int
++		if _, err := fmt.Sscanf(field, "%dx%d+%d+%d", &w, &h, &x, &y); err != nil {
++			return nil, fmt.Errorf("cannot parse monitor geometry %q: %v", field, err)
++		}
++
++		// Clipped to the image: a rectangle reaching past the edge would put
++		// the text where DrawString's clip silently drops it, and a corner
++		// nobody can see is worse than a corner in the wrong place.
++		r := image.Rect(x, y, x+w, y+h).Intersect(bounds)
++		if r.Empty() {
++			return nil, fmt.Errorf("monitor %q lies outside the image %v", field, bounds)
++		}
++		rects = append(rects, r)
++	}
++
++	if len(rects) == 0 {
++		return nil, fmt.Errorf("WALLPAPER_MONITORS is set but names no geometries")
++	}
++	return rects, nil
++}
++
+ func createWallpaper(weather string) error {
+ 	log.Println("Creating wallpaper...")
+ 
+@@ -154,8 +194,11 @@
+ 		face := truetype.NewFace(ttfFont, &truetype.Options{Size: fontSize, DPI: 72})
+ 		textWidth := font.MeasureString(face, weather).Ceil()
+ 
+-		x := bounds.Max.X - textWidth - padding
+-		y := padding + int(fontSize)
++		monitors, err := parseMonitors(bounds)
++
++		if err != nil {
++			return err
++		}
+ 
+ 		ctx := freetype.NewContext()
+ 		ctx.SetDPI(72)
+@@ -164,20 +207,29 @@
+ 		ctx.SetClip(bounds)
+ 		ctx.SetDst(img)
+ 
+-		// shadow
+-		ctx.SetSrc(image.NewUniform(color.Black))
+-		_, err := ctx.DrawString(weather, freetype.Pt(x+2, y+2))
+-
+-		if err != nil {
+-			return err
+-		}
+-
+-		// text
+-		ctx.SetSrc(image.NewUniform(color.White))
+-		_, err = ctx.DrawString(weather, freetype.Pt(x, y))
+-
+-		if err != nil {
+-			return err
++		// Once per screen, in the top-right corner of *that screen* rather
++		// than of the image. On one screen the two are the same place; on a
++		// layout where the image spans several, a corner of the image is a
++		// corner of only one of them and every other screen gets no text.
++		for _, m := range monitors {
++			x := m.Max.X - textWidth - padding
++			y := m.Min.Y + padding + int(fontSize)
++
++			// shadow
++			ctx.SetSrc(image.NewUniform(color.Black))
++			_, err = ctx.DrawString(weather, freetype.Pt(x+2, y+2))
++
++			if err != nil {
++				return err
++			}
++
++			// text
++			ctx.SetSrc(image.NewUniform(color.White))
++			_, err = ctx.DrawString(weather, freetype.Pt(x, y))
++
++			if err != nil {
++				return err
++			}
+ 		}
+ 	}
+ 
+@@ -203,7 +255,18 @@
+ 
+ 	log.Println("Setting wallpaper...")
+ 
+-	return exec.Command("feh", "--bg-fill", wallpaperOutput).Run()
++	// --bg-fill scales to cover and crops the overflow, and with Xinerama it
++	// does that once per screen. Handed an image already laid out for the
++	// whole root window, that re-crops every screen's copy of it — which is
++	// what pushed the temperature off the edge of the smaller panel. When the
++	// layout is known the image already fits, so --no-xinerama takes the root
++	// window as the single canvas it is and the image lands 1:1.
++	args := []string{"--bg-fill", wallpaperOutput}
++	if os.Getenv("WALLPAPER_MONITORS") != "" {
++		args = append([]string{"--no-xinerama"}, args...)
++	}
++
++	return exec.Command("feh", args...).Run()
+ }
+ 
+ func main() {

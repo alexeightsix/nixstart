@@ -143,6 +143,33 @@ in
         };
       };
 
+      barOutputs = mkOption {
+        type = types.listOf types.str;
+        default = [ ];
+        example = [ "primary" ];
+        description = ''
+          Outputs i3bar is drawn on, as `bar { output ... }` names. The empty
+          default is i3's own default of every output at once.
+
+          i3 gives two of these names a special meaning — "primary" and
+          "nonprimary", resolved against the X primary output rather than
+          against a connector. That is what makes `[ "primary" ]` mean "the
+          external monitor while one is connected, the built-in panel when it
+          is not" on a machine whose layout comes from `dock` below: both of
+          its branches mark exactly one output primary, the first external one
+          when docked and the panel when not. i3bar re-reads the primary flag
+          when the outputs change, so the bar moves on its own at the dock
+          rather than at the next reload.
+
+          Naming connectors instead ([ "DP-1" "HDMI-1" ]) pins the bar to
+          specific displays; an output that is not connected simply has no
+          bar. Note the dependency on something setting a primary at all — on
+          a machine with `dock.enable = false` and no `xrandr --primary` in
+          `monitors` below, "primary" can match nothing and leave no bar
+          anywhere.
+        '';
+      };
+
       monitors = mkOption {
         type = types.lines;
         default = "";
@@ -220,12 +247,51 @@ in
           type = types.enum [
             "left-of"
             "right-of"
+            "below"
           ];
           default = "right-of";
           description = ''
-            Which side of the external monitor the built-in panel sits on
-            physically. Only consulted when `keepInternal` is true — when the
+            Where the built-in panel sits physically relative to the external
+            monitor. Only consulted when `keepInternal` is true — when the
             panel is off, it has no position.
+
+            `left-of` and `right-of` hand the placement to xrandr's own
+            relative flags, which butt the panel against the end of the
+            external row.
+
+            `below` is the laptop-under-the-monitor desk layout, and it is
+            centred rather than left-aligned. xrandr has no notion of
+            centring and its `--below` aligns the left edges, so this one is
+            computed from the preferred modes and applied as an explicit
+            `--pos` — see home/desktop/dock.nix. With a panel and a monitor
+            of equal width the two are indistinguishable; they diverge as
+            soon as the monitor is wider, which is the common case.
+          '';
+        };
+
+        internalMode = mkOption {
+          type = types.nullOr types.str;
+          default = null;
+          example = "1680x1050";
+          description = ''
+            Force a mode on the built-in panel instead of letting `--auto`
+            take its preferred one. `xrandr --query` lists what the panel
+            will accept, and an unlisted mode makes the xrandr call fail.
+
+            This is the per-output half of "the text is too small", and it
+            exists because the other half cannot be done per-output: `dpi`
+            below sets `Xft.dpi`, which is one global X resource, so raising
+            it enlarges text on every screen rather than on the panel. A
+            169dpi panel next to an 81dpi monitor has no single right value,
+            and lowering the panel's mode trades a little sharpness for a
+            change that stops at the panel.
+
+            Pick a mode with the panel's own aspect ratio — 1920x1200 is
+            16:10, so 1680x1050 and 1280x800 are, and 1440x810 is not.
+            A mismatched one letterboxes or stretches.
+
+            null leaves `--auto` alone, which is right for a panel being
+            driven at its native resolution.
           '';
         };
       };

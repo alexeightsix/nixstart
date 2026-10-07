@@ -29,6 +29,15 @@ let
   statusCommand = "${lib.getExe pkgs.i3status-rust} ${
     config.xdg.configFile."i3status-rust/config.toml".source
   }";
+
+  # The `bar { output ... }` lines, or nothing at all — which is i3's own
+  # default of a bar on every screen. See desktop.barOutputs for what the
+  # names mean; "primary" is the one that follows the dock.
+  #
+  # Each line carries the four spaces the generated file wants. The indented
+  # string below strips the common prefix from its own literal lines, but an
+  # interpolation's content lands verbatim and has to indent itself.
+  barOutputs = lib.concatMapStrings (o: "output ${o}\n    ") desktop.barOutputs;
 in
 {
   config = lib.mkIf desktop.enable {
@@ -53,9 +62,6 @@ in
 
       # vicinae is a systemd user unit now (modules/nixos/desktop/i3.nix), not
       # a `systemctl --user start` from the window manager.
-
-      # jk (keyboard scroll mode) and vicinae are systemd user units now, not
-      # exec lines — see home/desktop/jk.nix and system/desktop/i3.nix.
 
       set $refresh_i3status killall -SIGUSR1 i3status
       bindsym XF86AudioRaiseVolume exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-sink-volume @DEFAULT_SINK@ +10% && $refresh_i3status
@@ -152,9 +158,15 @@ in
       ${builtins.readFile ./i3-colors.conf}
 
       bar {
-          mode hide
-          hidden_state hide
-          modifier $mod
+          # `dock`, not `hide`. The bar used to exist only while $mod was
+          # held — `mode hide` with `hidden_state hide` — which on a screen
+          # you are not holding a key on is indistinguishable from no bar at
+          # all. Dock keeps it on screen and reserves the 21px it occupies,
+          # so nothing is laid out underneath it.
+          #
+          # `modifier` and `hidden_state` are gone with it: both only mean
+          # anything to a bar that hides, and i3 ignores them here.
+          ${barOutputs}mode dock
           padding 0 0 0 0
           bindsym button1 nop
           bindsym button4 nop
@@ -183,23 +195,27 @@ in
 
       # Wifi. nmtui rather than a tray applet: i3bar's tray is XEmbed only and
       # nixpkgs builds nm-applet with -Dappindicator=yes, so an applet would
-      # need a snixembed shim to appear in a bar that is `mode hide` anyway.
+      # need a snixembed shim to render in the bar at all. That argument used
+      # to carry "in a bar that is hidden by default anyway" as a second half;
+      # the bar docks now, so the XEmbed half is the whole of it.
       # The net block in statusbar.nix is the at-a-glance half of this; $mod+w
       # is the half that can actually change networks. $mod+d stays the
       # launcher.
       bindsym $mod+w exec --no-startup-id ${lib.getExe config.programs.ghostty.package} -e ${lib.getExe' pkgs.networkmanager "nmtui"}
 
-      # flameshot: Ctrl+; -> interactive capture
-      bindsym Control+semicolon exec --no-startup-id ${lib.getExe pkgs.flameshot} gui
+      # flameshot. Two keys, two scopes, and the difference only started
+      # mattering once the built-in panel was switched on: `gui` overlays the
+      # whole X root window, which is now 1920x2130 spanning both stacked
+      # screens, including the two 120x1050 bands beside the narrower panel
+      # that no monitor displays. That is a capture canvas, not a screen.
+      #
+      # `screen -e` confines the same interactive selector to the monitor
+      # holding the cursor — the default when -n is not given — so it follows
+      # whichever screen the work is on. Ctrl+; is the common case and gets
+      # that; F10 keeps the everything-at-once grab for a capture that really
+      # does span both.
+      bindsym Control+semicolon exec --no-startup-id ${lib.getExe pkgs.flameshot} screen -e
       bindsym F10 exec --no-startup-id ${lib.getExe pkgs.flameshot} gui
-
-      # jk scroll mode, by key as well as by Esc Esc. jk is a daemon that
-      # grabs the keyboard itself, so this is not "run jk" — it is the SIGUSR1
-      # toggle jk documents, sent to the instance the user unit is already
-      # running. Esc Esc keeps working; this is a second way in, and unlike
-      # Esc Esc it fires in any focused window rather than only the classes
-      # jk is opted into.
-      bindsym Control+k exec --no-startup-id ${pkgs.procps}/bin/pkill -USR1 -x jk
     '';
   };
 }

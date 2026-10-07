@@ -165,26 +165,6 @@
         "type": "github"
       }
     },
-    "jk": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1786053329,
-        "narHash": "sha256-7Hqmyaj0gvbHfQz48GiE6pvJt/fxkNknzv4oiZuBYfA=",
-        "owner": "upbeatdevelopment",
-        "repo": "jk",
-        "rev": "a255e8372f35cbd2217150078822d28b63ec9156",
-        "type": "github"
-      },
-      "original": {
-        "owner": "upbeatdevelopment",
-        "repo": "jk",
-        "type": "github"
-      }
-    },
     "nix-flatpak": {
       "locked": {
         "lastModified": 1783368811,
@@ -365,7 +345,6 @@
         "ghostty": "ghostty",
         "glow-rose-pine": "glow-rose-pine",
         "home-manager": "home-manager_2",
-        "jk": "jk",
         "nix-flatpak": "nix-flatpak",
         "nixpkgs": "nixpkgs_3",
         "rose-pine-gtk-theme": "rose-pine-gtk-theme",
