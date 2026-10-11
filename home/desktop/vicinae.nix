@@ -33,7 +33,16 @@ let
         numberOfResults = "50";
       };
       applications.preferences.defaultAction = "launch";
+      # /etc/profiles/per-user is the one that matters and the one that was
+      # missing. `home-manager.useUserPackages` puts home.packages there
+      # rather than in ~/.nix-profile, so every application installed by a
+      # home module — ghostty, neovim, and now the bt entry — lives under it,
+      # while ~/.nix-profile/share/applications does not exist on this
+      # machine at all. It stays in the list anyway: it is where the same
+      # packages land with useUserPackages off, and a path that is not there
+      # costs nothing.
       applications.preferences.paths = [
+        "/etc/profiles/per-user/${cfg.user.name}/share/applications"
         "${config.home.homeDirectory}/.nix-profile/share/applications"
         "${config.home.homeDirectory}/.local/share/applications"
         "/run/current-system/sw/share/applications"

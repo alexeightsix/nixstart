@@ -65,15 +65,27 @@
       # layout follows what is actually plugged in.
       autorandr = true;
 
-      # One bar, on the monitor while there is one, on the panel when there
-      # is not. With no `output` at all i3 draws a bar on every screen, so
-      # docked there were two of them — the status line duplicated on the
-      # panel below the monitor showing the same clock and the same battery.
+      # One keypress moves both screens. $mod+1 puts the monitor on workspace
+      # 1 and the panel on its half of the pair, which the bar renders as 1
+      # too — rather than i3's default, where $mod+1 jumps focus to whichever
+      # screen already holds workspace 1 and leaves the other one alone.
+      pairedWorkspaces = true;
+
+      # One bar, on the monitor while one is connected and on the panel when
+      # it is not. i3 resolves "primary" against the X primary flag, and
+      # `dock` below marks exactly one output primary in each of its two
+      # branches, so this follows the dock without naming a connector.
       #
-      # "primary" rather than naming DP-1: `dock` below already marks exactly
-      # one output primary in each of its two branches — the first external
-      # when docked, the panel when undocked — which is precisely the rule
-      # wanted here, and it holds for a monitor this machine has not met.
+      # This went the other way for a while — `[ ]`, a bar on every screen —
+      # on the argument that a second bar only duplicates the status line
+      # while its workspace buttons are per-output and worth keeping. That
+      # reasoning still holds and is the cost of this setting: with the bar
+      # gone from the panel there is nothing on the panel itself saying which
+      # workspace it is showing, which `pairedWorkspaces` above makes more
+      # noticeable rather than less. Asked for anyway — a clock, a battery
+      # and a temperature repeated six inches below themselves is the louder
+      # annoyance of the two. `barOutputs` is still there to go back — see
+      # home/options.nix.
       barOutputs = [ "primary" ];
 
       # Laptop only — the desktop drives a single monitor and has no built-in

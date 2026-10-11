@@ -124,7 +124,16 @@ let
         # this is the branch that recovers from unplugging the last monitor
         # while the panel was off, which otherwise leaves a machine with no
         # enabled output at all and no way to fix it from the GUI.
-        args+=(--output "$internal" ${internalModeArg} --primary)
+        #
+        # --pos, because an output keeps the position it was last given and
+        # the docked branch below hands this one a y of row_height. Switching
+        # the monitor off without moving the panel back leaves it at +0+1080
+        # as the only enabled CRTC, and the screen is the bounding box of
+        # those: 1680x2130, with 1080px of nothing above the only thing you
+        # can see. i3 lays out against the CRTC so windows look right, which
+        # is what makes it easy to miss — what gives it away is `flameshot
+        # gui` grabbing a canvas twice the height of the screen.
+        args+=(--output "$internal" ${internalModeArg} --primary --pos 0x0)
         xrandr "''${args[@]}"
         exit 0
       fi
@@ -138,7 +147,19 @@ let
       ''}
       for output in $external; do
         if [ -z "$last" ]; then
-          args+=(--output "$output" --auto --primary)
+          # --pos 0x0 anchors the row. Everything downstream of here is
+          # absolute: --right-of chains off this output, and the panel's
+          # placement below is computed as `(row_width - int_width) / 2`,
+          # which is an offset from the origin and is only the centre of the
+          # row if the row actually starts there. Nothing made that true —
+          # the first external was brought up with --auto and no position at
+          # all, so it kept whatever coordinates it was last left at, and the
+          # panel was then centred under a row that was somewhere else
+          # entirely. Docked, that showed up as the pointer refusing to cross
+          # downwards: DP-1 sitting at +1440+0 over a panel at +0+1080 share
+          # a 240px strip of x, and the mouse only passes between two screens
+          # where their edges actually touch.
+          args+=(--output "$output" --auto --primary --pos 0x0)
         else
           args+=(--output "$output" --auto --right-of "$last")
         fi

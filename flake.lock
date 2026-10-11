@@ -6,11 +6,11 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1789030008,
-        "narHash": "sha256-6jYb1IXBQt5dHNUWNVgLkdeiK5+B0qMfGZu2jVyaD6k=",
+        "lastModified": 1791404924,
+        "narHash": "sha256-E0sxhEyNncDbu1Qmpcc1RWvAqCCypkwfO1G9XSOuaOs=",
         "owner": "kissgyorgy",
         "repo": "coding-agents",
-        "rev": "6144ff7b09cba0ec15e9adbad54aca4e94a9cad9",
+        "rev": "7986eb4ac92c5db2dabd677246100901604980e0",
         "type": "github"
       },
       "original": {

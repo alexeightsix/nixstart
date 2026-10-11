@@ -143,6 +143,37 @@ in
         };
       };
 
+      pairedWorkspaces = mkOption {
+        type = types.bool;
+        default = false;
+        description = ''
+          Switch every screen at once. $mod+N puts the primary output on
+          workspace N and the screen after it on N + 10, so one keypress moves
+          both rather than leaving each screen on an unrelated workspace and
+          the keypress merely jumping focus to whichever screen already held N.
+
+          i3 has no workspace that spans two outputs — a workspace belongs to
+          exactly one — so this is a *pair* of workspaces driven together, not
+          one workspace on two screens. Each screen keeps its own windows.
+
+          The second screen's workspaces are named "11:1" through "20:10", so
+          i3 sees ten distinct names while the bar, which already strips the
+          "N:" prefix (`strip_workspace_numbers`), renders them as 1 through
+          10. Both screens therefore show the same number for the same
+          keypress, which is the point: the pair is one workspace as far as
+          the eye and the hand are concerned.
+
+          Assignment is to `primary`/`nonprimary` rather than to connector
+          names, so it follows the dock onto a monitor this machine has never
+          seen. Undocked there is only the panel, it is primary, and $mod+N is
+          an ordinary single-screen switch.
+
+          $mod+Shift+N follows the same rule: the window goes to the pair's
+          half belonging to the screen you are on, rather than always to the
+          primary's.
+        '';
+      };
+
       barOutputs = mkOption {
         type = types.listOf types.str;
         default = [ ];
