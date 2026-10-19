@@ -78,6 +78,20 @@ in
         description = "i3, the bar, the compositor, notifications, the terminal.";
       };
 
+      hibernateAfter = mkOption {
+        type = types.nullOr types.ints.positive;
+        default = 30;
+        description = ''
+          Minutes of X idle time before the machine hibernates, implemented by
+          home/desktop/idle.nix. The lock that happens first is X's own
+          screensaver timer driving xss-lock, and is separate from this.
+
+          null leaves the session awake indefinitely, which is what it did
+          before: locked, but running until the battery hit upower's action
+          threshold.
+        '';
+      };
+
       ghosttyShader = mkOption {
         type = types.nullOr (
           types.enum [
@@ -172,6 +186,83 @@ in
           half belonging to the screen you are on, rather than always to the
           primary's.
         '';
+      };
+
+      # Agent mode: the terminal stays on the laptop panel.
+      #
+      # home/desktop/agent-mode.nix is the whole of it, including why this is
+      # a running mode with a keybinding rather than a setting that is simply
+      # on. Nothing here is consulted unless `enable` is true.
+      agentMode = {
+        enable = mkOption {
+          type = types.bool;
+          default = false;
+          description = ''
+            Build the mode and bind $mod+Shift+a to it. The mode itself is
+            off at every login — the state is a file in XDG_RUNTIME_DIR, so
+            it does not survive the session — and the keybinding is what
+            turns it on while an agent is working.
+
+            While it is on, every workspace switch puts the terminal back on
+            the built-in panel: the agent stays visible underneath whatever
+            the monitor is showing, instead of disappearing with the panel's
+            half of the workspace pair. Off, nothing watches and a workspace
+            switch does exactly what it did before.
+
+            Depends on something having turned the panel on while docked —
+            `dock.keepInternal` — since a pin to an output that is switched
+            off has nowhere to land and quietly does nothing.
+          '';
+        };
+
+        output = mkOption {
+          type = types.nullOr types.str;
+          default = null;
+          example = "eDP-1";
+          description = ''
+            The screen the terminal is pinned to. null means `dock.internal`,
+            which is the built-in panel and is the answer on a laptop; naming
+            a connector here is for a machine that wants some other screen to
+            be the one the agent lives on.
+          '';
+        };
+
+        terminalClass = mkOption {
+          type = types.str;
+          default = "com.mitchellh.ghostty";
+          description = ''
+            WM_CLASS of the terminal to pin, as `xprop WM_CLASS` reports it.
+            Ghostty's is its app id rather than anything resembling its name.
+
+            Only one window is ever moved. With several terminals open it is
+            the oldest — lowest X window id, which is creation order — on the
+            reasoning that the agent was started before the terminals opened
+            to look at what it is doing.
+          '';
+        };
+
+        exempt = mkOption {
+          type = types.listOf types.int;
+          default = [ 10 ];
+          description = ''
+            Workspaces the mode leaves alone, as the number on the key —
+            $mod+0 is workspace 10, which is the default here. Switching to
+            one of these keeps both screens as they are and does not pull the
+            terminal across, so there is somewhere to go when the thing being
+            looked at wants the whole desk.
+
+            Matched on the number rather than the name, so the paired
+            workspaces "10" and "20:10" are one entry and not two.
+          '';
+        };
+      };
+
+      # Set by home/desktop/agent-mode.nix, read by home/desktop/i3.nix: the
+      # toggle on PATH, or "" when the mode is not built. Internal.
+      _agentModeToggle = mkOption {
+        type = types.str;
+        internal = true;
+        default = "";
       };
 
       barOutputs = mkOption {

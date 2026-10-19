@@ -88,6 +88,18 @@
       # home/options.nix.
       barOutputs = [ "primary" ];
 
+      # The agent terminal lives on the panel.
+      #
+      # This machine runs coding agents (`agents = true` below) and the
+      # supervising is done on the monitor, so the terminal belongs on the
+      # screen underneath it and should stay there when the workspace
+      # changes. $mod+Shift+a turns it on for as long as that is true; it is
+      # off at every login. See home/desktop/agent-mode.nix.
+      #
+      # $mod+0 — workspace 10 — is left out of it, so there is still a pair
+      # where both screens are whatever you put on them.
+      agentMode.enable = true;
+
       # Laptop only — the desktop drives a single monitor and has no built-in
       # panel to switch off, so it leaves this at its default of false.
       #

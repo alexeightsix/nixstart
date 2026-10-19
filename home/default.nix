@@ -26,6 +26,7 @@
     ./desktop/i3.nix
     ./desktop/statusbar.nix
     ./desktop/battery.nix
+    ./desktop/idle.nix
     ./desktop/display.nix
     ./desktop/gtk.nix
     ./desktop/wallpaper.nix
@@ -36,7 +37,10 @@
     ./desktop/vicinae.nix
     ./desktop/network.nix
     ./desktop/dock.nix
+    ./desktop/agent-mode.nix
     ./desktop/bluetooth-headphones.nix
+    ./desktop/laptop-speakers.nix
+    ./desktop/jbl-speaker.nix
 
     ./dev/toolchains.nix
     ./dev/agents.nix

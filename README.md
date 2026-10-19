@@ -72,6 +72,28 @@ scripts/apply.sh test       # apply live, leave the boot menu alone
 display-manager, which kills X and the terminal you ran it from. Use `switch`
 from a TTY if you want it live without rebooting.
 
+```sh
+agent-apply                 # what a coding agent runs instead: switch, in tmux
+```
+
+`agent-apply` is `apply.sh switch` with the two things an agent cannot do
+without. It runs the rebuild in a detached tmux session, so activation
+restarting display-manager does not kill the rebuild along with the terminal
+the agent started it from; and it depends on the NOPASSWD rule in
+`system/core/users.nix`, because `sudo` in an agent's shell has no terminal to
+read a password from. It refuses with an explanation rather than hanging if
+that rule is not on the running generation yet — run `scripts/apply.sh switch`
+once by hand to install it.
+
+## Agent mode
+
+`$mod+Shift+a` pins the terminal to the laptop panel: while it is on, every
+workspace switch puts the first Ghostty window back on the built-in screen, so
+an agent stays in view under whatever the monitor is showing. `$mod+0` is
+exempt — that pair keeps both screens as they are. The mode is off at every
+login. See `home/desktop/agent-mode.nix`, and
+`nixstart.home.desktop.agentMode` in `home/options.nix`.
+
 ## Updating
 
 ```sh

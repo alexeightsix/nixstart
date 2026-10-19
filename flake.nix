@@ -140,7 +140,7 @@
             # pkgs/android-sdk.
             android_sdk.accept_license = true;
 
-            # beekeeper-studio 6.0.5 bundles Electron 39.8.1, EOL since March
+            # beekeeper-studio 6.1.4 bundles Electron 39.8.10, EOL since March
             # 2026 and carrying known CVEs; nixpkgs marked it insecure in the
             # 2026-09-05 bump. It is a database client pointed at hosts this
             # machine already holds credentials for, so the realistic exposure
@@ -151,7 +151,7 @@
             # It has to live here and not in a module: `nixpkgs.pkgs` is set
             # from pkgsFor, which makes the module-level `nixpkgs.config`
             # options inert.
-            permittedInsecurePackages = [ "beekeeper-studio-6.0.5" ];
+            permittedInsecurePackages = [ "beekeeper-studio-6.1.4" ];
           };
         };
 

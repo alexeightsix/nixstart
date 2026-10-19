@@ -1,0 +1,162 @@
+--- a/main.go
++++ b/main.go
+@@ -7,12 +7,14 @@
+ 	"image/color"
+ 	"image/draw"
+ 	"image/jpeg"
++	_ "image/png"
+ 	"log"
+ 	"net/http"
+ 	"net/url"
+ 	"os"
+ 	"os/exec"
+ 	"path/filepath"
++	"strconv"
+ 	"strings"
+ 	"time"
+ 
+@@ -60,6 +62,10 @@
+ 	}
+ 	defer geoResp.Body.Close()
+ 
++	if geoResp.StatusCode != http.StatusOK {
++		return "", fmt.Errorf("geocoding request failed: HTTP %s", geoResp.Status)
++	}
++
+ 	var geoData struct {
+ 		Results []struct {
+ 			Latitude  float64 `json:"latitude"`
+@@ -83,6 +89,17 @@
+ 	}
+ 	defer weatherResp.Body.Close()
+ 
++	// client.Get only errors on transport failures, so without this a 4xx or
++	// 5xx falls through to the decode below. Open-Meteo reports errors as
++	// perfectly well-formed JSON — {"error":true,"reason":"..."} — which
++	// decodes into weatherData without complaint because no field matches,
++	// leaving the zero value: 0.0 degrees and an empty unit. The wallpaper
++	// then reads "0", which is not obviously wrong anywhere that 0 degrees is
++	// a plausible temperature. Rate limiting is the likely way in.
++	if weatherResp.StatusCode != http.StatusOK {
++		return "", fmt.Errorf("weather request failed: HTTP %s", weatherResp.Status)
++	}
++
+ 	var weatherData struct {
+ 		Current struct {
+ 			Temperature float64 `json:"temperature_2m"`
+@@ -95,6 +112,14 @@
+ 		return "", fmt.Errorf("weather parse failed: %v", err)
+ 	}
+ 
++	// Belt and braces for the same failure: a response that is 200 but carries
++	// no temperature leaves the same zero value behind, and the missing unit
++	// is what gives it away. Better no redraw — the previous image stays up —
++	// than a confident wrong number.
++	if weatherData.CurrentUnits.Temperature == "" {
++		return "", fmt.Errorf("forecast carried no temperature unit; refusing to render %.0f as a temperature", weatherData.Current.Temperature)
++	}
++
+ 	return fmt.Sprintf("%.0f%s", weatherData.Current.Temperature, weatherData.CurrentUnits.Temperature), nil
+ }
+ 
+@@ -159,6 +184,55 @@
+ 	return rects, nil
+ }
+ 
++// parseColor reads an "#RRGGBB" or "#RGB" hex colour, with or without the
++// leading "#", and accepts "white" and "black" for the two this has always
++// used. Anything unparseable is an error rather than a silent fallback: a
++// temperature drawn in a colour nobody asked for is the bug this exists to
++// fix, and doing it quietly would just move it.
++func parseColor(spec string) (color.Color, error) {
++	switch strings.ToLower(strings.TrimSpace(spec)) {
++	case "white":
++		return color.White, nil
++	case "black":
++		return color.Black, nil
++	}
++
++	hex := strings.TrimPrefix(strings.TrimSpace(spec), "#")
++	if len(hex) == 3 {
++		// "#f0a" is "#ff00aa": each digit stands for both nibbles.
++		hex = string([]byte{hex[0], hex[0], hex[1], hex[1], hex[2], hex[2]})
++	}
++	if len(hex) != 6 {
++		return nil, fmt.Errorf("cannot parse colour %q: want #RRGGBB, #RGB, white or black", spec)
++	}
++
++	v, err := strconv.ParseUint(hex, 16, 32)
++	if err != nil {
++		return nil, fmt.Errorf("cannot parse colour %q: %v", spec, err)
++	}
++	return color.RGBA{R: uint8(v >> 16), G: uint8(v >> 8), B: uint8(v), A: 0xff}, nil
++}
++
++// textColors resolves the colour the temperature is drawn in and the colour of
++// the shadow behind it. The defaults are what this drew before they were
++// configurable, so an unset environment is unchanged.
++//
++// They need to be configurable because the legible pair depends on the base
++// image: white-on-black carries a dark sky and vanishes against a pale one,
++// and wallpapers/ holds both. Nothing here knows what the image looks like, so
++// the choice belongs to whoever picked it.
++func textColors() (fg, shadow color.Color, err error) {
++	fg, err = parseColor(envOr("WALLPAPER_TEXT_COLOR", "white"))
++	if err != nil {
++		return nil, nil, err
++	}
++	shadow, err = parseColor(envOr("WALLPAPER_SHADOW_COLOR", "black"))
++	if err != nil {
++		return nil, nil, err
++	}
++	return fg, shadow, nil
++}
++
+ func createWallpaper(weather string) error {
+ 	log.Println("Creating wallpaper...")
+ 
+@@ -172,7 +246,12 @@
+ 
+ 	log.Println("Loading image...")
+ 
+-	srcImg, err := jpeg.Decode(f)
++	// image.Decode rather than jpeg.Decode: wallpapers/ holds .png as well as
++	// .jpg, and the wrapper in home/desktop/wallpaper.nix only happens to hand
++	// this a JPEG because it runs the base through `magick` on every path. That
++	// is a coupling nothing states, and it fails as "missing SOI marker" —
++	// which does not say "wrong format" to anyone reading the journal.
++	srcImg, _, err := image.Decode(f)
+ 
+ 	if err != nil {
+ 		return err
+@@ -200,6 +279,12 @@
+ 			return err
+ 		}
+ 
++		fg, shadow, err := textColors()
++
++		if err != nil {
++			return err
++		}
++
+ 		ctx := freetype.NewContext()
+ 		ctx.SetDPI(72)
+ 		ctx.SetFont(ttfFont)
+@@ -216,7 +301,7 @@
+ 			y := m.Min.Y + padding + int(fontSize)
+ 
+ 			// shadow
+-			ctx.SetSrc(image.NewUniform(color.Black))
++			ctx.SetSrc(image.NewUniform(shadow))
+ 			_, err = ctx.DrawString(weather, freetype.Pt(x+2, y+2))
+ 
+ 			if err != nil {
+@@ -224,7 +309,7 @@
+ 			}
+ 
+ 			// text
+-			ctx.SetSrc(image.NewUniform(color.White))
++			ctx.SetSrc(image.NewUniform(fg))
+ 			_, err = ctx.DrawString(weather, freetype.Pt(x, y))
+ 
+ 			if err != nil {

@@ -97,5 +97,47 @@ in
     # the stages that ran as root. Nothing here writes into a home directory as
     # root, so there is nothing to repair.
     security.sudo.wheelNeedsPassword = true;
+
+    # Except for the rebuild itself.
+    #
+    # A coding agent working in this repository can edit the configuration
+    # but could not apply it: `sudo nixos-rebuild` has no terminal to read a
+    # password from, so it either hangs on the prompt or fails, and every
+    # change had to be carried by hand to a shell the agent was not in. That
+    # made the agent's work unverifiable — it could not see whether what it
+    # wrote evaluates, let alone whether it boots.
+    #
+    # Be clear about what this gives away: it is root. nixos-rebuild builds
+    # and activates a configuration from a flake this user owns and can
+    # write, so anything that can run it without a password can run arbitrary
+    # code as root by first editing the configuration. The rule does not
+    # narrow the privilege, only the number of keystrokes between the user
+    # and it — which, on a single-user laptop whose disk is encrypted and
+    # whose login password is the real boundary, is a trade worth making and
+    # should not be copied onto a machine where it is not.
+    #
+    # Named by /run/current-system/sw/bin rather than by store path: sudoers
+    # matches the command as resolved from PATH, and a store path would stop
+    # matching at the next generation — which is to say, immediately after
+    # the first rebuild this rule allowed.
+    security.sudo.extraRules = [
+      {
+        users = [ cfg.user.name ];
+        commands = [
+          {
+            command = "/run/current-system/sw/bin/nixos-rebuild";
+            options = [ "NOPASSWD" ];
+          }
+          # scripts/apply.sh starts this first when a failed activation has
+          # left the daemon down, and a password prompt there would block
+          # the rebuild before it began. Spelled out with its argument, so
+          # it permits this one unit and not `systemctl start` in general.
+          {
+            command = "/run/current-system/sw/bin/systemctl start nix-daemon.socket";
+            options = [ "NOPASSWD" ];
+          }
+        ];
+      }
+    ];
   };
 }

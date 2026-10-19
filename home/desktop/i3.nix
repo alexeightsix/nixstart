@@ -416,6 +416,15 @@ in
           }
       }
 
+      # Agent mode, from home/desktop/agent-mode.nix: the terminal stays on
+      # the laptop panel through every workspace switch for as long as it is
+      # on. Empty unless the mode is built — $mod+Shift+a is otherwise free
+      # and stays that way rather than being bound to a script that does not
+      # exist.
+      ${lib.optionalString (desktop._agentModeToggle != "")
+        "bindsym $mod+Shift+a exec --no-startup-id ${desktop._agentModeToggle}"
+      }
+
       bindsym $mod+Shift+s exec --no-startup-id "systemctl suspend"
       bindsym $mod+d exec --no-startup-id "${lib.getExe pkgs.vicinae} toggle"
 

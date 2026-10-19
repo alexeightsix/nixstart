@@ -55,7 +55,51 @@ in
 
     # Lunar Lake has no S3; suspend is s2idle (modern standby). Saying so
     # avoids the kernel picking a state the firmware does not implement.
-    systemd.sleep.settings.Sleep.SuspendState = "freeze";
+    #
+    # Hibernate is a separate path — S4 through /sys/power/disk — and the
+    # finding side of it is sound: swap is the 36.3G nvme0n1p2 against 30GiB
+    # of RAM, and the scripted initrd finds the image by scanning swapDevices
+    # for a swsuspend signature, so neither `resume=` nor boot.resumeDevice is
+    # needed. It is what criticalPowerAction below and home/desktop/idle.nix
+    # both use.
+    #
+    # HibernateMode is the half that needed fixing. The kernel default is
+    # `platform`, which asks ACPI to enter S4 properly and, on the way, runs
+    # every driver's .poweroff callback. btintel_pcie — the Bluetooth side of
+    # the BE201 — returns -EBUSY from that callback on this machine, and the
+    # kernel reads a failure there as a wakeup event:
+    #
+    #   PM: Image saving done
+    #   btintel_pcie 0000:00:14.7: PM: pci_pm_poweroff():
+    #       btintel_pcie_hibernate [btintel_pcie] returns -16
+    #   PM: hibernation: Wakeup event detected during hibernation,
+    #       rolling back.
+    #
+    # The image is already written at that point, so the kernel discards the
+    # swsuspend signature and resumes in place. It hit roughly a third of
+    # hibernations (2, 3 and 2 times in the three boots after idle-hibernate
+    # was turned on) and left the controller wedged each time — "Intel Soft
+    # Reset failed (-62)", then the adapter reappearing as a new hciN.
+    #
+    # `shutdown` writes the image and then powers the machine off directly,
+    # which skips hibernation_platform_enter and therefore skips the poweroff
+    # callbacks that btintel_pcie is failing. Resume is unchanged: the
+    # bootloader comes up and the initrd finds the image exactly as before.
+    # What is given up is firmware-level S4 — the machine looks cleanly
+    # powered off, so RTC and wake-on-LAN cannot bring it back and the power
+    # button is the only way in. On a laptop that is already the gesture.
+    #
+    # The caveat, recorded because it is not visible from either of those: that
+    # swap partition is plain, while root is crypto_LUKS. A hibernate image is
+    # a verbatim copy of RAM, so every hibernate writes memory — keys and
+    # decrypted file contents included — to unencrypted disk, and it stays
+    # there until overwritten. Closing that means swap inside the LUKS volume,
+    # or a LUKS device of its own opened in the initrd, which is a partition
+    # change rather than a configuration one.
+    systemd.sleep.settings.Sleep = {
+      SuspendState = "freeze";
+      HibernateMode = "shutdown";
+    };
 
     # Audio needs the SOF firmware on this platform; without it the speakers
     # and the internal mic simply do not appear.

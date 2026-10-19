@@ -1,0 +1,12 @@
+# JBL mode: connect the JBL Go 4 wireless speaker and make it the default
+# audio out. Drop the alias first so re-sourcing doesn't expand it.
+unalias jbl 2>/dev/null
+
+# The sequence is _audio_bt_connect, shared with `bt` — see dotfiles/zsh/alias/
+# _audio. A speaker has no microphone, so the helper finds no bluez_input node
+# for it and leaves the default source alone: a call carries on using whichever
+# mic it was already using rather than going silent because the output moved.
+jbl() {
+  _audio_bt_connect 90:F2:60:F9:41:8B "JBL Go 4" \
+    "powered on and in range?"
+}

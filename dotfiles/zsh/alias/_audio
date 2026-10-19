@@ -1,0 +1,139 @@
+# Helpers shared by the audio-switching aliases: `bt` (the Blue Matrix
+# headphones), `jbl` (the JBL Go 4 speaker) and `sp` (the laptop's own
+# speakers). Past finding the device, all three have the same two jobs — make
+# it the default, and bring whatever is already playing over to it — and only
+# the second one is more than a line.
+#
+# The two bluetooth modes share more than that: everything except the address,
+# the name and one hint is the same sequence, so it is _audio_bt_connect at the
+# bottom of this file and each of them is a handful of lines.
+#
+# A helper file rather than an alias, hence the underscore. aliases.nix sources
+# this whole directory at login, so a function defined here is in scope for
+# every other file in it: the glob's order decides when things are *defined*,
+# and these are only ever *called* from inside a function body, long after all
+# of it has been read.
+
+# First PipeWire node id of media class $1 whose node.name contains $2.
+_audio_node() {
+  pw-dump 2>/dev/null | jq -r --arg class "$1" --arg want "$2" \
+    'first(.[]
+       | select(.info.props["media.class"] == $class
+                and ((.info.props["node.name"] // "") | contains($want)))
+       | .id) // empty'
+}
+
+# node.name of node $1 — the spelling target.object wants.
+_audio_name() {
+  pw-dump 2>/dev/null | jq -r --arg id "$1" \
+    'first(.[] | select((.id | tostring) == $id) | .info.props["node.name"]) // empty'
+}
+
+# Point every stream of media class $1 at node $2, and print how many.
+#
+# `wpctl set-default` decides where the *next* stream goes and nothing more:
+# the browser tab that has been playing since before the switch stays linked
+# to the sink it started on, which is the whole of "I switched and the sound
+# didn't move". What moves it is a target.object override on the stream's own
+# node — what pavucontrol's "move to" and pactl's move-sink-input write — and
+# WirePlumber relinks the instant it changes.
+#
+# Set and overwritten, never deleted. Deleting the key tears the existing link
+# down without building a replacement: the stream goes quiet and stays quiet
+# until the application restarts it. So both aliases write it rather than only
+# the one that cares about stragglers — each switch replaces the other's
+# override, which is what stops a pin made for the speakers from surviving
+# into the headphones.
+_audio_retarget() {
+  local class=$1 target=$2
+  local name id moved=0
+
+  name=$(_audio_name "$target")
+  if [ -z "$name" ]; then
+    echo 0
+    return 0
+  fi
+
+  for id in $(pw-dump 2>/dev/null | jq -r --arg class "$class" \
+    '.[] | select(.info.props["media.class"] == $class) | .id'); do
+    pw-metadata "$id" target.object "$name" >/dev/null 2>&1 && moved=$((moved + 1))
+  done
+
+  echo "$moved"
+}
+
+# First PipeWire node id whose node.name starts with $1. Bluez spells its nodes
+# bluez_output.<MAC with underscores>[.N] — the suffix is not stable across
+# profiles, so this matches on the prefix rather than the whole name.
+_audio_bt_node() {
+  pw-dump 2>/dev/null | jq -r --arg p "$1" \
+    'first(.[] | select((.info.props["node.name"] // "") | startswith($p)) | .id) // empty'
+}
+
+# Connect the bluetooth audio device at $1 and make it the default output (and
+# input, on a profile that has one). $2 is the name every message calls it; $3
+# is the "it didn't answer" hint, which is the one line that is really per
+# device — a headset lives in a case, a speaker is just out of range.
+#
+# The body of `bt` until jbl arrived. Both aliases are the same sequence past
+# the address, and the retry loops are the bulk of it, so the sequence lives
+# here and each alias is the three facts that differ. Printed rather than
+# notified: the desktop wrappers in home/desktop/*.nix turn the last line into
+# the notification body, which only works while that line comes out on stdout.
+_audio_bt_connect() {
+  local mac=$1 label=$2 hint=$3
+  local node i sink source
+  local moved=0
+  node=${mac//:/_}
+
+  # Only reach for sudo when the radio or the service is actually down.
+  if [ "$(rfkill list bluetooth -o SOFT -n 2>/dev/null | tr -d ' ')" = blocked ]; then
+    sudo rfkill unblock bluetooth || return 1
+  fi
+  systemctl is-active --quiet bluetooth || sudo systemctl start bluetooth || return 1
+
+  bluetoothctl power on >/dev/null
+
+  # Connect, retrying while the device wakes up.
+  if ! bluetoothctl info "$mac" 2>/dev/null | grep -q 'Connected: yes'; then
+    for i in 1 2 3 4 5; do
+      bluetoothctl connect "$mac" >/dev/null 2>&1 && break
+      if [ "$i" = 5 ]; then
+        echo "$label didn't connect — $hint" >&2
+        return 1
+      fi
+      sleep 2
+    done
+  fi
+
+  # PipeWire publishes the bluez nodes a beat after the audio profile lands.
+  for i in 1 2 3 4 5 6 7 8 9 10; do
+    sink=$(_audio_bt_node "bluez_output.$node")
+    [ -n "$sink" ] && break
+    sleep 1
+  done
+
+  if [ -z "$sink" ]; then
+    echo "Linked, but no audio profile — toggle $label off and on" >&2
+    return 1
+  fi
+  wpctl set-default "$sink"
+
+  # What is already playing, which the default does not reach — see
+  # _audio_retarget. Here and not only in `sp` because the two directions have
+  # to be symmetric: `sp` pins the streams to the speakers on its way out, and
+  # a pin that nothing overwrites would leave a freshly connected device with
+  # the next sound and nothing that is already running.
+  moved=$(_audio_retarget Stream/Output/Audio "$sink")
+
+  # The mic node only exists on a headset profile; A2DP — and every speaker —
+  # is output-only.
+  source=$(_audio_bt_node "bluez_input.$node")
+  if [ -n "$source" ]; then
+    wpctl set-default "$source"
+    _audio_retarget Stream/Input/Audio "$source" >/dev/null
+    echo "$label connected — default output and input, $moved streams moved"
+  else
+    echo "$label connected — default output (no mic on this profile), $moved streams moved"
+  fi
+}

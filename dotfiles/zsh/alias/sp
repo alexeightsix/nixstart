@@ -1,0 +1,73 @@
+# Laptop speakers mode: bluetooth off, the built-in speakers and microphone
+# made default, and everything already playing dragged onto them. The inverse
+# of `bt`, and what to run when the headphones go back in their case. Drop the
+# alias first so re-sourcing doesn't expand it.
+unalias sp 2>/dev/null
+
+sp() {
+  # Declared once: re-running `local` on a set variable echoes it unless
+  # TYPESET_SILENT is on.
+  local dev sink source radio unmuted
+  local moved=0 captured=0
+
+  # The radio first, so the bluez nodes are gone before anything is pointed at
+  # the speakers. The other way round, PipeWire rescues the orphaned streams
+  # itself the moment their sink disappears — and "wherever WirePlumber put
+  # them" is not the same answer as the one below.
+  #
+  # `power off` disconnects on its own; the explicit disconnect ahead of it is
+  # for the headphones' sake, which otherwise sit waiting on a link that ended
+  # underneath them. No sudo anywhere: `bt` needs it to unblock a soft-blocked
+  # radio or start the service, turning a running one off is just this session
+  # talking to bluetoothd.
+  if bluetoothctl show 2>/dev/null | grep -q 'Powered: yes'; then
+    for dev in $(bluetoothctl devices Connected 2>/dev/null | cut -d' ' -f2); do
+      bluetoothctl disconnect "$dev" >/dev/null 2>&1
+    done
+    bluetoothctl power off >/dev/null 2>&1
+    radio="bluetooth off"
+  else
+    radio="bluetooth already off"
+  fi
+
+  # "Speaker" is the card profile's own name for the internal pair — it is
+  # what `wpctl status` prints — and matching on it is what rules out the
+  # three HDMI sinks sharing that card as well as anything bluez publishes.
+  sink=$(_audio_node Audio/Sink Speaker)
+  if [ -z "$sink" ]; then
+    echo "No internal speaker sink — SOF firmware missing? (dmesg | grep -i sof)" >&2
+    return 1
+  fi
+
+  wpctl set-default "$sink"
+
+  # Muted speakers are the other way to have no sound coming out of the
+  # speakers, so clearing it belongs to the mode. The volume is left where it
+  # was: mute is a state this is here to undo, volume is a preference.
+  case "$(wpctl get-volume "$sink" 2>/dev/null)" in
+    *MUTED*) unmuted=", unmuted" ;;
+    *) unmuted="" ;;
+  esac
+  wpctl set-mute "$sink" 0
+
+  # The input half of the same decision: the headset source `bt` made default
+  # went away with the radio, and anything in a call needs to be told where to
+  # listen instead. Its mute is deliberately not touched — a muted microphone
+  # is usually muted on purpose.
+  source=$(_audio_node Audio/Source Mic)
+  if [ -n "$source" ]; then
+    wpctl set-default "$source"
+  fi
+
+  # The streams that were already running, which the default does not reach.
+  moved=$(_audio_retarget Stream/Output/Audio "$sink")
+  if [ -n "$source" ]; then
+    captured=$(_audio_retarget Stream/Input/Audio "$source")
+  fi
+
+  if [ -n "$source" ]; then
+    echo "Laptop speakers — default out and in, $radio$unmuted, $moved playing and $captured recording streams moved"
+  else
+    echo "Laptop speakers — default out, no internal mic found, $radio$unmuted, $moved playing streams moved"
+  fi
+}

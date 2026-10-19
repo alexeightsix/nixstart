@@ -42,7 +42,36 @@ buildGoModule {
   # --bg-fill, exactly as before.
   #
   # Only the standard library is added, so vendorHash is unaffected.
-  patches = [ ./multi-monitor.patch ];
+  #
+  # robustness.patch is three fixes to the same habit of carrying on with a
+  # value that was never there:
+  #
+  #   - getWeather checked the transport error but not the HTTP status, and
+  #     Open-Meteo reports errors as well-formed JSON. {"error":true,...}
+  #     decodes into the response struct without matching a single field, so
+  #     the zero value survives and the wallpaper reads "0" with no unit —
+  #     indistinguishable from a real reading anywhere 0 degrees is plausible,
+  #     which here is about five months of the year. Rate limiting is the way
+  #     in. Now both calls check the status, and a missing unit is refused.
+  #
+  #   - jpeg.Decode became image.Decode. wallpapers/ holds .png as well as
+  #     .jpg and this only ever saw JPEG because the wrapper runs every path
+  #     through `magick` — a coupling nothing stated, failing as "missing SOI
+  #     marker" if it were ever relaxed.
+  #
+  #   - The temperature was hardcoded white-on-black, which carries a dark sky
+  #     and disappears against a pale one. WALLPAPER_TEXT_COLOR and
+  #     WALLPAPER_SHADOW_COLOR take #RRGGBB, #RGB, "white" or "black", and
+  #     default to the pair it always used, so an unset environment is
+  #     unchanged.
+  #
+  # Applied after multi-monitor.patch and written against that result, so the
+  # order here is load-bearing. Standard library only, so vendorHash again is
+  # unaffected.
+  patches = [
+    ./multi-monitor.patch
+    ./robustness.patch
+  ];
 
   # loadFont() searches four hardcoded FHS paths — Fedora's, Debian's, Arch's
   # and google-noto's — and `panic`s when it finds none. On NixOS none of them

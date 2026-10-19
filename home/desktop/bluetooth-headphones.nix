@@ -25,7 +25,14 @@
 let
   cfg = config.nixstart.home;
 
-  alias = "${cfg.checkout}/dotfiles/zsh/alias/bt";
+  aliasDir = "${cfg.checkout}/dotfiles/zsh/alias";
+  alias = "${aliasDir}/bt";
+
+  # `bt` moves the streams that are already playing onto the headphones, and
+  # the function that does it lives in the directory's shared helper rather
+  # than in the alias file — see dotfiles/zsh/alias/_audio. The login shell
+  # gets it by sourcing the whole directory; this has to name it.
+  helpers = "${aliasDir}/_audio";
 
   # zsh, not bash: the file is zsh and is written like it. `-c` is enough —
   # nothing in it needs an interactive shell, and sourcing ~/.zshrc to reach
@@ -44,13 +51,16 @@ let
       pkgs.systemd # systemctl
     ];
     text = ''
+      helper_file=${lib.escapeShellArg helpers}
       alias_file=${lib.escapeShellArg alias}
 
-      if [ ! -r "$alias_file" ]; then
-        notify-send --app-name=Bluetooth --icon=bluetooth --urgency=critical \
-          "Blue Matrix" "$alias_file is missing — is the checkout where nixstart.home.checkout says it is?"
-        exit 1
-      fi
+      for f in "$helper_file" "$alias_file"; do
+        if [ ! -r "$f" ]; then
+          notify-send --app-name=Bluetooth --icon=bluetooth --urgency=critical \
+            "Blue Matrix" "$f is missing — is the checkout where nixstart.home.checkout says it is?"
+          exit 1
+        fi
+      done
 
       # Teed rather than captured: the run takes up to ~20s of retries and the
       # function narrates it, so it goes to the terminal as it happens, and the
@@ -61,9 +71,9 @@ let
       log="$(mktemp)"
       trap 'rm -f "$log"' EXIT
 
-      # The path goes in as an argument rather than spliced into the command
-      # string: $0 is the shell's own name, so $1 is the file.
-      if zsh -c 'source "$1"; bt' bt-headphones "$alias_file" 2>&1 | tee "$log"; then
+      # The paths go in as arguments rather than spliced into the command
+      # string: $0 is the shell's own name, so $1 and $2 are the files.
+      if zsh -c 'source "$1"; source "$2"; bt' bt-headphones "$helper_file" "$alias_file" 2>&1 | tee "$log"; then
         notify-send --app-name=Bluetooth --icon=bluetooth \
           "Blue Matrix" "$(tail -n1 "$log")"
       else
