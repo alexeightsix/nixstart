@@ -155,6 +155,33 @@ in
             to render a number that changes a few times a day.
           '';
         };
+
+        textColor = mkOption {
+          type = types.str;
+          default = "white";
+          example = "#2b1410";
+          description = ''
+            Colour of the temperature, as #RRGGBB, #RGB, "white" or "black".
+
+            Which pair is legible depends on the image underneath it, and
+            wallpapers/ holds both kinds: white over black carries the dark
+            sky of wallpaper-5 and all but disappears against the pale one of
+            wallpaper-6, where only the drop shadow holds it together. The
+            generator cannot know what it has been handed, so the choice goes
+            with whoever chose the wallpaper.
+          '';
+        };
+
+        shadowColor = mkOption {
+          type = types.str;
+          default = "black";
+          example = "#f8e4c8";
+          description = ''
+            Colour of the shadow behind the temperature, same formats as
+            textColor. Drawn two pixels down and right, so on a pale image it
+            wants to be the light half of the pair rather than the dark one.
+          '';
+        };
       };
 
       pairedWorkspaces = mkOption {

@@ -61,6 +61,13 @@
       weather.enable = true;
       weather.location = "Montreal";
 
+      # wallpaper-6 is a pale cream sky where the temperature sits, so the
+      # white-over-black pair that suited wallpaper-5 is carried entirely by
+      # its drop shadow and is hard to read at a glance. Inverted: dark brown
+      # on cream, which is the same two colours the image already uses.
+      weather.textColor = "#2b1410";
+      weather.shadowColor = "#f8e4c8";
+
       # No fixed xrandr line: this machine gets docked and undocked, so the
       # layout follows what is actually plugged in.
       autorandr = true;

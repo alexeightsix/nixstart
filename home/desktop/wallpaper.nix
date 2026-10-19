@@ -108,9 +108,13 @@ let
                  exit
                }') || screen=""
 
-      # magick unconditionally, even in the fallback: the generator decodes
-      # JPEG only, and the base image is whichever file wallpapers/ holds —
-      # a .png there would otherwise fail at the decode.
+      # magick unconditionally, even in the fallback. It used to be that the
+      # generator decoded JPEG only, so a .png in wallpapers/ failed at the
+      # decode unless it came through here first; robustness.patch moved that
+      # to image.Decode and the format no longer matters. What keeps this
+      # unconditional is the canvas itself — WALLPAPER_INPUT is a path, so
+      # there has to be a file to point at either way, and going through
+      # magick on both paths keeps the two branches differing only in layout.
       if [ "''${#monitors[@]}" -gt 0 ] && [ -n "$screen" ]; then
         # One scale-to-cover crop of the base per monitor, composited at that
         # monitor's offset. `-resize WxH^` covers rather than fits and
@@ -225,6 +229,15 @@ in
           # from the canvas it lays out for the screens that are actually on.
           "WALLPAPER_OUTPUT=${dynamic}"
           "WALLPAPER_LOCATION=${desktop.weather.location}"
+
+          # Legibility is a property of the base image, not of the generator,
+          # so the colours travel with the wallpaper rather than being baked
+          # into the program. See pkgs/weather-wallpaper/robustness.patch for
+          # the parsing, and the option descriptions for why this is a choice
+          # at all. Both default to what was hardcoded before, so leaving them
+          # alone changes nothing.
+          "WALLPAPER_TEXT_COLOR=${desktop.weather.textColor}"
+          "WALLPAPER_SHADOW_COLOR=${desktop.weather.shadowColor}"
         ];
       };
     };
