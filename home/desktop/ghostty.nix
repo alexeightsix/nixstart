@@ -20,6 +20,46 @@
 let
   cfg = config.nixstart.home;
   shader = cfg.desktop.ghosttyShader;
+
+  # Ghostty is built against its own nixpkgs pin (see flake.nix), but GL
+  # drivers are loaded at runtime from /run/opengl-driver, which is the
+  # system's Mesa. When the system nixpkgs moves glibc ahead of Ghostty's,
+  # that Mesa cannot load into Ghostty's process — on 2026-10-19 Mesa 26.2.5
+  # wanted GLIBC_2.43 against Ghostty's 2.42 — and the window shows "Unable
+  # to acquire an OpenGL context". So point libglvnd and GBM at the Mesa from
+  # Ghostty's own nixpkgs, which by construction shares its glibc. Harmless
+  # when the two pins happen to agree; delete once they reliably do.
+  #
+  # The .desktop, D-Bus and systemd user files name the unwrapped binary by
+  # absolute store path, so they are rewritten to the wrapper as well —
+  # otherwise launching from vicinae or D-Bus activation would bypass it.
+  system = pkgs.stdenv.hostPlatform.system;
+  ghosttyUnwrapped = inputs.ghostty.packages.${system}.ghostty;
+  ghosttyMesa = inputs.ghostty.inputs.nixpkgs.legacyPackages.${system}.mesa;
+  ghosttyPackage = pkgs.symlinkJoin {
+    name = "ghostty-${ghosttyUnwrapped.version}-own-mesa";
+    paths = [ ghosttyUnwrapped ];
+    nativeBuildInputs = [ pkgs.makeWrapper ];
+    postBuild = ''
+      wrapProgram $out/bin/ghostty \
+        --set __EGL_VENDOR_LIBRARY_FILENAMES ${ghosttyMesa}/share/glvnd/egl_vendor.d/50_mesa.json \
+        --set LIBGL_DRIVERS_PATH ${ghosttyMesa}/lib/dri \
+        --set GBM_BACKENDS_PATH ${ghosttyMesa}/lib/gbm
+
+      for f in \
+        share/applications/com.mitchellh.ghostty.desktop \
+        share/dbus-1/services/com.mitchellh.ghostty.service \
+        share/systemd/user/app-com.mitchellh.ghostty.service; do
+        rm $out/$f
+        substitute ${ghosttyUnwrapped}/$f $out/$f \
+          --replace-fail ${ghosttyUnwrapped}/bin/ghostty $out/bin/ghostty
+      done
+    '';
+    inherit (ghosttyUnwrapped) version;
+    meta = ghosttyUnwrapped.meta // {
+      mainProgram = "ghostty";
+    };
+  };
 in
 {
   config = lib.mkIf cfg.desktop.enable {
@@ -31,7 +71,7 @@ in
       # in nixpkgs. home/desktop/i3.nix binds $mod+Return to this same
       # attribute rather than pkgs.ghostty, so the terminal i3 opens and the
       # one this configures cannot drift apart.
-      package = inputs.ghostty.packages.${pkgs.stdenv.hostPlatform.system}.ghostty;
+      package = ghosttyPackage;
 
       settings = {
         app-notifications = "no-clipboard-copy";

@@ -100,8 +100,15 @@ let
       case "$action" in
         switch)
           parts=()
+          # The `workspace ... output` assignments only apply when a workspace
+          # is created. One that already exists stays where it was made — after
+          # the dock comes and goes, "1" can be left on the laptop panel, and
+          # switching to it there is immediately undone by switching that same
+          # panel to "11:1", so $mod+1 appears to do nothing. Moving each one
+          # onto its screen on every switch puts a stranded workspace back.
           for (( i = 0; i < ''${#screens[@]}; i++ )); do
             parts+=("workspace \"$(name_for "$i")\"")
+            parts+=("move workspace to output \"''${screens[$i]}\"")
           done
           # Switching walks the screens, so focus ends on the last one. Put it
           # back where it started — without this the keypress moves you to
