@@ -8,7 +8,9 @@
   config = lib.mkIf config.nixstart.system.hardware.bluetooth {
     hardware.bluetooth = {
       enable = true;
-      powerOnBoot = false;
+      # Radio on from boot. `sp` still powers it down for the laptop speakers;
+      # that lasts until the next boot rather than sticking.
+      powerOnBoot = true;
     };
 
     # i3config kills blueman-applet and nm-applet at startup, so the applets

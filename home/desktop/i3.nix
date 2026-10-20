@@ -132,6 +132,32 @@ let
     '';
   };
 
+  # Volume control on the left of $mod+0, Bluetooth on the right. The assigns
+  # put both on workspace 10 and the default split lays them side by side, but
+  # in whichever order their windows happen to map — so the second is only
+  # started once the first is on screen.
+  audioPanels = pkgs.writeShellApplication {
+    name = "i3-audio-panels";
+    runtimeInputs = [
+      pkgs.coreutils # seq, sleep
+      pkgs.i3
+      pkgs.jq
+      pkgs.pavucontrol
+      pkgs.blueman
+    ];
+    text = ''
+      pavucontrol &
+      for _ in $(seq 50); do
+        if i3-msg -t get_tree \
+          | jq -e 'any(.. | objects; .window_properties?.class? == "pavucontrol")' > /dev/null; then
+          break
+        fi
+        sleep 0.2
+      done
+      exec blueman-manager
+    '';
+  };
+
   # Which screen Ctrl+; captures.
   #
   # `flameshot screen` without -n does not quietly fall back to the monitor
@@ -280,6 +306,11 @@ in
         config.xdg.configFile."picom/picom.conf".source
       } -b
       exec --no-startup-id ${lib.getExe pkgs.feh} --bg-fill ${desktop._resolvedWallpaper}
+
+      # The volume and Bluetooth windows, always open on $mod+0 side by side —
+      # see audioPanels. `exec` rather than `exec_always`, so a reload does
+      # not open a second pair.
+      exec --no-startup-id ${lib.getExe audioPanels}
       exec --no-startup-id ${monitorScript}
 
       # vicinae is a systemd user unit now (modules/nixos/desktop/i3.nix), not
@@ -379,6 +410,9 @@ in
       assign [class="^[tT]eams.*"] 7
       assign [class="^[sS]lack.*"] 7
       assign [class="^[fF]irefox$"] 3
+      # `number 10` is $mod+0's workspace: "10" on the primary screen.
+      assign [class="^Blueman-manager$"] number 10
+      assign [class="^pavucontrol$"] number 10
 
       for_window [class=(?i)firefox] focus
       for_window [class=TelegramDesktop] focus
