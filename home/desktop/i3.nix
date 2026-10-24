@@ -316,6 +316,12 @@ in
       # Obsidian, always open on $mod+6 — the assign below puts it there.
       exec --no-startup-id ${lib.getExe pkgs.obsidian}
 
+      # Chrome on $mod+3, and a terminal on $mod+1. The terminal gets a class of
+      # its own so only this one is pinned: assigning com.mitchellh.ghostty
+      # would send every $mod+Return to workspace 1 as well.
+      exec --no-startup-id ${lib.getExe pkgs.google-chrome}
+      exec --no-startup-id ${lib.getExe config.programs.ghostty.package} --class=com.mitchellh.ghostty.login
+
       # vicinae is a systemd user unit now (modules/nixos/desktop/i3.nix), not
       # a `systemctl --user start` from the window manager.
 
@@ -416,6 +422,8 @@ in
       # nixpkgs' Obsidian maps as "md.obsidian.Obsidian", not "obsidian".
       # `number 6` is "6" on the primary screen, as with workspace 10 below.
       assign [class="(?i)obsidian"] number 6
+      assign [class="^Google-chrome$"] 3
+      assign [class="^com\\.mitchellh\\.ghostty\\.login$"] number 1
       # `number 10` is $mod+0's workspace: "10" on the primary screen.
       assign [class="^Blueman-manager$"] number 10
       assign [class="^pavucontrol$"] number 10
