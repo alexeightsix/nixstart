@@ -313,6 +313,9 @@ in
       exec --no-startup-id ${lib.getExe audioPanels}
       exec --no-startup-id ${monitorScript}
 
+      # Obsidian, always open on $mod+6 — the assign below puts it there.
+      exec --no-startup-id ${lib.getExe pkgs.obsidian}
+
       # vicinae is a systemd user unit now (modules/nixos/desktop/i3.nix), not
       # a `systemctl --user start` from the window manager.
 
@@ -410,6 +413,9 @@ in
       assign [class="^[tT]eams.*"] 7
       assign [class="^[sS]lack.*"] 7
       assign [class="^[fF]irefox$"] 3
+      # nixpkgs' Obsidian maps as "md.obsidian.Obsidian", not "obsidian".
+      # `number 6` is "6" on the primary screen, as with workspace 10 below.
+      assign [class="(?i)obsidian"] number 6
       # `number 10` is $mod+0's workspace: "10" on the primary screen.
       assign [class="^Blueman-manager$"] number 10
       assign [class="^pavucontrol$"] number 10
