@@ -423,7 +423,7 @@ in
       # `number 6` is "6" on the primary screen, as with workspace 10 below.
       assign [class="(?i)obsidian"] number 6
       assign [class="^Google-chrome$"] 3
-      assign [class="^com\\.mitchellh\\.ghostty\\.login$"] number 1
+      assign [class="^com.mitchellh.ghostty.login$"] number 1
       # `number 10` is $mod+0's workspace: "10" on the primary screen.
       assign [class="^Blueman-manager$"] number 10
       assign [class="^pavucontrol$"] number 10
