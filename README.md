@@ -1,115 +1,35 @@
 # nixstart
 
-NixOS for a Dell XPS 13 9350, and only that: `nixosConfigurations.laptop` is
-the whole system, with the machine's own settings in `system/machine.nix`.
+NixOS with this config, on a Dell XPS 13 9350.
 
-## Setting up a new machine
+## Install
 
-### 1. Write an installer USB
+1. Write the installer to a USB stick, from any Linux machine:
 
-From a machine you already have:
+   ```sh
+   scripts/install-iso.sh            # list the USB sticks it will accept
+   scripts/install-iso.sh /dev/sdX   # download and write
+   ```
 
-```sh
-scripts/install-iso.sh               # list the devices it will accept
-scripts/install-iso.sh /dev/sdX      # download, verify, write
-```
+2. Boot the laptop from the USB stick, then:
 
-Removable, unmounted devices only, and it makes you type the device name back.
+   ```sh
+   nix-shell -p git
+   git clone https://github.com/alexeightsix/nixstart
+   cd nixstart
+   sudo scripts/install.sh /dev/nvme0n1 --luks --swap 40G
+   ```
 
-### 2. Install
+   This erases the disk. Add `--dry-run` first to see the plan.
 
-Boot the USB on the target, get this repo onto it, then:
+3. Reboot, log in as `alex` with password `changeme`, and run `passwd`.
 
-```sh
-scripts/install.sh /dev/nvme0n1 --dry-run          # print the plan
-scripts/install.sh /dev/nvme0n1                    # plain
-scripts/install.sh /dev/nvme0n1 --luks --swap 40G  # encrypted, hibernate
-```
+4. Commit the generated `system/hardware/` files.
 
-btrfs with subvolumes — 1GiB vfat ESP, optional swap, then `@` `@home` `@nix`
-`@log` — because `snapshots.home` needs `/home` to be its own subvolume.
-
-It generates `system/hardware/hardware-configuration.nix` and a `filesystems.nix`
-with by-label devices and the LUKS UUID, adds the import, and runs
-`nixos-install`. Commit both files afterwards.
-
-`--keep-home` reuses an existing `@home` instead of formatting it; check that
-uid 1000 still owns it. `--dry-run` stops before touching the disk.
-
-### 3. First boot
-
-1. Log in with `user.initialPassword` from `system/machine.nix` (`"changeme"`) and run
-   `passwd`. To skip the placeholder entirely, put a `user-password` secret in
-   `secrets/<hostname>.yaml` — sops wins over the option whenever it exists.
-2. Set `nixstart.home.desktop.dpi` once `xrandr --query` says which panel the
-   machine has. It defaults to null, which is 96dpi.
-3. Rebuild.
-
-## Rebuilding
+## Update
 
 ```sh
-scripts/apply.sh            # stage for the next boot — the default
-scripts/apply.sh switch     # apply live
-scripts/apply.sh test       # apply live, leave the boot menu alone
+scripts/apply.sh
 ```
 
-`boot` is the default because anything that moves the system path restarts
-display-manager, which kills X and the terminal you ran it from. Use `switch`
-from a TTY if you want it live without rebooting.
-
-```sh
-agent-apply                 # what a coding agent runs instead: switch, in tmux
-```
-
-`agent-apply` is `apply.sh switch` with the two things an agent cannot do
-without. It runs the rebuild in a detached tmux session, so activation
-restarting display-manager does not kill the rebuild along with the terminal
-the agent started it from; and it depends on the NOPASSWD rule in
-`system/core/users.nix`, because `sudo` in an agent's shell has no terminal to
-read a password from. It refuses with an explanation rather than hanging if
-that rule is not on the running generation yet — run `scripts/apply.sh switch`
-once by hand to install it.
-
-## Agent mode
-
-`$mod+Shift+a` pins the terminal to the laptop panel: while it is on, every
-workspace switch puts the first Ghostty window back on the built-in screen, so
-an agent stays in view under whatever the monitor is showing. `$mod+0` is
-exempt — that pair keeps both screens as they are. The mode is off at every
-login. See `home/desktop/agent-mode.nix`, and
-`nixstart.home.desktop.agentMode` in `home/options.nix`.
-
-## Updating
-
-```sh
-update          # move flake.lock, then rebuild
-sync-nix        # update/rebuild, pi update --extensions, then collect generations older than 30d
-bump-ghostty    # move the pinned ghostty revision to current main
-```
-
-Shell aliases, defined in `home/shell/aliases.nix`. `sync-nix` runs
-`pi update --extensions` as the normal user after a successful rebuild and
-before garbage collection. Each step must succeed before the next runs.
-Nix still owns the Pi binary; this extra step updates its user-managed packages.
-
-`nix flake update` moves every input except ghostty, which is pinned to an
-explicit revision in `flake.nix` precisely so the sweep leaves it alone —
-tracking a development branch is a choice, not something a routine update
-should make on your behalf. `bump-ghostty` rewrites that one line and stops;
-building it is still a separate, deliberate `sync-nix`.
-
-## Development toolchains
-
-The laptop enables Python through `nixstart.home.languages` in
-`system/machine.nix`. The shared `lib/dev-env.nix` definition installs
-`python3` and `uv`; Python 3 is available on the user PATH after rebuilding.
-
-## Changelog
-
-### 2026-09-10 — Python and Pi package maintenance
-
-**Why:** Python 3 is needed outside a development shell, and updating the Nix
-lockfile does not update Pi's separately installed extension packages.
-
-- **README** — the laptop includes Python 3 and uv; `sync-nix` updates Pi packages
-  after rebuilding and before garbage collection, without self-updating Pi.
+Then reboot.
