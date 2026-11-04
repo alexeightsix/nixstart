@@ -12,8 +12,10 @@
     ./core/networking.nix
     ./core/users.nix
     ./core/secrets.nix
+    ./core/easy-boot.nix
 
     ./desktop/x11.nix
+    ./desktop/keyd.nix
     ./desktop/i3.nix
     ./desktop/audio.nix
     ./desktop/fonts.nix

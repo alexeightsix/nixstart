@@ -39,6 +39,7 @@
     ./desktop/dock.nix
     ./desktop/agent-mode.nix
     ./desktop/bluetooth-headphones.nix
+    ./desktop/easy-boot.nix
     ./desktop/laptop-speakers.nix
     ./desktop/jbl-speaker.nix
 

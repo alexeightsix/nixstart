@@ -5,7 +5,10 @@
 # test, answered once, plus everything else that is only true of a laptop.
 { ... }:
 {
-  imports = [ ./hardware-configuration.nix ];
+  imports = [
+    ./hardware/hardware-configuration.nix
+    ./easy-boot-flag.nix
+  ];
 
   networking.hostName = "laptop";
 

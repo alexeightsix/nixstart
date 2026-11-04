@@ -22,7 +22,6 @@ case "$MODE" in
 esac
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-HOST="$(hostname)"
 
 step() { printf '\n\033[1;32m==>\033[0m \033[1m%s\033[0m\n' "$*"; }
 warn() { printf '\033[1;33m    %s\033[0m\n' "$*"; }
@@ -60,9 +59,9 @@ done
 # --- build -----------------------------------------------------------------
 # Separately from activating, so a build error costs nothing and never leaves a
 # half-applied system.
-step "building $HOST"
-nix build --no-link ".#nixosConfigurations.$HOST.config.system.build.toplevel"
-built="$(nix path-info ".#nixosConfigurations.$HOST.config.system.build.toplevel")"
+step "building"
+nix build --no-link ".#nixosConfigurations.laptop.config.system.build.toplevel"
+built="$(nix path-info ".#nixosConfigurations.laptop.config.system.build.toplevel")"
 echo "    $built"
 
 if [ "$built" = "$(readlink -f /run/current-system)" ]; then
@@ -72,7 +71,7 @@ fi
 
 # --- apply -----------------------------------------------------------------
 step "applying ($MODE)"
-sudo nixos-rebuild "$MODE" --flake ".#$HOST"
+sudo nixos-rebuild "$MODE" --flake ".#laptop"
 
 case "$MODE" in
     boot)

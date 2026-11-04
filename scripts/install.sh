@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 #
-# install.sh — install a host from this flake onto a disk.
+# install.sh — install this flake onto a disk.
 #
-#   install.sh <host> <device> [options]
-#   install.sh laptop  /dev/nvme0n1 --luks --swap 40G
+#   install.sh <device> [options]
+#   install.sh /dev/nvme0n1 --luks --swap 40G
 #
 #   --luks          encrypt everything but the ESP (asks for a passphrase)
 #   --swap SIZE     swap partition; size it >= RAM if you want hibernate
@@ -26,7 +26,7 @@ step() { echo; echo "==> $*"; }
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-HOST=""; DEVICE=""; LUKS=0; SWAP=""; KEEP_HOME=0; DRY=0
+DEVICE=""; LUKS=0; SWAP=""; KEEP_HOME=0; DRY=0
 while [ $# -gt 0 ]; do
     case "$1" in
         --luks)      LUKS=1 ;;
@@ -35,13 +35,12 @@ while [ $# -gt 0 ]; do
         --dry-run)   DRY=1 ;;
         -h|--help)   awk 'NR>1 && /^#/ {sub(/^# ?/, ""); print; next} NR>1 {exit}' "$0"; exit 0 ;;
         -*)          die "unknown option $1" ;;
-        *)           if [ -z "$HOST" ]; then HOST=$1; elif [ -z "$DEVICE" ]; then DEVICE=$1; else die "unexpected $1"; fi ;;
+        *)           if [ -z "$DEVICE" ]; then DEVICE=$1; else die "unexpected $1"; fi ;;
     esac
     shift
 done
 
-[ -n "$HOST" ] && [ -n "$DEVICE" ] || { awk 'NR>1 && /^#/ {sub(/^# ?/, ""); print; next} NR>1 {exit}' "$0"; exit 2; }
-[ -d "$REPO/hosts/$HOST" ] || die "no such host: $HOST (have: $(ls "$REPO/hosts" | tr '\n' ' '))"
+[ -n "$DEVICE" ] || { awk 'NR>1 && /^#/ {sub(/^# ?/, ""); print; next} NR>1 {exit}' "$0"; exit 2; }
 [ -b "$DEVICE" ] || die "$DEVICE is not a block device"
 [ "$(id -u)" = 0 ] || die "run as root"
 
@@ -77,7 +76,6 @@ fi
 
 # --- the plan -------------------------------------------------------------
 echo
-echo "  host        $HOST"
 echo "  device      $DEVICE"
 lsblk -o NAME,SIZE,FSTYPE,LABEL,MODEL "$DEVICE" | sed 's/^/    /'
 echo
@@ -152,11 +150,11 @@ mount "$ESP" /mnt/boot
 
 # --- hardware configuration ----------------------------------------------
 # The one file that cannot be written ahead of time. It replaces the
-# placeholder in hosts/<host>/ so the flake describes this actual machine.
-step "generating hardware-configuration.nix for $HOST"
+# placeholder in system/hardware/ so the flake describes this actual machine.
+step "generating hardware-configuration.nix"
 nixos-generate-config --root /mnt --no-filesystems
 install -m 0644 /mnt/etc/nixos/hardware-configuration.nix \
-    "$REPO/hosts/$HOST/hardware-configuration.nix"
+    "$REPO/system/hardware/hardware-configuration.nix"
 
 {
     echo ""
@@ -174,13 +172,13 @@ install -m 0644 /mnt/etc/nixos/hardware-configuration.nix \
         echo "  boot.initrd.luks.devices.cryptroot.device = \"/dev/disk/by-uuid/$uuid\";"
     fi
     echo "}"
-} > "$REPO/hosts/$HOST/filesystems.nix"
+} > "$REPO/system/hardware/filesystems.nix"
 
-grep -q "filesystems.nix" "$REPO/hosts/$HOST/default.nix" \
-    || sed -i '0,/imports = \[/s//imports = [\n    .\/filesystems.nix/' "$REPO/hosts/$HOST/default.nix"
+grep -q "filesystems.nix" "$REPO/system/machine.nix" \
+    || sed -i '0,/imports = \[/s//imports = [\n    .\/hardware\/filesystems.nix/' "$REPO/system/machine.nix"
 
 # --- install --------------------------------------------------------------
-step "installing $HOST (this takes a while)"
+step "installing (this takes a while)"
 export NIX_CONFIG="experimental-features = nix-command flakes"
 
 # The dotfiles used to be a separate `path:` input, which meant hunting for a
@@ -188,8 +186,8 @@ export NIX_CONFIG="experimental-features = nix-command flakes"
 # not fail on a path that does not exist in the installer environment. They
 # live in this repository now, so there is nothing to find and nothing to
 # override.
-nixos-install --flake "$REPO#$HOST" --no-root-password
+nixos-install --flake "$REPO#laptop" --no-root-password
 
 step "done"
-echo "  Reboot, log in as the account in hosts/$HOST/default.nix, and run passwd."
+echo "  Reboot, log in as the account in system/machine.nix, and run passwd."
 [ $KEEP_HOME -eq 1 ] && echo "  /home was kept — check that uid 1000 still owns it."

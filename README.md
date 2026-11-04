@@ -1,6 +1,7 @@
 # nixstart
 
-NixOS for a Dell XPS 13 9350. `nixosConfigurations.laptop` is the only host.
+NixOS for a Dell XPS 13 9350, and only that: `nixosConfigurations.laptop` is
+the whole system, with the machine's own settings in `system/machine.nix`.
 
 ## Setting up a new machine
 
@@ -15,45 +16,29 @@ scripts/install-iso.sh /dev/sdX      # download, verify, write
 
 Removable, unmounted devices only, and it makes you type the device name back.
 
-### 2. Add a host, if it is not the laptop
-
-`hosts/<name>/default.nix` holds the facts true of that machine and nothing
-else — every module is inert until an option turns it on, so copy
-`hosts/laptop/default.nix` and delete what does not apply. Then register it:
-
-```nix
-# flake.nix
-nixosConfigurations = {
-  laptop = mkHost { hostname = "laptop"; };
-  <name> = mkHost { hostname = "<name>"; };
-};
-```
-
-The installer writes `hardware-configuration.nix` for you in step 3.
-
-### 3. Install
+### 2. Install
 
 Boot the USB on the target, get this repo onto it, then:
 
 ```sh
-scripts/install.sh <host> /dev/nvme0n1 --dry-run          # print the plan
-scripts/install.sh <host> /dev/nvme0n1                    # plain
-scripts/install.sh <host> /dev/nvme0n1 --luks --swap 40G  # encrypted, hibernate
+scripts/install.sh /dev/nvme0n1 --dry-run          # print the plan
+scripts/install.sh /dev/nvme0n1                    # plain
+scripts/install.sh /dev/nvme0n1 --luks --swap 40G  # encrypted, hibernate
 ```
 
 btrfs with subvolumes — 1GiB vfat ESP, optional swap, then `@` `@home` `@nix`
 `@log` — because `snapshots.home` needs `/home` to be its own subvolume.
 
-It generates `hosts/<host>/hardware-configuration.nix` and a `filesystems.nix`
+It generates `system/hardware/hardware-configuration.nix` and a `filesystems.nix`
 with by-label devices and the LUKS UUID, adds the import, and runs
 `nixos-install`. Commit both files afterwards.
 
 `--keep-home` reuses an existing `@home` instead of formatting it; check that
 uid 1000 still owns it. `--dry-run` stops before touching the disk.
 
-### 4. First boot
+### 3. First boot
 
-1. Log in with `user.initialPassword` from the host file (`"changeme"`) and run
+1. Log in with `user.initialPassword` from `system/machine.nix` (`"changeme"`) and run
    `passwd`. To skip the placeholder entirely, put a `user-password` secret in
    `secrets/<hostname>.yaml` — sops wins over the option whenever it exists.
 2. Set `nixstart.home.desktop.dpi` once `xrandr --query` says which panel the
@@ -116,7 +101,7 @@ building it is still a separate, deliberate `sync-nix`.
 ## Development toolchains
 
 The laptop enables Python through `nixstart.home.languages` in
-`hosts/laptop/default.nix`. The shared `lib/dev-env.nix` definition installs
+`system/machine.nix`. The shared `lib/dev-env.nix` definition installs
 `python3` and `uv`; Python 3 is available on the user PATH after rebuilding.
 
 ## Changelog

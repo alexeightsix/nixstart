@@ -156,21 +156,20 @@
         };
 
       # ---------------------------------------------------------- system ---
-      # A machine: the system modules, plus the one host file that holds the
-      # handful of facts true of that machine and no other. home-manager comes
-      # along as a NixOS module so `nixos-rebuild switch` does both halves.
-      mkHost =
-        {
-          hostname,
-          system ? "x86_64-linux",
-        }:
+      # The one machine: the system modules, plus system/machine.nix, which
+      # holds the facts true of this machine. home-manager comes along as a
+      # NixOS module so `nixos-rebuild switch` does both halves.
+      laptop =
+        let
+          system = "x86_64-linux";
+        in
         lib.nixosSystem {
           inherit system;
           specialArgs = { inherit inputs self; };
           modules = [
             { nixpkgs.pkgs = pkgsFor system; }
             ./system
-            ./hosts/${hostname}
+            ./system/machine.nix
             home-manager.nixosModules.home-manager
             {
               home-manager = {
@@ -204,7 +203,7 @@
     in
     {
       nixosConfigurations = {
-        laptop = mkHost { hostname = "laptop"; };
+        inherit laptop;
       };
 
       homeConfigurations = {
