@@ -25,6 +25,8 @@ inputs: final: prev: {
   # whenever Expo moves.
   android-sdk = final.callPackage ./pkgs/android-sdk { };
 
+  herdr-app = final.callPackage ./pkgs/herdr-app { };
+
   # witr builds itself; this only lifts its package into the same namespace
   # as everything else so modules do not have to reach into `inputs`.
   #

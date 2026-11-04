@@ -74,7 +74,18 @@
     # is pinned in flake.lock anyway; naming the revision here makes the
     # version visible in the file and means `nix flake update` cannot move it
     # on its own — bumping ghostty is an edit to this line.
-    ghostty.url = "github:ghostty-org/ghostty/82938b633ba646db38591d969c3c526332bd7e65";
+    ghostty.url = "github:ghostty-org/ghostty/ca91d0a24e67b3eecdb23c943227cd2b3908747b";
+
+    # opencode from its own flake rather than nixpkgs, which trails the
+    # releases (2.1.4 against 2.2.4 upstream when this was added). Pinned to
+    # a release tag like ghostty is pinned to a commit, so `nix flake update`
+    # cannot move it; the `bump-opencode` alias rewrites this line to the newest
+    # release, and `update` / `sync-nix` run it first.
+    #
+    # Deliberately no `inputs.nixpkgs.follows`, for the same reason as
+    # coding-agents: the package carries a node_modules hash computed against
+    # its own nixpkgs' bun.
+    opencode.url = "github:anomalyco/opencode/v2.2.5";
 
     # witr — "why is this running?": traces a process, port, container or file
     # back to the chain that started it. stage-12 installed it with

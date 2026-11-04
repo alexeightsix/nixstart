@@ -26,7 +26,11 @@ in
     # `dnf` was aliased to take a snapper snapshot and then run dnf, because a
     # Fedora package transaction cannot be undone. Both halves are one command
     # here, and its rollback is a boot menu entry.
-    rebuild = "sudo nixos-rebuild switch --flake ${config.home.homeDirectory}/nixstart";
+    #
+    # vicinae indexes desktop entries once at startup and does not notice new
+    # ones, so an app added by the switch stays out of the launcher until the
+    # daemon restarts. `try-restart` is a no-op when it is not running.
+    rebuild = "sudo nixos-rebuild switch --flake ${config.home.homeDirectory}/nixstart && systemctl --user try-restart vicinae.service";
     rebuild-test = "sudo nixos-rebuild test --flake ${config.home.homeDirectory}/nixstart";
     generations = "nixos-rebuild list-generations";
 
@@ -34,7 +38,7 @@ in
     # claude, opencode, codex, pi, flatpak, npm -g, rustup, cargo-update, go
     # install, oh-my-zsh, lazy.nvim — each with its own idea of "current".
     # One lockfile moves now.
-    update = "nix flake update --flake ${config.home.homeDirectory}/nixstart && rebuild";
+    update = "bump-opencode && nix flake update --flake ${config.home.homeDirectory}/nixstart && rebuild";
 
     # The whole cycle, in the order the pieces actually depend on each other:
     # move the lockfile, build and activate it, update Pi's user-managed
@@ -47,7 +51,7 @@ in
     # generation this alias just built and has not yet proven — and a
     # generation that builds is not a generation that boots. 30d matches the
     # policy nix.gc already runs weekly, so this only pulls that sweep forward.
-    sync-nix = "nix flake update --flake ${config.home.homeDirectory}/nixstart && rebuild && pi update --extensions && sudo nix-collect-garbage --delete-older-than 30d";
+    sync-nix = "bump-opencode && nix flake update --flake ${config.home.homeDirectory}/nixstart && rebuild && pi update --extensions && sudo nix-collect-garbage --delete-older-than 30d";
 
     # The one input `nix flake update` cannot move. ghostty is pinned to an
     # explicit main revision in flake.nix precisely so the lockfile sweep
@@ -55,6 +59,13 @@ in
     # is that edit, not a way around it. It rewrites the pin and stops; the
     # rebuild is still a separate, deliberate `sync-nix`.
     bump-ghostty = "rev=$(git ls-remote https://github.com/ghostty-org/ghostty main | cut -f1) && sed -i \"s|github:ghostty-org/ghostty/[0-9a-f]*|github:ghostty-org/ghostty/$rev|\" ${config.home.homeDirectory}/nixstart/flake.nix && echo \"ghostty pinned to $rev — run sync-nix to build it\"";
+
+    # opencode is pinned to a release tag in flake.nix, so the lockfile sweep
+    # cannot move it either — and unlike ghostty it is meant to stay current,
+    # so `update` and `sync-nix` run this first. Upstream ships several
+    # releases a day and no branch tracks them (`dev` runs ahead, `production`
+    # behind), so the newest vX.Y.Z tag is the only reliable "latest".
+    bump-opencode = "tag=$(git ls-remote --tags --refs https://github.com/anomalyco/opencode 'v*' | cut -d/ -f3 | grep -E '^v[0-9]+\\.[0-9]+\\.[0-9]+$' | sort -V | tail -1) && [ -n \"$tag\" ] && sed -i \"s|github:anomalyco/opencode/v[0-9.]*|github:anomalyco/opencode/$tag|\" ${config.home.homeDirectory}/nixstart/flake.nix && echo \"opencode pinned to $tag\"";
 
     # `zsh` opened ~/.zshrc and re-sourced it. That file is a store path now,
     # so the thing to edit is the module that generates it.

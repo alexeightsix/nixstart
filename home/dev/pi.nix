@@ -53,7 +53,7 @@ in
       # launcher, and its own docs say Pi is installed separately, so a fresh
       # machine had a dispatcher and nothing to dispatch to — bare `pi` exited
       # 127 with "real pi executable not found".
-      inputs.coding-agents.packages.${pkgs.stdenv.hostPlatform.system}.pi-coding-agent
+      inputs.coding-agents.packages.${pkgs.stdenv.hostPlatform.system}.pi
     ];
 
     # dotfiles/pi/pi-launcher is deliberately NOT linked to ~/.local/bin/pi.
