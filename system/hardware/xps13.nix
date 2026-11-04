@@ -82,6 +82,10 @@
 
   services.thermald.enable = true;
 
+  # BIOS and device firmware from Dell through LVFS: `fwupdmgr refresh`,
+  # then `fwupdmgr update`. Lunar Lake fixes still arrive this way.
+  services.fwupd.enable = true;
+
   # Lid, power button, and the keyboard backlight.
   services.logind.settings.Login = {
     HandleLidSwitch = "suspend";
