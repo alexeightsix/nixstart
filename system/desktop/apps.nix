@@ -26,8 +26,6 @@
     gimp
 
     # system
-    btop
-    fastfetch
     gnome-system-monitor
     gnome-tweaks
     gparted

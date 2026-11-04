@@ -53,7 +53,6 @@
   environment.systemPackages = with pkgs; [
     nmap
     inetutils # `telnet`
-    rsync
     rclone
   ];
 }

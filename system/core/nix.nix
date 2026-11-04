@@ -88,6 +88,5 @@
     nix-index
     nixd
     nixfmt
-    ncdu # what is actually taking up the space
   ];
 }

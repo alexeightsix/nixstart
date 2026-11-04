@@ -9,13 +9,8 @@
 {
   environment.systemPackages = with pkgs; [
     dex
-    i3lock
     xss-lock
     picom
-    dunst
-    flameshot
-    i3status-rust
-    vicinae
     playerctl
   ];
 

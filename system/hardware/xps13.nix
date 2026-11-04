@@ -94,7 +94,6 @@
     brightnessctl
     powertop
     intel-gpu-tools
-    acpi
   ];
 
   networking.networkmanager.wifi.backend = "iwd";

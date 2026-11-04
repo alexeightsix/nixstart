@@ -64,17 +64,10 @@ in
     zsh = "nvim ${config.home.homeDirectory}/nixstart/home/shell/zsh.nix";
   };
 
-  # The binaries the alias files shell out to. `ls` is eza, `md` is glow, `lg`
-  # is lazygit, `or`/`pr` are gh, `ff` needs fd, `dff`/`gc`/`gcm`/`gr` need fzf.
+  # The binaries the alias files shell out to. eza, lazygit, gh and fzf come
+  # from their programs.* modules; fd and ripgrep from neovim.nix.
   home.packages = with pkgs; [
-    eza
-    fd
-    ripgrep
-    fzf
     glow-rose-pine
-    lazygit
-    gh
-    delta
     vhs
 
     # Odds and ends that belong to no toolchain in particular.
@@ -86,6 +79,5 @@ in
     htop
     fastfetch
     tree
-    unzip
   ];
 }

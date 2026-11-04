@@ -166,8 +166,6 @@ in
     };
 
     environment.systemPackages = with pkgs; [
-      snapper
-      btrfs-progs
       btrfs-assistant # the GUI, for browsing and diffing snapshots
     ];
   };

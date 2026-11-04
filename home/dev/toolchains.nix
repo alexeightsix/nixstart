@@ -13,17 +13,12 @@ let
     with pkgs;
     lib.optionals (has "go") [
       go
-      gopls
-      golangci-lint
     ]
     ++ lib.optionals (has "node") [
       nodejs
       pnpm
       bun
       typescript
-      typescript-language-server
-      vscode-langservers-extracted
-      prettierd
     ]
     ++ lib.optionals (has "python") [
       python3
@@ -32,8 +27,6 @@ let
     ++ lib.optionals (has "lua") [
       lua
       luarocks
-      lua-language-server
-      stylua
     ]
     ++ lib.optionals (has "rust") [ rustup ]
     ++ lib.optionals (has "android") [

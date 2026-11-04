@@ -1,7 +1,6 @@
 # Tailscale.
 {
   config,
-  pkgs,
   ...
 }:
 {
@@ -21,6 +20,4 @@
   # Let the daemon's own DNS handling through; without this, MagicDNS
   # resolution breaks whenever the firewall is on.
   networking.firewall.trustedInterfaces = [ config.services.tailscale.interfaceName ];
-
-  environment.systemPackages = [ pkgs.tailscale ];
 }

@@ -43,12 +43,7 @@
   };
 
   environment.systemPackages = with pkgs; [
-    arandr
-    xrandr
-    xset
     xclip
-    feh
     gpick
-    libnotify
   ];
 }
