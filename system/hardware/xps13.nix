@@ -59,6 +59,11 @@
     HibernateMode = "shutdown";
   };
 
+  # Compressed swap in RAM, used before the swap partition (higher priority),
+  # so memory pressure stays fast and less ends up on the unencrypted disk.
+  # Hibernate still writes to the partition: systemd never hibernates to zram.
+  zramSwap.enable = true;
+
   # Audio needs the SOF firmware on this platform; without it the speakers
   # and the internal mic simply do not appear.
   hardware.firmware = [ pkgs.sof-firmware ];
