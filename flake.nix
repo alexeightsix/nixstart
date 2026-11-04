@@ -192,45 +192,11 @@
             }
           ];
         };
-
-      # ------------------------------------------------------------ home ---
-      # The same home modules, standalone. This is what `link.sh --headless`
-      # was for: an account on a machine this repository does not own — the
-      # Fedora desktop during the migration, the dev box, an Incus instance.
-      # `home-manager switch --flake .#alex@headless`.
-      mkHome =
-        {
-          profile,
-          system ? "x86_64-linux",
-        }:
-        home-manager.lib.homeManagerConfiguration {
-          pkgs = pkgsFor system;
-          extraSpecialArgs = { inherit inputs self; };
-          modules = [
-            ./home
-            ./profiles/${profile}.nix
-          ];
-        };
     in
     {
       nixosConfigurations = {
         inherit laptop;
       };
-
-      homeConfigurations = {
-        "alex@headless" = mkHome { profile = "headless"; };
-      };
-
-      # A reusable piece, for a guest built outside this flake — a dev box, a
-      # container, another machine's configuration. It is the dev environment
-      # as a NixOS module, with no home-manager generation behind it.
-      nixosModules = {
-        devEnv = ./system/dev-env.nix;
-      };
-
-      # The dev environment as a plain function, for anything that is not a
-      # NixOS module at all.
-      lib.devEnv = import ./lib/dev-env.nix;
 
       packages = forAllSystems (
         system:
@@ -250,73 +216,12 @@
 
       formatter = forAllSystems (system: (pkgsFor system).nixfmt);
 
-      # The dev shells. This is where agents are started: `nix develop
-      # .#agent` gives them the same tools, aliases and shell they would have
-      # on the laptop, without needing a NixOS host underneath.
       devShells = forAllSystems (
         system:
         let
           pkgs = pkgsFor system;
-          lib = pkgs.lib;
-
-          mkShell =
-            {
-              name,
-              languages ? [ ],
-              agents ? false,
-              databases ? false,
-            }:
-            import ./lib/dev-shell.nix {
-              inherit pkgs lib name;
-              dotfiles = "${self}/dotfiles";
-              devEnv = import ./lib/dev-env.nix {
-                inherit
-                  pkgs
-                  lib
-                  languages
-                  agents
-                  databases
-                  ;
-              };
-            };
         in
         {
-          # Everything, for working on a project by hand.
-          default = mkShell {
-            name = "dev";
-            languages = [
-              "go"
-              "node"
-              "rust"
-              "lua"
-              "python"
-            ];
-            databases = true;
-          };
-
-          # What an agent is launched into. Same shell, plus the agents
-          # themselves.
-          agent = mkShell {
-            name = "agent";
-            languages = [
-              "go"
-              "node"
-            ];
-            agents = true;
-          };
-
-          # One per language, for a shell that only does one thing.
-          go = mkShell {
-            name = "go";
-            languages = [ "go" ];
-            agents = true;
-          };
-          node = mkShell {
-            name = "node";
-            languages = [ "node" ];
-            agents = true;
-          };
-
           # Working on this repository itself.
           #
           # Not `with pkgs; [ ... home-manager ... ]`: `with` binds looser than

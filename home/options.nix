@@ -1,12 +1,5 @@
 # The `nixstart.home.*` namespace — what a person carries between machines.
 #
-# This module set is deliberately independent of the NixOS one. It evaluates
-# with nothing but home-manager, so `home-manager switch --flake .#alex@headless`
-# configures an account on a machine this repository does not own — the Fedora
-# desktop during the migration, a dev box, an Incus instance. That was the job
-# `link.sh --headless` was doing, and the reason its list had already drifted
-# from stage-03's was that the two were maintained separately.
-#
 # When NixOS *is* in charge, system/home.nix sets these from
 # `nixstart.system.*`. The direction is one-way and explicit: the system
 # layer knows about the home layer, never the reverse.

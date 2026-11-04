@@ -32,7 +32,6 @@
     ./services/snapshots.nix
 
     ./virtualisation.nix
-    ./dev-env.nix
 
     ./home.nix
   ];

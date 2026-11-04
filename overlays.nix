@@ -21,7 +21,7 @@ inputs: final: prev: {
   # it that Expo and Gradle need spelled out — ANDROID_HOME, the NDK root, the
   # aapt2 that AGP has to be pointed at. All three are built from versions the
   # package pins, so exporting the derivation alone would put
-  # "build-tools/36.0.0/aapt2" in lib/dev-env.nix as a second place to edit
+  # "build-tools/36.0.0/aapt2" in home/dev/toolchains.nix as a second place to edit
   # whenever Expo moves.
   android-sdk = final.callPackage ./pkgs/android-sdk { };
 

@@ -6,7 +6,7 @@
 # location not found: ~/Android/sdk", fell back to a bare `adb` that also did
 # not exist, and died with `spawn adb ENOENT`. Expo looks at $ANDROID_HOME,
 # then the deprecated $ANDROID_SDK_ROOT, then ~/Android/sdk, and runs
-# $ANDROID_HOME/platform-tools/adb; lib/dev-env.nix sets the first of those to
+# $ANDROID_HOME/platform-tools/adb; home/dev/toolchains.nix sets the first of those to
 # this derivation.
 #
 # Every version below is a requirement read out of the project, not a
