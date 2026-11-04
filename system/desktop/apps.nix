@@ -36,7 +36,6 @@ in
       # system
       btop
       fastfetch
-      ncdu
       gnome-system-monitor
       gnome-tweaks
       gparted

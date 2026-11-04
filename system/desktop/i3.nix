@@ -25,9 +25,7 @@ in
       flameshot
       i3status-rust
       vicinae
-      pavucontrol
       playerctl
-      brightnessctl
     ];
 
     # stage-14 did `ln -s /usr/bin/pavucontrol /usr/bin/sound` so the launcher

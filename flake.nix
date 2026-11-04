@@ -114,9 +114,6 @@
       flake = false;
     };
 
-    # Declarative Flathub, for the applications that genuinely ship no other
-    # way. stage-04's eight are all in nixpkgs.
-    nix-flatpak.url = "github:gmodena/nix-flatpak";
 
   };
 
@@ -176,7 +173,7 @@
         in
         lib.nixosSystem {
           inherit system;
-          specialArgs = { inherit inputs self; };
+          specialArgs = { inherit inputs; };
           modules = [
             { nixpkgs.pkgs = pkgsFor system; }
             ./system
@@ -205,7 +202,6 @@
         in
         {
           inherit (pkgs)
-            fury-renegade-rgb
             dracula-zsh-theme
             weather-wallpaper
             glow-rose-pine

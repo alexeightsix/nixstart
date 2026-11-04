@@ -19,12 +19,10 @@
     ./desktop/i3.nix
     ./desktop/audio.nix
     ./desktop/fonts.nix
-    ./desktop/flatpak.nix
     ./desktop/apps.nix
 
     ./hardware/bluetooth.nix
     ./hardware/keychron.nix
-    ./hardware/rgb.nix
     ./hardware/xps13.nix
 
     ./services/openssh.nix

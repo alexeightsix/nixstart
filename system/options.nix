@@ -48,14 +48,6 @@ in
         default = false;
         description = "Browsers, chat, media, database and design tools.";
       };
-      flatpak = mkOption {
-        type = types.bool;
-        default = false;
-        description = ''
-          Flathub as a declarative remote, for applications that ship no other
-          way. Everything currently installed is in nixpkgs, so this is off.
-        '';
-      };
     };
 
     trustLocalNetwork = mkOption {
@@ -97,11 +89,6 @@ in
         type = types.bool;
         default = false;
         description = "hidraw access for the Keychron K2 Pro, so VIA can flash it.";
-      };
-      rgb = mkOption {
-        type = types.bool;
-        default = false;
-        description = "Hold the RAM RGB at zero brightness on every boot.";
       };
       bluetooth = mkOption {
         type = types.bool;

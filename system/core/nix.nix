@@ -71,10 +71,6 @@
     nixPath = [ "nixpkgs=${inputs.nixpkgs}" ];
   };
 
-  # Rollback is a boot menu entry now, which is what the `dnf` alias was
-  # reaching for when it took a snapper snapshot before every install.
-  boot.loader.systemd-boot.configurationLimit = lib.mkDefault 20;
-
   system.stateVersion = lib.mkDefault "25.05";
 
   # Collecting and optimising are both IO-bound and neither is urgent.

@@ -39,7 +39,6 @@
       xps13 = true; # Lunar Lake: kernel, Xe2, SOF audio, fprintd, upower
       keychron = true;
       bluetooth = true;
-      # No RGB — that is the desktop's RAM.
     };
   };
 
