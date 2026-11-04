@@ -87,5 +87,6 @@
     nix-index
     nixd
     nixfmt
+    nvd # package diff between generations; scripts/apply.sh runs it
   ];
 }

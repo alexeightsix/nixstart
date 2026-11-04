@@ -65,6 +65,16 @@ if [ "$built" = "$(readlink -f /run/current-system)" ]; then
     exit 0
 fi
 
+# --- what changed ----------------------------------------------------------
+# Package versions added, removed and upgraded against the running system.
+# Through nix run the first time, before nvd itself is installed.
+step "changes"
+if command -v nvd >/dev/null; then
+    nvd diff /run/current-system "$built"
+else
+    nix run nixpkgs#nvd -- diff /run/current-system "$built"
+fi
+
 # --- apply -----------------------------------------------------------------
 step "applying ($MODE)"
 sudo nixos-rebuild "$MODE" --flake ".#laptop"
