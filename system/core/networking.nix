@@ -8,6 +8,21 @@
   networking.networkmanager.enable = lib.mkDefault true;
   networking.firewall.enable = lib.mkDefault true;
 
+  # Wired only: keep the wifi radio off on every boot. NetworkManager already
+  # remembers `nmcli radio wifi off` in its state file, but that lives outside
+  # this repo; this makes it part of the config. `nmcli radio wifi on` still
+  # works for a one-off, until the next boot.
+  systemd.services.wifi-radio-off = {
+    description = "Turn the wifi radio off";
+    after = [ "NetworkManager.service" ];
+    requires = [ "NetworkManager.service" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${lib.getExe' pkgs.networkmanager "nmcli"} radio wifi off";
+    };
+  };
+
   # Trust the private networks this machine is on, rather than listing ports.
   # Off unless a host asks for it; see the option in system/options.nix for
   # what that exposes and for the Tailscale version that exposes nothing.
