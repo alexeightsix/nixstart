@@ -64,6 +64,12 @@
   # Hibernate still writes to the partition: systemd never hibernates to zram.
   zramSwap.enable = true;
 
+  # Under sustained memory pressure, kill the one app causing it rather than
+  # letting the whole machine stall. Apps each get their own app-*.scope (the
+  # launcher and Ghostty start them that way), so that is what gets killed,
+  # not the session.
+  systemd.oomd.enableUserSlices = true;
+
   # Audio needs the SOF firmware on this platform; without it the speakers
   # and the internal mic simply do not appear.
   hardware.firmware = [ pkgs.sof-firmware ];
