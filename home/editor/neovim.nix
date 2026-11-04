@@ -78,9 +78,6 @@ in
         templ
         golangci-lint
       ]
-      ++ lib.optionals (enabled "php") [
-        intelephense
-      ]
       ++ lib.optionals (enabled "lua") [
         lua-language-server
         stylua

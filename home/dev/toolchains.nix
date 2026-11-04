@@ -25,11 +25,6 @@ let
       vscode-langservers-extracted
       prettierd
     ]
-    ++ lib.optionals (has "php") [
-      php84
-      php84Packages.composer
-      intelephense
-    ]
     ++ lib.optionals (has "python") [
       python3
       uv
@@ -61,13 +56,6 @@ let
       # what actually runs, and it is the file to look at when a build takes
       # a Gradle version by surprise.
       gradle
-    ]
-    ++ lib.optionals (has "gtk") [
-      gtk4
-      libadwaita
-      blueprint-compiler
-      pkg-config
-      gobject-introspection
     ];
 
   databasePackages = lib.optionals cfg.databases (

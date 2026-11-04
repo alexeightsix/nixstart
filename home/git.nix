@@ -7,8 +7,6 @@
 # always the same build.
 {
   config,
-  lib,
-  pkgs,
   ...
 }:
 let

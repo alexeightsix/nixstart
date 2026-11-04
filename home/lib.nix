@@ -1,5 +1,5 @@
 # Helpers shared by the home modules.
-{ lib, config }:
+{ lib, ... }:
 {
   # Some applications rewrite their own configuration as you use them.
   # flameshot and vicinae both do, and link.sh had to `render` rather than
@@ -17,8 +17,4 @@
         run install -m 0644 ${source} "${target}"
       fi
     '';
-
-  # A plain symlink to a writable path in the working checkout, for trees that
-  # are edited far more often than the system is rebuilt.
-  fromCheckout = path: config.lib.file.mkOutOfStoreSymlink path;
 }

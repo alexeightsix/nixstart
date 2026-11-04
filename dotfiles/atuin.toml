@@ -1,8 +1,0 @@
-style = "compact"
-show_preview = true 
-show_help = false
-show_tabs = false
-
-[ai]
-enabled = true
-model = "max"

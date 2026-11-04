@@ -4,7 +4,7 @@
 # hand, each guarded with `command -v` because the same file is cloned into
 # disposable Incus instances. The guard is unnecessary here: if the module is
 # on, the binary is in the profile.
-{ config, lib, ... }:
+{ config, ... }:
 let
   cfg = config.nixstart.home;
 in

@@ -463,11 +463,9 @@ in
         types.enum [
           "go"
           "node"
-          "php"
           "python"
           "rust"
           "lua"
-          "gtk"
           "android"
         ]
       );
@@ -477,8 +475,7 @@ in
         expects to find on PATH. The editor configuration itself is not
         managed here — see home/editor/neovim.nix.
 
-        `android` is not a language and is here anyway, next to `gtk`, which
-        is not one either. It is the Android SDK, a JDK 17 and Gradle, and it
+        `android` is not a language and is here anyway. It is the Android SDK, a JDK 17 and Gradle, and it
         behaves like the rest of this list: a machine that turns it on gets
         the toolchain and the environment that goes with it, and one that does
         not is not carrying several gigabytes of system image it never boots.
