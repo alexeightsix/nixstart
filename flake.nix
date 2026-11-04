@@ -9,33 +9,18 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Machine-local secrets: .zsh_secrets, and the sync-dev host and password
-    # that scripts/sync-dev.sh and ssh-dev-storage.sh each re-implement a
-    # reader for.
+    # Machine-local secrets. See system/core/secrets.nix.
     sops-nix = {
       url = "github:Mic92/sops-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # The dotfiles used to be a separate input — a `path:/home/alex/kickstart`
-    # pointing at a dev-env checkout, because ghostty-shaders/ and
-    # zsh/copyline.plugin.zsh were untracked in the dev-env remote and a git
-    # input would have silently produced a configuration missing both.
-    #
-    # They now live in this repository, under dotfiles/ and wallpapers/, so
-    # there is no input at all: `${self}/dotfiles`. That removes the last
-    # reason this flake was only buildable on a machine that happened to have
-    # a second checkout next to it, and the untracked files are tracked here.
-    #
-    # The build-time/runtime distinction survives the move. Files Nix reads at
-    # build time (tmux.conf, dunstrc, the shaders) come from the store path.
-    # Trees that must stay editable at runtime — the Neovim config, the Pi
-    # setup — do not; those go through `nixstart.home.checkout`, a plain path
-    # on the machine, which is now this repository's own working tree.
+    # No dotfiles input: they live in this repository at `${self}/dotfiles`.
+    # Trees that must stay editable at runtime go through
+    # `nixstart.home.checkout`.
 
     # The weather wallpaper generator — the base image with the current
-    # temperature drawn on it. Was a `go build` in a checkout under
-    # ~/dev/archive with the binary committed next to its source.
+    # temperature drawn on it.
     weather-wallpaper = {
       url = "github:upbeatdevelopment/wealther-wallpaper";
       flake = false;
@@ -88,10 +73,7 @@
     opencode.url = "github:anomalyco/opencode/v2.2.5";
 
     # witr — "why is this running?": traces a process, port, container or file
-    # back to the chain that started it. stage-12 installed it with
-    # `curl ... | bash`, which drops a binary into /usr/local/bin outside any
-    # package manager. It ships its own flake, so this takes the package
-    # rather than repackaging it.
+    # back to the chain that started it. Taken from its own flake.
     witr = {
       url = "github:pranshuparmar/witr";
       inputs.nixpkgs.follows = "nixpkgs";

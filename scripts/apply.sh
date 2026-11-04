@@ -5,12 +5,8 @@
 #   scripts/apply.sh switch     apply live
 #   scripts/apply.sh test       apply live, but do not touch the boot menu
 #
-# `boot` is the default deliberately. Some changes here — anything that moves
-# the system path, which includes the xdg-desktop-portal addition — make
-# systemd restart display-manager, and that kills X, your session, and the
-# terminal you are running this from. A `switch` from inside the desktop is how
-# the 17:10 rebuild died with exit 101 halfway through activation. `boot`
-# stages everything and lets the next startup apply it with nothing running.
+# `boot` is the default deliberately: a change that restarts display-manager
+# kills X and this terminal mid-activation when run as `switch` from the session.
 #
 # Run `switch` from a TTY (Ctrl+Alt+F2) if you want it live without rebooting.
 set -euo pipefail

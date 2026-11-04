@@ -1,22 +1,14 @@
 # Wifi, as the launcher sees it.
 #
-# There is no tray applet anywhere in this repository and that is deliberate:
-# i3bar's tray speaks XEmbed only, while nixpkgs builds networkmanagerapplet
-# with `-Dappindicator=yes`, which makes nm-applet a StatusNotifierItem and
-# nothing else. It would need a snixembed shim to render at all, in a bar that
-# is `mode hide` and so invisible unless $mod is held. Three moving parts to
-# reach a menu the launcher can already show.
-#
-# So wifi is reachable three ways instead, each doing one thing:
-#   - the `net` block in statusbar.nix  — which network am I on ($mod to peek)
+# No tray applet, deliberately: i3bar's tray speaks XEmbed only, while
+# nixpkgs builds nm-applet as a StatusNotifierItem, so it would need a
+# snixembed shim. Wifi is reachable three ways instead:
+#   - the `net` block in statusbar.nix  — which network am I on
 #   - $mod+w in i3.nix                  — change network, straight to nmtui
 #   - this desktop entry                — the same, found by typing in vicinae
 #
-# vicinae indexes `~/.nix-profile/share/applications`, which is where
-# home-manager writes `xdg.desktopEntries`, so no vicinae-side configuration is
-# needed — the entry appearing in its `applications` provider is the whole
-# integration. `settings.Keywords` is what makes "wifi" and "network" find it
-# rather than only the literal name.
+# vicinae picks up `xdg.desktopEntries` with no configuration of its own;
+# `settings.Keywords` is what makes "wifi" and "network" find it.
 {
   config,
   lib,

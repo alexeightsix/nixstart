@@ -4,7 +4,7 @@
 # name you forget you defined" — and more than half of those files are shell
 # functions with fzf pipelines in them, which Nix could only hold as opaque
 # strings. So the directory stays the source of truth and is sourced at
-# runtime. What moves here is the handful whose *meaning* changed on NixOS.
+# runtime. The NixOS-specific ones are here.
 {
   config,
   pkgs,
@@ -23,10 +23,6 @@ in
   '';
 
   programs.zsh.shellAliases = {
-    # `dnf` was aliased to take a snapper snapshot and then run dnf, because a
-    # Fedora package transaction cannot be undone. Both halves are one command
-    # here, and its rollback is a boot menu entry.
-    #
     # vicinae indexes desktop entries once at startup and does not notice new
     # ones, so an app added by the switch stays out of the launcher until the
     # daemon restarts. `try-restart` is a no-op when it is not running.
@@ -34,10 +30,7 @@ in
     rebuild-test = "sudo nixos-rebuild test --flake ${config.home.homeDirectory}/nixstart";
     generations = "nixos-rebuild list-generations";
 
-    # scripts/update-packages.sh ran nine updaters in sequence — dnf, atuin,
-    # claude, opencode, codex, pi, flatpak, npm -g, rustup, cargo-update, go
-    # install, oh-my-zsh, lazy.nvim — each with its own idea of "current".
-    # One lockfile moves now.
+    # Move the lockfile and rebuild.
     update = "bump-opencode && nix flake update --flake ${config.home.homeDirectory}/nixstart && rebuild";
 
     # The whole cycle, in the order the pieces actually depend on each other:
@@ -67,8 +60,7 @@ in
     # behind), so the newest vX.Y.Z tag is the only reliable "latest".
     bump-opencode = "tag=$(git ls-remote --tags --refs https://github.com/anomalyco/opencode 'v*' | cut -d/ -f3 | grep -E '^v[0-9]+\\.[0-9]+\\.[0-9]+$' | sort -V | tail -1) && [ -n \"$tag\" ] && sed -i \"s|github:anomalyco/opencode/v[0-9.]*|github:anomalyco/opencode/$tag|\" ${config.home.homeDirectory}/nixstart/flake.nix && echo \"opencode pinned to $tag\"";
 
-    # `zsh` opened ~/.zshrc and re-sourced it. That file is a store path now,
-    # so the thing to edit is the module that generates it.
+    # ~/.zshrc is a store path, so edit the module that generates it.
     zsh = "nvim ${config.home.homeDirectory}/nixstart/home/shell/zsh.nix";
   };
 
@@ -85,13 +77,13 @@ in
     delta
     vhs
 
-    # stage-01 odds and ends that belong to no toolchain in particular.
+    # Odds and ends that belong to no toolchain in particular.
     jq
     gettext
     ncdu
     witr # "why is this running?" — traces a process/port/container to its origin
     btop
-    htop # kickstart only ever installed btop; htop added on request
+    htop
     fastfetch
     tree
     unzip

@@ -1,10 +1,5 @@
-# The i3 session's system-level parts. The configuration file itself is
-# home-manager's (modules/home/desktop/i3.nix) — this is the daemons and
-# helpers it execs, which stage-01's package list was missing.
-#
-# i3config execs dex-autostart, xss-lock and i3lock; none of the three was
-# installed by any stage. On Fedora they came in as dependencies of something
-# else, which is why it worked. Naming them is the fix.
+# The i3 session's system-level parts: the daemons and helpers the i3 config
+# execs. The configuration file itself is home-manager's (home/desktop/i3.nix).
 {
   config,
   lib,
@@ -24,13 +19,10 @@
     playerctl
   ];
 
-  # stage-14 did `ln -s /usr/bin/pavucontrol /usr/bin/sound` so the launcher
-  # could find it by that name. A wrapper in the system profile does the same
-  # thing without writing into a directory the package manager owns.
+  # `sound` opens pavucontrol.
   environment.shellAliases.sound = lib.getExe pkgs.pavucontrol;
 
-  # vicinae runs as a per-user daemon. stage-02 enabled it with a `runuser`
-  # incantation that had to reconstruct XDG_RUNTIME_DIR by hand.
+  # vicinae runs as a per-user daemon.
   systemd.user.services.vicinae = {
     description = "Vicinae launcher daemon";
     wantedBy = [ "graphical-session.target" ];
@@ -39,14 +31,8 @@
     # Desktop entries name their binaries bare — `Exec=ghostty`, `Exec=btop`,
     # `Exec=nvim`, `Exec=pavucontrol` — and vicinae execs them directly rather
     # than through a shell, so they have to be found on this unit's PATH.
-    # NixOS gives a user unit coreutils, findutils, grep, sed and systemd and
-    # nothing else, so every one of those lookups failed with
-    #
-    #   Failed to start app: "Child process set up failed: execve: No such file or directory"
-    #
-    # and the launcher could start only the few entries whose Exec is already
-    # an absolute store path (Chrome, flameshot). These two profiles are where
-    # a user's applications actually live.
+    # NixOS gives a user unit only coreutils, findutils, grep, sed and
+    # systemd; these two profiles are where a user's applications live.
     path = [
       "/run/current-system/sw"
       "/etc/profiles/per-user/${config.nixstart.system.user.name}"

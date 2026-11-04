@@ -1,10 +1,4 @@
-# git.
-#
-# The credential helper was `!/usr/bin/gh auth git-credential`. That absolute
-# path is the single most portable-looking line in the repository and the one
-# most certain to break here: there is no /usr/bin/gh on NixOS. It resolves to
-# a store path now, which also means the helper and the gh that answers it are
-# always the same build.
+# git. The gh credential helper is a store path (there is no /usr/bin/gh).
 {
   config,
   ...

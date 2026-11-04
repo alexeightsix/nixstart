@@ -1,6 +1,5 @@
-# stage-05 cloned dracula/zsh into /tmp and copied the theme plus its lib/ into
-# ~/.oh-my-zsh/themes. oh-my-zsh's own directory is read-only on NixOS, so the
-# theme becomes a custom-directory drop-in instead — see modules/home/shell/zsh.nix.
+# The Dracula oh-my-zsh theme. oh-my-zsh's own directory is read-only on
+# NixOS, so this is a custom-directory drop-in — see home/shell/zsh.nix.
 {
   lib,
   stdenvNoCC,

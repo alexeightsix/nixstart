@@ -181,11 +181,6 @@ grep -q "filesystems.nix" "$REPO/system/machine.nix" \
 step "installing (this takes a while)"
 export NIX_CONFIG="experimental-features = nix-command flakes"
 
-# The dotfiles used to be a separate `path:` input, which meant hunting for a
-# ~/kickstart checkout here and passing --override-input so the installer did
-# not fail on a path that does not exist in the installer environment. They
-# live in this repository now, so there is nothing to find and nothing to
-# override.
 nixos-install --flake "$REPO#laptop" --no-root-password
 
 step "done"

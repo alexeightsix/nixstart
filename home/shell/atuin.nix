@@ -1,6 +1,4 @@
-# stage-05 installed atuin with `bash <(curl ...)`, which put a binary in
-# ~/.atuin/bin and an env file .zshrc then had to source conditionally,
-# "only present when atuin came from its own installer".
+# Shell history.
 { ... }:
 {
   programs.atuin = {

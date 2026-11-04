@@ -1,26 +1,11 @@
-# Dell XPS 13 9350 (Lunar Lake) — the real machine.
-#
-# This was a placeholder that said "replace with nixos-generate-config" and
-# never was, which is why generations 2, 3 and 4 all built cleanly and then
-# failed to boot. Two things were missing and either one is fatal:
-#
-#   the LUKS device   root lives on /dev/mapper/cryptroot; with no
-#                     boot.initrd.luks.devices the initrd cannot open the
-#                     volume that every filesystem below sits on
-#   /nix              a NixOS system whose /nix is not mounted has no store
-#                     to boot from, so it dies after unlocking
-#
-# Verified against the running machine (lsblk, findmnt, /etc/fstab of the
-# generation that does boot):
+# Dell XPS 13 9350 disk layout, verified against the running machine.
 #
 #   nvme0n1p1  vfat         BOOT   ->  /boot
 #   nvme0n1p2  swap         swap
 #   nvme0n1p3  crypto_LUKS         ->  cryptroot, btrfs, label "nixos"
 #                                      @ @home @nix @log
 #
-# CPU, microcode, kvm and graphics come from system/hardware/xps13.nix — the
-# placeholder declared kvm-amd and AMD microcode on an Intel Core Ultra 7
-# 258V, and that is deliberately not repeated here.
+# CPU, microcode, kvm and graphics come from system/hardware/xps13.nix.
 { lib, modulesPath, ... }:
 {
   imports = [ (modulesPath + "/installer/scan/not-detected.nix") ];
@@ -69,8 +54,7 @@
     ];
   };
 
-  # neededForBoot is what puts x-initrd.mount on this one, matching the
-  # generation that boots; journald wants /var/log present early.
+  # neededForBoot: journald wants /var/log present early.
   fileSystems."/var/log" = {
     device = "/dev/disk/by-label/nixos";
     fsType = "btrfs";

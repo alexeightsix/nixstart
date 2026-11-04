@@ -1,11 +1,5 @@
 # The i3 configuration.
 #
-# i3config was the one file that never got the path treatment the rest of the
-# repository did: link.sh derives $DOTFILES from its own location and common.sh
-# derives $KICKSTART from BASH_SOURCE, but i3config still says
-# `$HOME/kickstart/dotfiles/picom.conf` and `$HOME/kickstart/scripts/xrandr.sh`
-# in six places. Those are interpolated now, so the clone can live anywhere.
-#
 # Written with `xdg.configFile` and the existing text rather than
 # `xsession.windowManager.i3`'s option tree: the config is 230 lines of
 # bindcode tables and Rose Pine colours that translate to Nix attribute sets
@@ -20,8 +14,7 @@ let
   cfg = config.nixstart.home;
   desktop = cfg.desktop;
 
-  # scripts/xrandr.sh was a single commented-out line, so every host ran an
-  # empty script. The layout is per-host now, and a host with none runs nothing.
+  # desktop.monitors, run at i3 start; empty while `dock` handles the layout.
   monitorScript = pkgs.writeShellScript "monitors" ''
     ${desktop.monitors}
   '';
@@ -160,26 +153,11 @@ let
 
   # Which screen Ctrl+; captures.
   #
-  # `flameshot screen` without -n does not quietly fall back to the monitor
-  # holding the cursor the way `--help` claims. On two screens it puts up its
-  # own chooser — "Monitor 1: DP-1 / Click to select" beside "Monitor 2:
-  # eDP-1" — and that chooser is an ordinary window, so i3 tiles it into half
-  # a workspace instead of showing it over the desktop. A keypress meant to
-  # start a screenshot ended up asking a question and corrupting the layout to
-  # ask it.
-  #
-  # -n answers the question up front. Qt numbers screens primary-first and
-  # then in RandR order, which is the order `xrandr --listmonitors` prints and
-  # the order workspacePair above already sorts into; verified with
-  # `flameshot screen -n N -r`, which returns 1920x1080 for 0 and 1680x1050
-  # for 1 here. With -n the capture widget comes up at exactly the output's
-  # geometry and i3 leaves it alone.
-  #
-  # The pointer is warped onto that screen as well, because -n decides which
-  # monitor is captured but not where the cursor is: without the warp the
-  # selector opens on the focused screen with the mouse still on the other
-  # one. Skipped when the pointer is already inside the output, so mouse and
-  # focus together moves nothing.
+  # Without -n, `flameshot screen` on two screens puts up a monitor chooser
+  # that i3 tiles into the layout. -n takes the index in Qt's screen order
+  # (primary first, then RandR order — the order workspacePair sorts into).
+  # The pointer is warped onto that screen too, unless it is already there,
+  # since -n does not move the cursor.
   screenshotFocused = pkgs.writeShellApplication {
     name = "flameshot-focused-screen";
     runtimeInputs = [

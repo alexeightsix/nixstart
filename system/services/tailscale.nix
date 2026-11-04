@@ -1,9 +1,4 @@
 # Tailscale.
-#
-# It is running on this machine today and no bootstrap stage installs it —
-# `tailscale0` shows up in `incus list` output but nothing in the repository
-# put it there, so a rebuilt machine would silently come back without the
-# tailnet. That is exactly the class of thing this port is for.
 {
   config,
   pkgs,
@@ -18,16 +13,8 @@
     useRoutingFeatures = "client";
     openFirewall = true;
 
-    # `sudo tailscale set --operator=$USER`, which otherwise has to be run
-    # by hand after every install and is forgotten after every reinstall.
-    # Without it `tailscale up`, `tailscale status` and friends all need
-    # sudo: the daemon only takes control commands from root or from the
-    # one account named as its operator.
-    #
-    # nixpkgs turns this list into a `tailscaled-set` oneshot, ordered
-    # after tailscaled and wanted by multi-user.target, so it is reasserted
-    # on every boot and every activation instead of being a one-time manual
-    # step. It follows the host's user rather than hardcoding a name.
+    # Lets the user run `tailscale up`/`status` without sudo. Reasserted on
+    # every boot by nixpkgs' `tailscaled-set` oneshot.
     extraSetFlags = [ "--operator=${config.nixstart.system.user.name}" ];
   };
 

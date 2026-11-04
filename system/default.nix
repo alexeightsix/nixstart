@@ -1,6 +1,4 @@
-# Every NixOS module in this repository. Importing this one imports the lot;
-# each of them is inert until the matching `kickstart.*` option is turned on,
-# so a host file is a list of decisions rather than a list of imports.
+# Every NixOS module in this repository. system/machine.nix imports this.
 {
   imports = [
     ./options.nix

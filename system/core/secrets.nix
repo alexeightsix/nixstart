@@ -1,10 +1,5 @@
-# Machine-local secrets.
-#
-# Today these are untracked plaintext files that every script re-implements a
-# reader for: ~/.zsh_secrets, ~/.config/sync-dev/host, ~/.config/sync-dev/password
-# (mode 600, with a comment explaining that publishing the host next to "logs
-# in as root over password auth" is a target). Encrypted to the host key, they
-# can live in this repository.
+# Machine-local secrets, encrypted to the host key so they can live in this
+# repository. Inert until secrets/<hostname>.yaml exists.
 {
   config,
   inputs,

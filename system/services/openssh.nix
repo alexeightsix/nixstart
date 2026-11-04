@@ -1,5 +1,4 @@
-# stage-02 ran `systemctl enable --now sshd` with the distro default config,
-# which on Fedora permits password authentication.
+# Key-only SSH.
 { lib, ... }:
 {
   services.openssh = {

@@ -32,8 +32,6 @@
 
   services.displayManager.defaultSession = "none+i3";
 
-  # xfce4-power-manager was in stage-01's package list with nothing turning
-  # it on; the pieces it was standing in for are services here.
   services.libinput.enable = true;
 
   # The desktop portal. Without it `flameshot gui` (Ctrl+; in desktop/i3.nix)

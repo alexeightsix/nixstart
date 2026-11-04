@@ -1,6 +1,4 @@
-# The graphical applications, whatever channel Fedora happened to get them
-# from: dnf (stage-01), a downloaded rpm (Chrome), a vendor repo (Beekeeper,
-# stage-12) or Flathub (stage-04). One list now.
+# The graphical applications.
 {
   pkgs,
   ...
@@ -11,7 +9,7 @@
     firefox
     google-chrome
 
-    # chat and meetings — were Flatpaks, with /usr/bin symlinks after them
+    # chat and meetings
     slack
     discord
     zoom-us
@@ -52,8 +50,8 @@
 
   # Thunar on its own lists files and little else. gvfs is trash, network
   # shares and phones over MTP; tumbler draws the thumbnails; udisks2 is
-  # what volman actually calls to mount a USB stick. A desktop environment
-  # would have turned on all three, and there is no desktop environment.
+  # what volman actually calls to mount a USB stick. With no desktop
+  # environment, nothing else turns them on.
   services.gvfs.enable = true;
   services.tumbler.enable = true;
   services.udisks2.enable = true;

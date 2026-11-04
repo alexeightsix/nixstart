@@ -1,9 +1,7 @@
 # The bridge from the system layer to the home layer.
 #
-# One-directional and explicit: the system knows the home modules exist and
-# tells them what this machine is. The home modules never read `osConfig`,
-# which is the whole point — the same set configures an account on a machine
-# this repository does not manage.
+# One-directional and explicit: the system tells the home modules what this
+# machine is, and the home modules never read `osConfig`.
 { config, ... }:
 let
   cfg = config.nixstart.system;

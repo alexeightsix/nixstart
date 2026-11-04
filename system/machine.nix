@@ -1,8 +1,4 @@
 # Dell XPS 13 9350 — Core Ultra 7 258V, Arc 140V, 32GB LPDDR5X, Killer BE201.
-#
-# scripts/i3status-select.sh existed to tell this machine and the desktop
-# apart at runtime, by testing for /sys/class/power_supply/BAT0. This is that
-# test, answered once, plus everything else that is only true of a laptop.
 { ... }:
 {
   imports = [
@@ -50,51 +46,25 @@
       # One bar, on the monitor while one is connected and on the panel when
       # it is not. i3 resolves "primary" against the X primary flag, and
       # `dock` below marks exactly one output primary in each of its two
-      # branches, so this follows the dock without naming a connector.
-      #
-      # This went the other way for a while — `[ ]`, a bar on every screen —
-      # on the argument that a second bar only duplicates the status line
-      # while its workspace buttons are per-output and worth keeping. That
-      # reasoning still holds and is the cost of this setting: with the bar
-      # gone from the panel there is nothing on the panel itself saying which
-      # workspace it is showing, which `pairedWorkspaces` above makes more
-      # noticeable rather than less. Asked for anyway — a clock, a battery
-      # and a temperature repeated six inches below themselves is the louder
-      # annoyance of the two. `barOutputs` is still there to go back — see
-      # home/options.nix.
+      # branches, so this follows the dock without naming a connector. The
+      # cost: nothing on the panel says which workspace it is showing.
       barOutputs = [ "primary" ];
 
-      # The agent terminal lives on the panel.
-      #
-      # This machine runs coding agents (`agents = true` below) and the
-      # supervising is done on the monitor, so the terminal belongs on the
-      # screen underneath it and should stay there when the workspace
-      # changes. $mod+Shift+a turns it on for as long as that is true; it is
-      # off at every login. See home/desktop/agent-mode.nix.
-      #
-      # $mod+0 — workspace 10 — is left out of it, so there is still a pair
-      # where both screens are whatever you put on them.
+      # The agent terminal lives on the panel while supervising happens on
+      # the monitor. $mod+Shift+a toggles it (off at every login); $mod+0 is
+      # left out of it. See home/desktop/agent-mode.nix.
       agentMode.enable = true;
 
-      # Laptop only — the desktop drives a single monitor and has no built-in
-      # panel to switch off, so it leaves this at its default of false.
-      #
-      # autorandr alone was not enough: with no saved profiles it matches
-      # nothing and does nothing, and home-manager's unit only fires at login.
-      # See home/desktop/dock.nix.
+      # autorandr alone is not enough: with no saved profiles it matches
+      # nothing, and home-manager's unit only fires at login. See
+      # home/desktop/dock.nix.
       dock = {
         enable = true;
         internal = "eDP-1"; # `xrandr --query` on this machine
-        # An external display extends onto the panel rather than replacing it:
-        # both stay on, the first external is primary at +0+0 and the panel
-        # sits to its right, each at its own native mode — DP-1 keeps 144Hz at
-        # 1920x1080 and the panel keeps 1920x1200, which a mirrored layout
-        # could not do.
-        #
-        # internalPosition is load-bearing now rather than aspirational, and
-        # it describes where the panel physically is, not a preference: the
-        # laptop sits under the monitor on this desk, centred on it, so the
-        # pointer crosses between the two where the screens actually meet.
+        # An external display extends onto the panel rather than replacing
+        # it, each at its own mode. internalPosition is where the panel
+        # physically sits on the desk (under the monitor, centred), so the
+        # pointer crosses where the screens actually meet.
         keepInternal = true;
         internalPosition = "below";
 
@@ -125,9 +95,7 @@
       "rust"
       "lua"
 
-      # The Expo project in ~/dev/spotlight. This is the machine it is built
-      # on, and it is the only one — the desktop does not have it, so the SDK
-      # and its system image are not in that machine's closure.
+      # The Expo project in ~/dev/spotlight.
       "android"
     ];
     databases = true;

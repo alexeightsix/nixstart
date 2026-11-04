@@ -1,7 +1,4 @@
 # Nix itself.
-#
-# stage-08 installed the daemon with the upstream shell installer and left a
-# note that SELinux had to be disabled first. On NixOS none of that exists.
 {
   lib,
   pkgs,
@@ -32,11 +29,6 @@
       ];
     };
 
-    # scripts/update-packages.sh ran `dnf upgrade`, `atuin update`, `claude
-    # update`, `flatpak update`, `npm update -g`, `rustup update`, `cargo
-    # install-update --all` and `go install ...@latest` in sequence, each with
-    # its own idea of what "current" means. Here the lockfile is the only
-    # thing that moves, and `nixos-rebuild` is the only thing that applies it.
     # Two layers of garbage collection, because a scheduled one alone is not
     # enough: a heavy week of rebuilds can fill a disk long before the next
     # timer fires.

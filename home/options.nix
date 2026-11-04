@@ -1,8 +1,5 @@
-# The `nixstart.home.*` namespace — what a person carries between machines.
-#
-# When NixOS *is* in charge, system/home.nix sets these from
-# `nixstart.system.*`. The direction is one-way and explicit: the system
-# layer knows about the home layer, never the reverse.
+# The `nixstart.home.*` namespace. system/home.nix sets these from
+# `nixstart.system.*`; the home layer never reads the system layer.
 { lib, ... }:
 let
   inherit (lib) mkOption types;
@@ -28,13 +25,8 @@ in
       };
     };
 
-    # The dotfiles repository, in its two forms.
-    #
-    # The distinction is the one thing this port has to get right. A file Nix
-    # reads is pinned and reproducible but frozen until the next rebuild; a
-    # file read at runtime is editable but outside Nix's knowledge. Both are
-    # correct for different files, and conflating them is what makes ported
-    # configurations feel worse than the shell scripts they replaced.
+    # The dotfiles, in their two forms: a store path Nix reads (pinned, frozen
+    # until the next rebuild) and a checkout read at runtime (editable).
 
     dotfiles = mkOption {
       type = types.path;
@@ -48,14 +40,9 @@ in
       type = types.str;
       default = "/home/alex/nixstart";
       description = ''
-        Working checkout on the machine, referred to by path and never read.
-        This is where the trees that are edited far more often than the system
-        is rebuilt live — dotfiles/nvim and dotfiles/pi — so that an edit
+        Working checkout of this repository, referred to by path and never
+        read. dotfiles/nvim and dotfiles/pi are linked from here so an edit
         takes effect on save rather than on `nixos-rebuild`.
-
-        This is the same repository the system is built from. It used to be a
-        second checkout (~/kickstart, the dev-env remote); the dotfiles moved
-        in here so that there is one tree to clone and one to back up.
       '';
     };
 
@@ -72,10 +59,7 @@ in
           Minutes of X idle time before the machine hibernates, implemented by
           home/desktop/idle.nix. The lock that happens first is X's own
           screensaver timer driving xss-lock, and is separate from this.
-
-          null leaves the session awake indefinitely, which is what it did
-          before: locked, but running until the battery hit upower's action
-          threshold.
+          null leaves the session locked but awake indefinitely.
         '';
       };
 
@@ -88,11 +72,8 @@ in
         );
         default = "bloom";
         description = ''
-          Fragment shader Ghostty runs over the terminal, from the dotfiles
-          checkout's ghostty-shaders/. The tracked ghostty config named
-          bloom.glsl but the file itself was never in the repository — it
-          existed only in ~/.config on the one machine, so Ghostty logged a
-          warning and carried on anywhere else. null turns the shader off.
+          Fragment shader Ghostty runs over the terminal, from
+          dotfiles/ghostty-shaders/. null turns the shader off.
         '';
       };
 
@@ -101,9 +82,8 @@ in
         default = null;
         example = "wallpaper-3.png";
         description = ''
-          Filename under wallpapers/. null means the last one, by name — so
-          adding wallpaper-6 to the repository is all it takes to switch to
-          it, and nothing has to be edited here.
+          Filename under wallpapers/. null means the last one by name, so
+          adding a new wallpaper is all it takes to switch to it.
         '';
       };
 
@@ -121,9 +101,7 @@ in
           default = false;
           description = ''
             Redraw the wallpaper with the current temperature in the corner,
-            on a schedule. Replaces the two crontab lines that were doing this
-            — one every minute, and an @reboot entry that polled `xset q` up
-            to 150 times waiting for an X server to exist.
+            on a schedule.
           '';
         };
 
@@ -137,9 +115,8 @@ in
           type = types.str;
           default = "15m";
           description = ''
-            How often to redraw. The crontab ran this every minute, which is
-            sixty geocode-plus-forecast round trips an hour against a free API
-            to render a number that changes a few times a day.
+            How often to redraw. The temperature changes a few times a day;
+            every minute would be pointless load on a free API.
           '';
         };
 
@@ -149,13 +126,8 @@ in
           example = "#2b1410";
           description = ''
             Colour of the temperature, as #RRGGBB, #RGB, "white" or "black".
-
-            Which pair is legible depends on the image underneath it, and
-            wallpapers/ holds both kinds: white over black carries the dark
-            sky of wallpaper-5 and all but disappears against the pale one of
-            wallpaper-6, where only the drop shadow holds it together. The
-            generator cannot know what it has been handed, so the choice goes
-            with whoever chose the wallpaper.
+            Which colour is legible depends on the wallpaper, so it is set
+            alongside it.
           '';
         };
 
@@ -175,57 +147,26 @@ in
         type = types.bool;
         default = false;
         description = ''
-          Switch every screen at once. $mod+N puts the primary output on
-          workspace N and the screen after it on N + 10, so one keypress moves
-          both rather than leaving each screen on an unrelated workspace and
-          the keypress merely jumping focus to whichever screen already held N.
-
-          i3 has no workspace that spans two outputs — a workspace belongs to
-          exactly one — so this is a *pair* of workspaces driven together, not
-          one workspace on two screens. Each screen keeps its own windows.
-
-          The second screen's workspaces are named "11:1" through "20:10", so
-          i3 sees ten distinct names while the bar, which already strips the
-          "N:" prefix (`strip_workspace_numbers`), renders them as 1 through
-          10. Both screens therefore show the same number for the same
-          keypress, which is the point: the pair is one workspace as far as
-          the eye and the hand are concerned.
-
-          Assignment is to `primary`/`nonprimary` rather than to connector
-          names, so it follows the dock onto a monitor this machine has never
-          seen. Undocked there is only the panel, it is primary, and $mod+N is
-          an ordinary single-screen switch.
-
-          $mod+Shift+N follows the same rule: the window goes to the pair's
-          half belonging to the screen you are on, rather than always to the
-          primary's.
+          Switch every screen at once: $mod+N puts the primary output on
+          workspace N and the other screen on N + 10 (named "11:1" through
+          "20:10", which the bar renders as 1-10). Assigned to
+          `primary`/`nonprimary`, so it follows the dock; undocked it is an
+          ordinary single-screen switch. $mod+Shift+N sends the window to the
+          half of the pair on the screen you are on.
         '';
       };
 
-      # Agent mode: the terminal stays on the laptop panel.
-      #
-      # home/desktop/agent-mode.nix is the whole of it, including why this is
-      # a running mode with a keybinding rather than a setting that is simply
-      # on. Nothing here is consulted unless `enable` is true.
+      # Agent mode: the terminal stays on the laptop panel. See
+      # home/desktop/agent-mode.nix.
       agentMode = {
         enable = mkOption {
           type = types.bool;
           default = false;
           description = ''
-            Build the mode and bind $mod+Shift+a to it. The mode itself is
-            off at every login — the state is a file in XDG_RUNTIME_DIR, so
-            it does not survive the session — and the keybinding is what
-            turns it on while an agent is working.
-
-            While it is on, every workspace switch puts the terminal back on
-            the built-in panel: the agent stays visible underneath whatever
-            the monitor is showing, instead of disappearing with the panel's
-            half of the workspace pair. Off, nothing watches and a workspace
-            switch does exactly what it did before.
-
-            Depends on something having turned the panel on while docked —
-            `dock.keepInternal` — since a pin to an output that is switched
-            off has nowhere to land and quietly does nothing.
+            Build the mode and bind $mod+Shift+a to it. While on (it is off
+            at every login), every workspace switch puts the terminal back on
+            the built-in panel. Needs `dock.keepInternal`, or the panel is off
+            while docked and the pin has nowhere to land.
           '';
         };
 
@@ -235,9 +176,7 @@ in
           example = "eDP-1";
           description = ''
             The screen the terminal is pinned to. null means `dock.internal`,
-            which is the built-in panel and is the answer on a laptop; naming
-            a connector here is for a machine that wants some other screen to
-            be the one the agent lives on.
+            the built-in panel.
           '';
         };
 
@@ -246,12 +185,8 @@ in
           default = "com.mitchellh.ghostty";
           description = ''
             WM_CLASS of the terminal to pin, as `xprop WM_CLASS` reports it.
-            Ghostty's is its app id rather than anything resembling its name.
-
-            Only one window is ever moved. With several terminals open it is
-            the oldest — lowest X window id, which is creation order — on the
-            reasoning that the agent was started before the terminals opened
-            to look at what it is doing.
+            Only one window is moved: the oldest (lowest X window id), on the
+            assumption the agent was started first.
           '';
         };
 
@@ -259,14 +194,9 @@ in
           type = types.listOf types.int;
           default = [ 10 ];
           description = ''
-            Workspaces the mode leaves alone, as the number on the key —
-            $mod+0 is workspace 10, which is the default here. Switching to
-            one of these keeps both screens as they are and does not pull the
-            terminal across, so there is somewhere to go when the thing being
-            looked at wants the whole desk.
-
-            Matched on the number rather than the name, so the paired
-            workspaces "10" and "20:10" are one entry and not two.
+            Workspaces the mode leaves alone, as the number on the key
+            ($mod+0 is 10), so there is somewhere that gets the whole desk.
+            Matched on the number, so "10" and "20:10" are one entry.
           '';
         };
       };
@@ -284,25 +214,10 @@ in
         default = [ ];
         example = [ "primary" ];
         description = ''
-          Outputs i3bar is drawn on, as `bar { output ... }` names. The empty
-          default is i3's own default of every output at once.
-
-          i3 gives two of these names a special meaning — "primary" and
-          "nonprimary", resolved against the X primary output rather than
-          against a connector. That is what makes `[ "primary" ]` mean "the
-          external monitor while one is connected, the built-in panel when it
-          is not" on a machine whose layout comes from `dock` below: both of
-          its branches mark exactly one output primary, the first external one
-          when docked and the panel when not. i3bar re-reads the primary flag
-          when the outputs change, so the bar moves on its own at the dock
-          rather than at the next reload.
-
-          Naming connectors instead ([ "DP-1" "HDMI-1" ]) pins the bar to
-          specific displays; an output that is not connected simply has no
-          bar. Note the dependency on something setting a primary at all — on
-          a machine with `dock.enable = false` and no `xrandr --primary` in
-          `monitors` below, "primary" can match nothing and leave no bar
-          anywhere.
+          Outputs i3bar is drawn on, as `bar { output ... }` names; empty
+          means every output. "primary" follows the X primary flag, which
+          `dock` sets, so the bar moves with the dock. Without something
+          setting a primary, "primary" matches nothing and there is no bar.
         '';
       };
 
@@ -311,12 +226,8 @@ in
         default = "";
         example = "xrandr --output HDMI-2 --mode 1920x1080 --pos 0x0 --rotate normal";
         description = ''
-          Per-host xrandr layout, run at i3 start. scripts/xrandr.sh was a
-          single commented-out line, so every machine ran an empty script.
-
-          Leave empty on a laptop and let autorandr handle it instead — see
-          `autorandr` below, which reacts to a monitor being plugged in
-          rather than running once at login.
+          Fixed xrandr layout, run at i3 start. Leave empty when `dock` or
+          `autorandr` manages the layout.
         '';
       };
 
@@ -324,17 +235,9 @@ in
         type = types.bool;
         default = false;
         description = ''
-          Detect the connected outputs and apply a saved profile, on login
-          and whenever one is plugged or unplugged. A fixed xrandr line is
-          fine on a machine whose monitors never change; a laptop that is
-          docked and undocked wants this.
-
-          Save a layout once it looks right: `autorandr --save docked`.
-
-          Note that this only ever *applies* a profile you have already saved.
-          With no saved profiles — which is the state a fresh install is in —
-          `autorandr --change` matches nothing and exits successfully having
-          done nothing at all. `dock` below is the part that needs no profile.
+          Apply a saved autorandr profile on login and on hotplug. Save one
+          with `autorandr --save docked`; with none saved this does nothing,
+          which is why `dock` exists.
         '';
       };
 
@@ -346,17 +249,8 @@ in
             Follow the external monitor: when one is connected, use it and
             switch the internal panel off; when the last one is unplugged,
             switch the panel back on. Applied at login and on every hotplug.
-
-            This is deliberately not autorandr. autorandr keys its profiles on
-            the EDID of the specific monitors it saw when you ran
-            `autorandr --save`, so it cannot do anything at all until a layout
-            has been saved by hand, and it does nothing for a monitor it has
-            not met before. The rule here is about the *kind* of output, not
-            which monitor it is, so it works on a display that has never been
-            plugged into this machine — including the first time.
-
-            The two coexist: a saved autorandr profile for a dock you use
-            often still wins, because autorandr runs first at login.
+            Unlike autorandr it needs no saved profile, so it works on a
+            monitor it has never seen; a saved autorandr profile still wins.
           '';
         };
 
@@ -388,20 +282,9 @@ in
           default = "right-of";
           description = ''
             Where the built-in panel sits physically relative to the external
-            monitor. Only consulted when `keepInternal` is true — when the
-            panel is off, it has no position.
-
-            `left-of` and `right-of` hand the placement to xrandr's own
-            relative flags, which butt the panel against the end of the
-            external row.
-
-            `below` is the laptop-under-the-monitor desk layout, and it is
-            centred rather than left-aligned. xrandr has no notion of
-            centring and its `--below` aligns the left edges, so this one is
-            computed from the preferred modes and applied as an explicit
-            `--pos` — see home/desktop/dock.nix. With a panel and a monitor
-            of equal width the two are indistinguishable; they diverge as
-            soon as the monitor is wider, which is the common case.
+            monitor, when `keepInternal` is true. `below` is centred, computed
+            as an explicit `--pos` since xrandr's `--below` left-aligns — see
+            home/desktop/dock.nix.
           '';
         };
 
@@ -410,24 +293,10 @@ in
           default = null;
           example = "1680x1050";
           description = ''
-            Force a mode on the built-in panel instead of letting `--auto`
-            take its preferred one. `xrandr --query` lists what the panel
-            will accept, and an unlisted mode makes the xrandr call fail.
-
-            This is the per-output half of "the text is too small", and it
-            exists because the other half cannot be done per-output: `dpi`
-            below sets `Xft.dpi`, which is one global X resource, so raising
-            it enlarges text on every screen rather than on the panel. A
-            169dpi panel next to an 81dpi monitor has no single right value,
-            and lowering the panel's mode trades a little sharpness for a
-            change that stops at the panel.
-
-            Pick a mode with the panel's own aspect ratio — 1920x1200 is
-            16:10, so 1680x1050 and 1280x800 are, and 1440x810 is not.
-            A mismatched one letterboxes or stretches.
-
-            null leaves `--auto` alone, which is right for a panel being
-            driven at its native resolution.
+            Force a mode on the built-in panel instead of `--auto` (null).
+            Enlarges text on the panel alone, which `dpi` cannot since
+            Xft.dpi is global. Must be listed by `xrandr --query` and should
+            keep the panel's aspect ratio.
           '';
         };
       };
@@ -437,11 +306,8 @@ in
         default = null;
         example = 144;
         description = ''
-          X server DPI, for a HiDPI panel. i3, dmenu and anything else drawing
-          through Xft read this; without it a 2880x1800 13" panel renders at
-          96dpi and everything is about half the size it should be.
-
-          null leaves X to its own detection, which is right at 1920x1200.
+          X server DPI (Xft.dpi), for a HiDPI panel. null leaves X to its own
+          detection, which is right at 1920x1200.
         '';
       };
 
@@ -469,11 +335,8 @@ in
         expects to find on PATH. The editor configuration itself is not
         managed here — see home/editor/neovim.nix.
 
-        `android` is not a language and is here anyway. It is the Android SDK, a JDK 17 and Gradle, and it
-        behaves like the rest of this list: a machine that turns it on gets
-        the toolchain and the environment that goes with it, and one that does
-        not is not carrying several gigabytes of system image it never boots.
-        See pkgs/android-sdk for what the versions are pinned to and why.
+        `android` is the Android SDK, a JDK 17 and Gradle. See
+        pkgs/android-sdk for what the versions are pinned to and why.
       '';
     };
 
@@ -481,9 +344,7 @@ in
       type = types.bool;
       default = false;
       description = ''
-        mariadb and postgresql clients. stage-01 installed both server
-        packages to get the `mysql` and `psql` binaries; the servers
-        themselves run in Docker, so only the clients are here.
+        mariadb and postgresql clients. The servers run in Docker.
       '';
     };
 

@@ -1,25 +1,9 @@
 # Follow the external monitor.
 #
-# The laptop had `autorandr = true` and no saved profiles, which is a
-# configuration that cannot do anything: `autorandr --change` matches the
-# connected outputs against profiles in ~/.config/autorandr, finds none, and
-# exits 0. The service log shows exactly that — started, finished, 70ms, no
-# xrandr call. Docking the machine changed nothing and there was no error to
-# notice.
-#
-# There is a second, quieter half to it. home-manager's services.autorandr
-# only installs a user unit wanted by graphical-session.target, so even with
-# profiles saved it would run at login and never again; the udev rule that
-# makes autorandr react to a monitor being plugged in ships inside the
-# autorandr package (etc/udev/rules.d/40-monitor-hotplug.rules) and nothing
-# was installing it. Hotplug was not wired up at all.
-#
-# So this module does not try to fix autorandr. It answers the actual
-# requirement — "use the monitor, turn the laptop panel off" — with a rule
-# about kinds of output rather than about specific monitors, so it applies to
-# a display this machine has never seen. autorandr stays enabled and still
-# runs first at login, so a hand-saved profile for a familiar dock continues
-# to win.
+# autorandr with no saved profiles does nothing, and home-manager's unit only
+# runs at login (its hotplug udev rule is not installed). This applies a rule
+# about kinds of output instead, so it works on a display this machine has
+# never seen. autorandr still runs first at login, so a saved profile wins.
 {
   config,
   lib,

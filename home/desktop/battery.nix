@@ -1,11 +1,4 @@
-# Battery warnings.
-#
-# The tracked i3status.toml has a bare `[[block]] block = "battery"` with no
-# thresholds, so the bar shows a percentage and nothing else happens as it
-# falls — the first real signal is the machine suspending. On a laptop with a
-# 60W charger that is easy to walk away from, that is the wrong first signal.
-#
-# Two layers, because they fail differently:
+# Battery warnings. Two layers, because they fail differently:
 #
 #   the bar      always visible, colour-coded, no interaction needed
 #   batsignal    a dunst popup at each low threshold, urgency rising to
@@ -13,9 +6,7 @@
 #                notification is off (-f 0) because it repeats for as long as
 #                the battery sits topped out on the charger.
 #
-# The popup is what dunstrc's [urgency_critical] section was already styled
-# for — red, and `timeout = 0` so it does not disappear on its own. Nothing
-# was sending critical notifications until now.
+# dunstrc's [urgency_critical] styles the popup red with `timeout = 0`.
 {
   lib,
   pkgs,
@@ -28,11 +19,7 @@
       PartOf = [ "graphical-session.target" ];
       After = [ "graphical-session.target" ];
 
-      # The battery check, at runtime rather than as a host option saying
-      # "this is a laptop". systemd skips a unit whose Condition is unmet
-      # rather than failing it, so a machine with no battery simply never
-      # starts batsignal — and the glob catches BAT1 as well as BAT0, which
-      # a hardcoded path would not.
+      # Skipped, not failed, if there is no battery; the glob catches BAT1 too.
       ConditionPathExistsGlob = "/sys/class/power_supply/BAT*";
     };
     Install.WantedBy = [ "graphical-session.target" ];

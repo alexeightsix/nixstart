@@ -1,5 +1,3 @@
-# stage-11 downloaded a JetBrainsMono Nerd Font release zip from GitHub and
-# unpacked it into /usr/local/share/fonts, pinned to v3.2.1 by URL.
 {
   pkgs,
   ...

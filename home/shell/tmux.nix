@@ -3,28 +3,11 @@
 # `programs.tmux.extraConfig` unchanged; there is nothing for the option tree
 # to add.
 #
-# The one thing that did not survive the move from kickstart is tpm. tmux.conf
-# declares six plugins at the top and then loads them, on line 89, with
-#
-#   run '~/.tmux/plugins/tpm/tpm'
-#
-# which is a runtime git clone into $HOME that nothing in this repository
-# installs. So every `@plugin` line was silently inert on a fresh machine — no
-# rose-pine theme, no vim-tmux-navigator bindings, no yank, no fzf — and tmux
-# came up as plain tmux wearing the local key bindings. Nothing errored; the
-# plugins simply were not there.
-#
-# home-manager's `programs.tmux.plugins` is the obvious replacement and is the
-# wrong shape for this file: it appends the plugin loads at a fixed point,
-# whereas this config cares where they land. Everything from line 90 down is
-# written to run *after* tpm and says so in its own comments ("after tpm so it
-# appends", "after tpm so it overrides rose-pine"). Loading the plugins last
-# would let rose-pine win those overrides back.
-#
-# So the tpm line is replaced in place, with the same plugins in the same
-# order, and the ordering the file was written around is preserved exactly.
-# The `set -g @plugin` lines are left alone: inert without tpm, and keeping
-# them means this file stays byte-identical to the kickstart copy.
+# tpm is a runtime git clone nothing here installs, so its
+# `run '~/.tmux/plugins/tpm/tpm'` line is replaced in place with the Nix
+# plugins, same order. Not `programs.tmux.plugins`: that loads them at a
+# fixed point, and the lines after tpm in tmux.conf are written to override
+# the plugins. The `set -g @plugin` lines are left alone (inert without tpm).
 {
   config,
   lib,
@@ -51,9 +34,8 @@ let
   tmuxConf = builtins.replaceStrings [ tpmLine ] [ loadPlugins ] source;
 in
 {
-  # replaceStrings fails open — if the line is ever reworded the substitution
-  # quietly does nothing and the plugins go missing again, which is the exact
-  # failure being fixed here. Better to break the build.
+  # replaceStrings fails open — if the line is ever reworded the plugins
+  # silently go missing. Better to break the build.
   assertions = [
     {
       assertion = lib.hasInfix tpmLine source;

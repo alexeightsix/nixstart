@@ -1,9 +1,5 @@
-# Every home-manager module in this repository.
-#
-# Importing this one imports the lot; each is inert until the matching
-# `nixstart.home.*` option is set, so a profile is a list of decisions rather
-# than a list of imports. Nothing in here reads `osConfig`, which is what lets
-# the same modules configure an account on a machine NixOS does not manage.
+# Every home-manager module in this repository. Nothing in here reads
+# `osConfig`; system/home.nix passes in what the modules need.
 {
   config,
   lib,
@@ -49,19 +45,13 @@
     ./dev/pi.nix
   ];
 
-  # Both live in this repository now, so the store path is this flake's own
-  # source. A profile or host can still override either.
+  # Both live in this repository, so the store path is this flake's source.
   nixstart.home.dotfiles = lib.mkDefault "${self}/dotfiles";
   nixstart.home.wallpapers = lib.mkDefault "${self}/wallpapers";
 
   home.username = config.nixstart.home.user.name;
   home.homeDirectory = "/home/${config.nixstart.home.user.name}";
 
-  # `home.file` and `xdg.configFile` replace link.sh's link()/preserve()/
-  # render(). Anything already at a destination is moved aside — the same
-  # courtesy preserve() was doing with a timestamp — and the sed pass that
-  # substituted $HOME, $DOTFILES and $KICKSTART into formats with no variables
-  # of their own is just string interpolation now.
   xdg.enable = true;
 
   programs.home-manager.enable = true;

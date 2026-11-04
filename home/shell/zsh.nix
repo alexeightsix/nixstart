@@ -1,10 +1,5 @@
-# The login shell.
-#
-# .zshrc opened by deriving $DOTFILES from `${${(%):-%x}:A:h}` — the file being
-# sourced, resolved back through the symlink link.sh had made — so the clone
-# could be named anything and sit anywhere. Nix knows the path at build time,
-# so the trick stops being load-bearing; $DOTFILES is still exported, because
-# the alias files and copyline read it.
+# The login shell. $DOTFILES is exported because the alias files and
+# copyline read it.
 {
   config,
   lib,
@@ -18,14 +13,10 @@ in
   programs.zsh = {
     enable = true;
 
-    # ~/.zshrc, where it has always been. The XDG location is the future
-    # default, but every script and instance that sources ~/.zshrc by path —
-    # and .zshrc.local, and the Incus provisioning — would have to move with it.
+    # ~/.zshrc rather than the XDG location, for anything that sources it by
+    # path.
     dotDir = config.home.homeDirectory;
 
-    # The three curl-piped installers stage-05 ran are packages now, and
-    # oh-my-zsh no longer has to be talked out of overwriting the .zshrc
-    # link.sh had just put there with KEEP_ZSHRC=yes CHSH=no RUNZSH=no.
     oh-my-zsh = {
       enable = true;
       plugins = [
@@ -36,8 +27,7 @@ in
       ];
       theme = "dracula";
       # oh-my-zsh's own directory is read-only in the store, so the Dracula
-      # theme is a custom-directory drop-in rather than a git clone copied
-      # into ~/.oh-my-zsh/themes the way stage-05 did it.
+      # theme is a custom-directory drop-in.
       custom = "${pkgs.dracula-zsh-theme}";
     };
 
@@ -68,19 +58,15 @@ in
     };
 
     initContent = lib.mkMerge [
-      # Machine-local secrets. Still guarded: a machine with no secrets file
-      # should cost you the keys, not the shell.
+      # Machine-local secrets. Guarded: a missing file should cost you the
+      # keys, not the shell.
       (lib.mkOrder 500 ''
         [ -f "$HOME/.zsh_secrets" ] && source "$HOME/.zsh_secrets"
       '')
 
-      # How this shell was reached, for the tmux status bar. lazyincus sets
-      # DEV_VIA on the way in and each hop appends itself, so by the time a
-      # prompt appears it reads something like `tui>ssh`. tmux is added here
-      # because this is the first thing that knows it is inside one; the
-      # %>tmux strip keeps re-sourcing idempotent, and -p is pane-scoped so a
-      # pane opened over ssh and one opened through `incus exec` each keep
-      # their own trail.
+      # How this shell was reached, for the tmux status bar: a DEV_VIA trail
+      # set on the way in gets `>tmux` appended (idempotently) and is stored
+      # per pane.
       (lib.mkOrder 1000 ''
         if [ -n "$DEV_VIA" ] && [ -n "$TMUX" ]; then
           export DEV_VIA="''${DEV_VIA%>tmux}>tmux"
@@ -102,10 +88,6 @@ in
     ];
   };
 
-  # Every `export PATH=` line in .zshrc was a language runtime's installer
-  # announcing where it had put itself — .cargo, .bun, .opencode, .npm-global,
-  # .local/share/pnpm, .grok, and a Node tarball pinned by full path for Pi
-  # (~/.local/share/pi-node/node-v22.23.2-linux-x64/bin). Those installers are
-  # gone. What is left is the one directory the user's own scripts write to.
+  # The one directory the user's own scripts write to.
   home.sessionPath = [ "${config.home.homeDirectory}/.local/bin" ];
 }

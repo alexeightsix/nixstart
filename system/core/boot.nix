@@ -19,7 +19,7 @@
     efi.canTouchEfiVariables = lib.mkDefault true;
   };
 
-  # stage-02 blacklisted pcspkr and snd_pcsp through /etc/modprobe.d/nobeep.conf.
+  # No PC speaker beep.
   boot.blacklistedKernelModules = [
     "pcspkr"
     "snd_pcsp"

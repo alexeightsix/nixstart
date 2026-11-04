@@ -1,16 +1,7 @@
 # Resolution, scaling and outputs.
 #
-# There were three separate gaps here, and they only show up on a laptop:
-#
-#   scripts/xrandr.sh   one commented-out line, so every machine ran an empty
-#                       script at i3 start and no layout was ever applied
-#   DPI                 never set anywhere, so X assumes 96dpi; correct at
-#                       1920x1200, half-size at 2880x1800
-#   cursor size         same, and the reason the pointer looks tiny on HiDPI
-#
-# i3config's `font pango:monospace 8` and Ghostty's `font-size = 10` are both
-# point sizes, so they follow DPI automatically once it is right — they do not
-# need to be changed per machine, which is why nothing here touches them.
+# i3's and Ghostty's font sizes are point sizes, so they follow DPI on their
+# own and nothing here touches them.
 {
   config,
   lib,

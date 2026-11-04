@@ -114,9 +114,8 @@ in
       window-save-state = "always";
       window-theme = "ghostty";
 
-      # Absolute store path rather than ~/.config/ghostty/bloom.glsl: the
-      # shader and the line that names it then move together, and a machine
-      # that has never had the file copied into place still gets it.
+      # Absolute store path, so the shader and the line naming it move
+      # together.
       custom-shader = lib.mkIf (shader != null) "${cfg.dotfiles}/ghostty-shaders/${shader}.glsl";
 
       # Ghostty's own tabs and splits, driven by the tmux bindings in

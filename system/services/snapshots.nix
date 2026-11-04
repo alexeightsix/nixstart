@@ -1,22 +1,11 @@
 # Btrfs snapshots of /home. Only /home.
 #
-# The root filesystem is deliberately not snapshotted, and that is the whole
-# point of doing this on NixOS rather than Fedora. The `dnf` alias took a
-# snapper snapshot before every package install because a Fedora transaction
-# cannot be undone; here the system is a generation, rollback is a boot menu
-# entry, and everything under /nix/store is already reproducible from the
-# flake. What none of that covers is the one directory that is neither
-# reproducible nor disposable — /home.
+# The root filesystem is a NixOS generation and rolls back from the boot menu;
+# /home is the one directory that is neither reproducible nor disposable.
 #
-# The layout matches what the `restore` alias in dotfiles/zsh/alias already
-# expects: snapper's own /home/.snapshots/<number>/snapshot/<path>. That
-# function fzf-picks an old version of a file or directory out of these
-# snapshots, so the two have to agree about where they live.
-#
-# Separately, scripts/backup.sh stays a script — it mounts /dev/sda1 by device
-# node and rsyncs the whole system to it. That is an operator action, and it is
-# the off-disk half of the story; snapshots are not backups, since they die
-# with the filesystem holding them.
+# The layout matches what the `restore` alias in dotfiles/zsh/alias expects:
+# snapper's own /home/.snapshots/<number>/snapshot/<path>. Snapshots are not
+# backups — they die with the filesystem holding them.
 {
   config,
   lib,

@@ -1,6 +1,4 @@
-# stage-09: a udev rule granting hidraw access to the Keychron K2 Pro so VIA
-# can flash keyboard/keycron.layout, plus a plugdev group the script added the
-# user to only if the group already happened to exist.
+# hidraw access to the Keychron K2 Pro so VIA can flash its layout.
 {
   pkgs,
   ...

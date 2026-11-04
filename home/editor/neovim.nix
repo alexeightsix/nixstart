@@ -8,9 +8,7 @@
 # read-only path anyway.
 #
 # What Nix is responsible for here is the *environment* Neovim runs in — the
-# compilers, language servers and formatters that were coming from `dnf`,
-# `npm -g`, `go install` and Mason before, none of which exist on a NixOS box
-# unless something puts them there.
+# compilers, language servers and formatters its config expects on PATH.
 {
   lib,
   pkgs,
@@ -42,15 +40,12 @@ in
         ripgrep
         fd
 
-        # Providers. stage-03 ran `sudo npm install -g neovim`, which put a
-        # root-owned package in a global prefix and then needed the
-        # `chown -R` at the end of that stage to undo the damage.
+        # Providers.
         neovim-node-client
         python3Packages.pynvim
       ]
-      # Language servers, matched to lua/config/lsp.nix's two lists. These are
-      # the ones Mason was downloading; see programs.nix-ld below for why
-      # Mason still works if you would rather keep it doing that.
+      # Language servers, matched to lua/config/lsp.lua's two lists. Mason
+      # still works too; see system/core/nix-ld.nix.
       ++ lib.optionals (enabled "node") [
         typescript-language-server
         vscode-langservers-extracted # cssls, eslint, html, json

@@ -1,13 +1,8 @@
 # The account, its password, and the groups the enabled modules need it in.
 #
-# stage-02, stage-07 and stage-09 each ran their own `usermod -aG`, so the
-# group list only existed as the union of three scripts you had to have run.
-#
-# Passwords never came up in the old bootstrap because Fedora's installer had
-# already asked for one. Nothing asks here, so a NixOS host with no password
-# set produces an account that cannot log in at all: lightdm rejects an empty
-# password, and sudo needs one because wheelNeedsPassword is on. Hence the
-# two options below — one of them has to be set or the build fails.
+# With no password set the account cannot log in at all (lightdm rejects an
+# empty password, and sudo needs one), so one of the two password sources
+# below has to be set or the build fails.
 {
   config,
   lib,
@@ -48,8 +43,7 @@ in
     default = null;
     description = ''
       Password set on first boot, in the clear and world-readable in the Nix
-      store. Only for a machine you are about to log into and change it on —
-      `passwd` immediately after, and it is then ignored for ever after.
+      store. Run `passwd` on first login; it is ignored from then on.
 
       Prefer a `user-password` secret in secrets/<hostname>.yaml, which is
       used in preference to this when present. Generate the hash with
@@ -93,33 +87,15 @@ in
       ++ cfg.user.extraGroups;
     };
 
-    # stage-03 finished with `chown -R $(id -un) $HOME` to undo the damage from
-    # the stages that ran as root. Nothing here writes into a home directory as
-    # root, so there is nothing to repair.
     security.sudo.wheelNeedsPassword = true;
 
     # Except for the rebuild itself.
     #
-    # A coding agent working in this repository can edit the configuration
-    # but could not apply it: `sudo nixos-rebuild` has no terminal to read a
-    # password from, so it either hangs on the prompt or fails, and every
-    # change had to be carried by hand to a shell the agent was not in. That
-    # made the agent's work unverifiable — it could not see whether what it
-    # wrote evaluates, let alone whether it boots.
-    #
-    # Be clear about what this gives away: it is root. nixos-rebuild builds
-    # and activates a configuration from a flake this user owns and can
-    # write, so anything that can run it without a password can run arbitrary
-    # code as root by first editing the configuration. The rule does not
-    # narrow the privilege, only the number of keystrokes between the user
-    # and it — which, on a single-user laptop whose disk is encrypted and
-    # whose login password is the real boundary, is a trade worth making and
-    # should not be copied onto a machine where it is not.
-    #
-    # Named by /run/current-system/sw/bin rather than by store path: sudoers
-    # matches the command as resolved from PATH, and a store path would stop
-    # matching at the next generation — which is to say, immediately after
-    # the first rebuild this rule allowed.
+    # A coding agent has no terminal to type a sudo password into, so without
+    # this it cannot apply what it edits. This is effectively root (the flake
+    # is user-writable); acceptable on a single-user laptop with an encrypted
+    # disk, not elsewhere. Named by /run/current-system/sw/bin because a store
+    # path would stop matching at the next generation.
     security.sudo.extraRules = [
       {
         users = [ cfg.user.name ];

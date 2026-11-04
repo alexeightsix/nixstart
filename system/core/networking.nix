@@ -52,7 +52,7 @@
 
   environment.systemPackages = with pkgs; [
     nmap
-    inetutils # `telnet`, which Fedora ships as its own package
+    inetutils # `telnet`
     rsync
     rclone
   ];
