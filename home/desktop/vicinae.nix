@@ -37,7 +37,6 @@ let
         "${config.home.homeDirectory}/.nix-profile/share/applications"
         "${config.home.homeDirectory}/.local/share/applications"
         "/run/current-system/sw/share/applications"
-        "/var/lib/flatpak/exports/share/applications"
       ];
       calculator.enabled = false;
       manage-shortcuts.entrypoints.create.enabled = true;

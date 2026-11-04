@@ -4,8 +4,8 @@
   ...
 }:
 {
-  networking.networkmanager.enable = lib.mkDefault true;
-  networking.firewall.enable = lib.mkDefault true;
+  networking.networkmanager.enable = true;
+  networking.firewall.enable = true;
 
   # Wired only: keep the wifi radio off on every boot. NetworkManager already
   # remembers `nmcli radio wifi off` in its state file, but that lives outside

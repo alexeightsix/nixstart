@@ -1,6 +1,5 @@
 # Nix itself.
 {
-  lib,
   pkgs,
   inputs,
   config,
@@ -63,7 +62,7 @@
     nixPath = [ "nixpkgs=${inputs.nixpkgs}" ];
   };
 
-  system.stateVersion = lib.mkDefault "25.05";
+  system.stateVersion = "25.05";
 
   # Collecting and optimising are both IO-bound and neither is urgent.
   systemd.services.nix-gc.serviceConfig = {

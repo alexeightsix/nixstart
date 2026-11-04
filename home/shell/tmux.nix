@@ -57,7 +57,7 @@ in
     extraConfig = tmuxConf;
   };
 
-  # tmux.conf binds prefix+r and prefix+s to these two helpers, by the paths
+  # tmux.conf binds prefix+n and prefix+r to these two helpers, by the paths
   # below. They are read from the store with the config that references them,
   # so a binding and the script it runs can never be from different commits.
   home.file = {

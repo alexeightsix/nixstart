@@ -9,8 +9,6 @@
   networking.hostName = "laptop";
 
   nixstart.system = {
-    user.name = "alex";
-
     # First-boot password only, and world-readable in the store — run
     # `passwd` on the first login and this is ignored from then on. Replace it
     # with a `user-password` secret in secrets/HOSTNAME.yaml when sops is set
@@ -19,12 +17,8 @@
   };
 
   home-manager.users.alex.nixstart.home = {
-    checkout = "/home/alex/nixstart";
-    user.email = "alexlatour@gmail.com";
-
     desktop = {
       weather.enable = true;
-      weather.location = "Montreal";
 
       # wallpaper-6 is a pale cream sky where the temperature sits, so the
       # white-over-black pair that suited wallpaper-5 is carried entirely by
@@ -85,7 +79,6 @@
       #   QHD+  2560x1600 -> dpi = 144
       #   2.8K  2880x1800 -> dpi = 168, and GDK_SCALE kicks in
       dpi = null;
-      cursorSize = 24;
     };
 
     languages = [

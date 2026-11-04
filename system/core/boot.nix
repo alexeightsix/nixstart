@@ -1,8 +1,8 @@
-{ lib, ... }:
+{ ... }:
 {
   boot.loader = {
     systemd-boot = {
-      enable = lib.mkDefault true;
+      enable = true;
 
       # Three entries in the boot menu, not every generation ever built. The
       # ESP is 1 GiB and each entry drags a kernel and initrd into it, so an
@@ -16,7 +16,7 @@
       # offered at boot.
       configurationLimit = 3;
     };
-    efi.canTouchEfiVariables = lib.mkDefault true;
+    efi.canTouchEfiVariables = true;
   };
 
   # No PC speaker beep.

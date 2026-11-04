@@ -27,15 +27,6 @@ in
           owner = cfg.user.name;
           path = "/home/${cfg.user.name}/.zsh_secrets";
         };
-        sync-dev-host = {
-          owner = cfg.user.name;
-          path = "/home/${cfg.user.name}/.config/sync-dev/host";
-        };
-        sync-dev-password = {
-          owner = cfg.user.name;
-          mode = "0600";
-          path = "/home/${cfg.user.name}/.config/sync-dev/password";
-        };
       };
     };
   };

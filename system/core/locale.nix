@@ -1,7 +1,7 @@
 { lib, ... }:
 {
-  time.timeZone = lib.mkDefault "America/Toronto";
-  i18n.defaultLocale = lib.mkDefault "en_CA.UTF-8";
+  time.timeZone = "America/Toronto";
+  i18n.defaultLocale = "en_CA.UTF-8";
   console.keyMap = lib.mkDefault "us";
 
   # Build the console keymap from the X keyboard configuration instead of

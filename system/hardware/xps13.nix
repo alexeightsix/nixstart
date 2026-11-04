@@ -7,7 +7,6 @@
 # Shipped with Ubuntu 24.04, so it is a Dell-certified Linux machine and the
 # awkward parts are firmware and kernel version rather than missing drivers.
 {
-  lib,
   pkgs,
   ...
 }:
@@ -15,7 +14,7 @@
   # Lunar Lake is new enough that the LTS kernel is the wrong default here:
   # Xe2 graphics, the BE201 wifi and the SOF audio topology all landed
   # across 6.11–6.13.
-  boot.kernelPackages = lib.mkDefault pkgs.linuxPackages_latest;
+  boot.kernelPackages = pkgs.linuxPackages_latest;
 
   hardware.cpu.intel.updateMicrocode = true;
   hardware.enableRedistributableFirmware = true;
@@ -67,7 +66,7 @@
   # The fingerprint reader in the "Platinum Backlit ... with Fingerprint
   # Reader" option. fprintd drives it for login and sudo; if enrolment
   # fails, this is the thing to turn off first — nothing else depends on it.
-  services.fprintd.enable = lib.mkDefault true;
+  services.fprintd.enable = true;
 
   # Battery. power-profiles-daemon rather than TLP: it is what the
   # Dell-certified Ubuntu image uses, it cooperates with upower, and the two
