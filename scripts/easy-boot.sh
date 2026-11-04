@@ -11,9 +11,20 @@
 # for what this does and what it costs.
 set -euo pipefail
 
+# The setuid sudo lives in /run/wrappers/bin, and not every launcher has it on
+# PATH. vicinae's unit sets its own PATH without it, so from $mod+d `sudo`
+# resolved to the bare /run/current-system/sw/bin/sudo, which refuses to run.
+# apply.sh inherits this.
+export PATH="/run/wrappers/bin:$PATH"
+
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 FLAG="$REPO/system/easy-boot-flag.nix"
 KEY=/etc/secrets/initrd/cryptroot.key
+
+# The existing disk passphrase, used once to authorise adding the key file, so
+# `on` does not stop to ask for it. Kept outside the repository; without the
+# file, cryptsetup asks for it instead.
+PASSPHRASE_FILE="${XDG_CONFIG_HOME:-$HOME/.config}/easy-boot/passphrase"
 
 step() { printf '\n\033[1;32m==>\033[0m \033[1m%s\033[0m\n' "$*"; }
 die() { printf '\033[1;31m%s\033[0m\n' "$*" >&2; exit 1; }
@@ -42,8 +53,15 @@ case "$MODE" in
             sudo sh -c "umask 077; head -c 64 /dev/urandom > '$KEY'"
         fi
         if ! key_works; then
-            step "adding the key file to $DEV (enter your current disk passphrase)"
-            sudo cryptsetup luksAddKey "$DEV" "$KEY"
+            step "adding the key file to $DEV"
+            if [ -r "$PASSPHRASE_FILE" ]; then
+                # printf, not cat: a trailing newline would become part of
+                # the passphrase and fail to match.
+                printf '%s' "$(cat "$PASSPHRASE_FILE")" \
+                    | sudo cryptsetup luksAddKey --key-file=- "$DEV" "$KEY"
+            else
+                sudo cryptsetup luksAddKey "$DEV" "$KEY"
+            fi
         fi
         set_flag true
         "$REPO/scripts/apply.sh" boot
