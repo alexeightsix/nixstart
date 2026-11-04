@@ -65,12 +65,6 @@ in
     };
 
     desktop = {
-      enable = mkOption {
-        type = types.bool;
-        default = false;
-        description = "i3, the bar, the compositor, notifications, the terminal.";
-      };
-
       hibernateAfter = mkOption {
         type = types.nullOr types.ints.positive;
         default = 30;

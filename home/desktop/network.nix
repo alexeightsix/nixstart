@@ -23,33 +23,28 @@
   pkgs,
   ...
 }:
-let
-  cfg = config.nixstart.home;
-in
 {
-  config = lib.mkIf cfg.desktop.enable {
-    xdg.desktopEntries.nmtui = {
-      name = "Wi-Fi";
-      genericName = "Network Connections";
-      comment = "Scan for and connect to wireless networks";
+  xdg.desktopEntries.nmtui = {
+    name = "Wi-Fi";
+    genericName = "Network Connections";
+    comment = "Scan for and connect to wireless networks";
 
-      # ghostty IS the terminal here, so `terminal = false`: setting it true
-      # would ask the desktop to wrap an already-wrapped command in whatever
-      # it considers the default terminal.
-      exec = "${lib.getExe config.programs.ghostty.package} -e ${lib.getExe' pkgs.networkmanager "nmtui"}";
-      terminal = false;
+    # ghostty IS the terminal here, so `terminal = false`: setting it true
+    # would ask the desktop to wrap an already-wrapped command in whatever
+    # it considers the default terminal.
+    exec = "${lib.getExe config.programs.ghostty.package} -e ${lib.getExe' pkgs.networkmanager "nmtui"}";
+    terminal = false;
 
-      # rose-pine ships only the `-symbolic` spelling of this icon; the bare
-      # `network-wireless` would fall through to adwaita rather than the theme
-      # actually in use.
-      icon = "network-wireless-symbolic";
+    # rose-pine ships only the `-symbolic` spelling of this icon; the bare
+    # `network-wireless` would fall through to adwaita rather than the theme
+    # actually in use.
+    icon = "network-wireless-symbolic";
 
-      categories = [
-        "Settings"
-        "Network"
-      ];
+    categories = [
+      "Settings"
+      "Network"
+    ];
 
-      settings.Keywords = "wifi;wi-fi;wireless;network;networkmanager;nmtui;connect;ssid;internet;";
-    };
+    settings.Keywords = "wifi;wi-fi;wireless;network;networkmanager;nmtui;connect;ssid;internet;";
   };
 }

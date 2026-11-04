@@ -14,7 +14,6 @@
   ...
 }:
 let
-  cfg = config.nixstart.home;
   helpers = import ../lib.nix { inherit lib config; };
 
   # useX11LegacyScreenshot below is what makes ctrl+; work at all. flameshot 14
@@ -54,21 +53,19 @@ let
   '';
 in
 {
-  config = lib.mkIf cfg.desktop.enable {
-    home.packages = [ pkgs.flameshot ];
+  home.packages = [ pkgs.flameshot ];
 
-    # savePath points here, and flameshot does not create it: with the
-    # directory missing a capture is taken and then silently fails to save.
-    # link.sh never made it either — it existed on the old machine because
-    # something else had happened to create it.
-    home.file."Pictures/.keep".text = "";
+  # savePath points here, and flameshot does not create it: with the
+  # directory missing a capture is taken and then silently fails to save.
+  # link.sh never made it either — it existed on the old machine because
+  # something else had happened to create it.
+  home.file."Pictures/.keep".text = "";
 
-    # checkForUpdates and ignoreUpdateToVersion=14.0.0 were in the tracked
-    # file; an update check is meaningless when the version is pinned by the
-    # lockfile, so it is off.
-    home.activation.seedFlameshot = helpers.mkSeededFile {
-      target = "${config.xdg.configHome}/flameshot/flameshot.ini";
-      source = ini;
-    };
+  # checkForUpdates and ignoreUpdateToVersion=14.0.0 were in the tracked
+  # file; an update check is meaningless when the version is pinned by the
+  # lockfile, so it is off.
+  home.activation.seedFlameshot = helpers.mkSeededFile {
+    target = "${config.xdg.configHome}/flameshot/flameshot.ini";
+    source = ini;
   };
 }

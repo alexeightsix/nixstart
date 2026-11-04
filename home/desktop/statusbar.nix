@@ -12,7 +12,6 @@
   ...
 }:
 let
-  cfg = config.nixstart.home;
 
   rosePine = {
     theme = "plain";
@@ -102,16 +101,14 @@ let
   ];
 in
 {
-  config = lib.mkIf cfg.desktop.enable {
-    home.packages = [ pkgs.i3status-rust ];
+  home.packages = [ pkgs.i3status-rust ];
 
-    xdg.configFile."i3status-rust/config.toml".source =
-      (pkgs.formats.toml { }).generate "i3status-rust-config.toml"
-        {
-          icons_format = "{icon}";
-          theme = rosePine;
-          icons.icons = "awesome4";
-          block = blocks;
-        };
-  };
+  xdg.configFile."i3status-rust/config.toml".source =
+    (pkgs.formats.toml { }).generate "i3status-rust-config.toml"
+      {
+        icons_format = "{icon}";
+        theme = rosePine;
+        icons.icons = "awesome4";
+        block = blocks;
+      };
 }

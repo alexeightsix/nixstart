@@ -14,8 +14,7 @@
 #
 # dotfiles/pi/link.sh already does this correctly — it symlinks the tracked
 # files in, preserves anything already there, and prunes links whose source
-# has been deleted. It is left to do its job; run it by hand, or turn on
-# `linkConfig` below to have activation call it.
+# has been deleted. Activation runs it.
 {
   config,
   inputs,
@@ -28,19 +27,6 @@ let
   piRepo = "${cfg.checkout}/dotfiles/pi";
 in
 {
-  options.nixstart.pi.linkConfig = lib.mkOption {
-    type = lib.types.bool;
-    default = false;
-    description = ''
-      Run dotfiles/pi/link.sh on activation, linking the tracked Pi
-      configuration into ~/.pi/agent from the working checkout.
-
-      Off by default: run it yourself once and Nix never touches the
-      directory. The links it creates point at the checkout either way, so
-      an edit is live in both cases.
-    '';
-  };
-
   config = lib.mkIf cfg.agents {
     # .zshrc put an unpacked upstream Node tarball on PATH for Pi —
     # ~/.local/share/pi-node/node-v22.23.2-linux-x64/bin — which is a
@@ -79,7 +65,7 @@ in
     # The file stays in the repository: it is still what a non-Nix machine
     # wants, and dotfiles/pi/docs describes it. It just is not on PATH here.
 
-    home.activation.linkPi = lib.mkIf config.nixstart.pi.linkConfig (
+    home.activation.linkPi = (
       lib.hm.dag.entryAfter [ "writeBoundary" ] ''
         if [ -x ${piRepo}/link.sh ]; then
           run ${pkgs.bash}/bin/bash ${piRepo}/link.sh

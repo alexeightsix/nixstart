@@ -1,23 +1,19 @@
 {
-  config,
-  lib,
   pkgs,
   ...
 }:
 {
-  config = lib.mkIf config.nixstart.system.hardware.bluetooth {
-    hardware.bluetooth = {
-      enable = true;
-      # Radio on from boot. `sp` still powers it down for the laptop speakers;
-      # that lasts until the next boot rather than sticking.
-      powerOnBoot = true;
-    };
-
-    # i3config kills blueman-applet and nm-applet at startup, so the applets
-    # are deliberately not autostarted here — only the tools are installed.
-    environment.systemPackages = with pkgs; [
-      blueman
-      bluez-tools
-    ];
+  hardware.bluetooth = {
+    enable = true;
+    # Radio on from boot. `sp` still powers it down for the laptop speakers;
+    # that lasts until the next boot rather than sticking.
+    powerOnBoot = true;
   };
+
+  # i3config kills blueman-applet and nm-applet at startup, so the applets
+  # are deliberately not autostarted here — only the tools are installed.
+  environment.systemPackages = with pkgs; [
+    blueman
+    bluez-tools
+  ];
 }

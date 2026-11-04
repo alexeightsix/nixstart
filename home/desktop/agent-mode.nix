@@ -190,7 +190,7 @@ let
   };
 in
 {
-  config = lib.mkIf (desktop.enable && agent.enable) {
+  config = lib.mkIf agent.enable {
     # i3.nix binds $mod+Shift+a to this. Passed through an internal option
     # rather than imported, so that the i3 config has no opinion about
     # whether the feature is built — same shape as _resolvedWallpaper.

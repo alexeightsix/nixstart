@@ -29,18 +29,6 @@ let
 in
 {
   options.nixstart.system.snapshots = {
-    home = lib.mkOption {
-      type = lib.types.bool;
-      default = false;
-      description = ''
-        Timeline snapshots of /home with snapper.
-
-        Requires /home to be its own btrfs subvolume — snapper takes snapshots
-        of a subvolume, not of a directory, and will refuse to create the
-        config otherwise.
-      '';
-    };
-
     limits = lib.mkOption {
       type = lib.types.attrsOf lib.types.int;
       default = {
@@ -59,7 +47,7 @@ in
     };
   };
 
-  config = lib.mkIf cfg.home {
+  config = {
     # A directory cannot be snapshotted, only a subvolume, and the failure if
     # /home is not one is a cryptic snapper error at activation rather than
     # anything that points at this file.
@@ -67,7 +55,7 @@ in
       {
         assertion = homeFs == null || homeFs.fsType == "btrfs";
         message = ''
-          nixstart.system.snapshots.home needs /home on btrfs, but
+          snapper needs /home on btrfs, but
           fileSystems."/home".fsType is "${toString homeFs.fsType}".
         '';
       }

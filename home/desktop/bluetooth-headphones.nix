@@ -90,30 +90,28 @@ let
   };
 in
 {
-  config = lib.mkIf cfg.desktop.enable {
-    home.packages = [ connect ];
+  home.packages = [ connect ];
 
-    # In a terminal window rather than `terminal = true`, which asks the
-    # desktop to pick one — there is no XDG terminal association on this
-    # machine and nothing would answer. Ghostty is the terminal here, and it
-    # is the same `-e` form i3's $mod+w uses for nmtui.
-    #
-    # Named "bt" first because that is the name the command has: typing bt
-    # into the launcher is the muscle memory this replaces, and a prefix match
-    # on the title does not depend on whether the provider indexes Keywords.
-    xdg.desktopEntries.bt-headphones = {
-      name = "bt — Blue Matrix Headphones";
-      genericName = "Bluetooth Headphones";
-      comment = "Connect the Blue Matrix headphones and make them the default audio device";
-      icon = "bluetooth";
-      exec = "${lib.getExe config.programs.ghostty.package} -e ${lib.getExe connect}";
-      terminal = false;
-      categories = [
-        "Audio"
-        "AudioVideo"
-        "Settings"
-      ];
-      settings.Keywords = "bt;bluetooth;headphones;headset;blue matrix;audio;pair;connect;";
-    };
+  # In a terminal window rather than `terminal = true`, which asks the
+  # desktop to pick one — there is no XDG terminal association on this
+  # machine and nothing would answer. Ghostty is the terminal here, and it
+  # is the same `-e` form i3's $mod+w uses for nmtui.
+  #
+  # Named "bt" first because that is the name the command has: typing bt
+  # into the launcher is the muscle memory this replaces, and a prefix match
+  # on the title does not depend on whether the provider indexes Keywords.
+  xdg.desktopEntries.bt-headphones = {
+    name = "bt — Blue Matrix Headphones";
+    genericName = "Bluetooth Headphones";
+    comment = "Connect the Blue Matrix headphones and make them the default audio device";
+    icon = "bluetooth";
+    exec = "${lib.getExe config.programs.ghostty.package} -e ${lib.getExe connect}";
+    terminal = false;
+    categories = [
+      "Audio"
+      "AudioVideo"
+      "Settings"
+    ];
+    settings.Keywords = "bt;bluetooth;headphones;headset;blue matrix;audio;pair;connect;";
   };
 }

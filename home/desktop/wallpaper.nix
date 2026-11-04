@@ -196,78 +196,76 @@ let
   };
 in
 {
-  config = lib.mkIf desktop.enable {
-    # What i3's feh line uses. Read by home/desktop/i3.nix.
-    #
-    # Always the base image, even when the weather wallpaper is on, and that
-    # is deliberate. This used to resolve to `dynamic`, which is a path in
-    # ~/.cache that nothing guarantees exists: the timer first fires 30s into
-    # the session, so a fresh login had no wallpaper until it did, and a
-    # single failing run left the desktop bare indefinitely. That is exactly
-    # what happened — see the font patch in pkgs/weather-wallpaper.
-    #
-    # The base image is a store path, so it is always there. i3 draws it
-    # immediately at login and the weather run — which calls feh itself once
-    # it has written the file — replaces it a few seconds later. The failure
-    # mode of the weather half is now a wallpaper without a temperature on
-    # it, rather than no wallpaper.
-    nixstart.home.desktop._resolvedWallpaper = base;
+  # What i3's feh line uses. Read by home/desktop/i3.nix.
+  #
+  # Always the base image, even when the weather wallpaper is on, and that
+  # is deliberate. This used to resolve to `dynamic`, which is a path in
+  # ~/.cache that nothing guarantees exists: the timer first fires 30s into
+  # the session, so a fresh login had no wallpaper until it did, and a
+  # single failing run left the desktop bare indefinitely. That is exactly
+  # what happened — see the font patch in pkgs/weather-wallpaper.
+  #
+  # The base image is a store path, so it is always there. i3 draws it
+  # immediately at login and the weather run — which calls feh itself once
+  # it has written the file — replaces it a few seconds later. The failure
+  # mode of the weather half is now a wallpaper without a temperature on
+  # it, rather than no wallpaper.
+  nixstart.home.desktop._resolvedWallpaper = base;
 
-    systemd.user.services.weather-wallpaper = lib.mkIf desktop.weather.enable {
-      Unit = {
-        Description = "Draw the current temperature onto the wallpaper";
-        # The @reboot crontab line polled `xset q` in a loop because cron has
-        # no idea whether X is up. systemd does.
-        PartOf = [ "graphical-session.target" ];
-        After = [ "graphical-session.target" ];
-      };
-      Service = {
-        Type = "oneshot";
-        ExecStart = lib.getExe wallpaperFor;
-        Environment = [
-          # WALLPAPER_INPUT and WALLPAPER_MONITORS are set by the wrapper,
-          # from the canvas it lays out for the screens that are actually on.
-          "WALLPAPER_OUTPUT=${dynamic}"
-          "WALLPAPER_LOCATION=${desktop.weather.location}"
-
-          # Legibility is a property of the base image, not of the generator,
-          # so the colours travel with the wallpaper rather than being baked
-          # into the program. See pkgs/weather-wallpaper/robustness.patch for
-          # the parsing, and the option descriptions for why this is a choice
-          # at all. Both default to what was hardcoded before, so leaving them
-          # alone changes nothing.
-          "WALLPAPER_TEXT_COLOR=${desktop.weather.textColor}"
-          "WALLPAPER_SHADOW_COLOR=${desktop.weather.shadowColor}"
-        ];
-      };
+  systemd.user.services.weather-wallpaper = lib.mkIf desktop.weather.enable {
+    Unit = {
+      Description = "Draw the current temperature onto the wallpaper";
+      # The @reboot crontab line polled `xset q` in a loop because cron has
+      # no idea whether X is up. systemd does.
+      PartOf = [ "graphical-session.target" ];
+      After = [ "graphical-session.target" ];
     };
+    Service = {
+      Type = "oneshot";
+      ExecStart = lib.getExe wallpaperFor;
+      Environment = [
+        # WALLPAPER_INPUT and WALLPAPER_MONITORS are set by the wrapper,
+        # from the canvas it lays out for the screens that are actually on.
+        "WALLPAPER_OUTPUT=${dynamic}"
+        "WALLPAPER_LOCATION=${desktop.weather.location}"
 
-    # Redraw when the screens change, not only when the timer comes round.
-    systemd.user.services.weather-wallpaper-watch = lib.mkIf desktop.weather.enable {
-      Unit = {
-        Description = "Redraw the weather wallpaper when the display layout changes";
-        PartOf = [ "graphical-session.target" ];
-        After = [ "graphical-session.target" ];
-      };
-      Service = {
-        # `udevadm monitor` never exits, so this is the long-running half.
-        ExecStart = lib.getExe layoutWatch;
-        Restart = "always";
-        RestartSec = 2;
-      };
-      Install.WantedBy = [ "graphical-session.target" ];
+        # Legibility is a property of the base image, not of the generator,
+        # so the colours travel with the wallpaper rather than being baked
+        # into the program. See pkgs/weather-wallpaper/robustness.patch for
+        # the parsing, and the option descriptions for why this is a choice
+        # at all. Both default to what was hardcoded before, so leaving them
+        # alone changes nothing.
+        "WALLPAPER_TEXT_COLOR=${desktop.weather.textColor}"
+        "WALLPAPER_SHADOW_COLOR=${desktop.weather.shadowColor}"
+      ];
     };
-
-    systemd.user.timers.weather-wallpaper = lib.mkIf desktop.weather.enable {
-      Unit.Description = "Refresh the weather wallpaper";
-      Timer = {
-        OnStartupSec = "30s";
-        OnUnitActiveSec = desktop.weather.interval;
-        Persistent = true;
-      };
-      Install.WantedBy = [ "timers.target" ];
-    };
-
-    home.packages = lib.optional desktop.weather.enable pkgs.weather-wallpaper ++ [ pkgs.feh ];
   };
+
+  # Redraw when the screens change, not only when the timer comes round.
+  systemd.user.services.weather-wallpaper-watch = lib.mkIf desktop.weather.enable {
+    Unit = {
+      Description = "Redraw the weather wallpaper when the display layout changes";
+      PartOf = [ "graphical-session.target" ];
+      After = [ "graphical-session.target" ];
+    };
+    Service = {
+      # `udevadm monitor` never exits, so this is the long-running half.
+      ExecStart = lib.getExe layoutWatch;
+      Restart = "always";
+      RestartSec = 2;
+    };
+    Install.WantedBy = [ "graphical-session.target" ];
+  };
+
+  systemd.user.timers.weather-wallpaper = lib.mkIf desktop.weather.enable {
+    Unit.Description = "Refresh the weather wallpaper";
+    Timer = {
+      OnStartupSec = "30s";
+      OnUnitActiveSec = desktop.weather.interval;
+      Persistent = true;
+    };
+    Install.WantedBy = [ "timers.target" ];
+  };
+
+  home.packages = lib.optional desktop.weather.enable pkgs.weather-wallpaper ++ [ pkgs.feh ];
 }

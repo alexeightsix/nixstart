@@ -220,7 +220,7 @@ let
   };
 in
 {
-  config = lib.mkIf (desktop.enable && dock.enable) {
+  config = lib.mkIf dock.enable {
     home.packages = [ script ];
 
     # Applied once when the session comes up. After autorandr, so that a saved

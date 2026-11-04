@@ -13,27 +13,23 @@
 # The one cost of overload(): a tap sends Escape on release rather than on
 # press, because until the key comes up keyd cannot know whether it is a tap.
 {
-  config,
-  lib,
   ...
 }:
 {
-  config = lib.mkIf config.nixstart.system.desktop.enable {
-    services.keyd = {
-      enable = true;
-      keyboards.default = {
-        ids = [ "*" ];
-        settings = {
-          main = {
-            esc = "overload(nav, esc)";
-            capslock = "overload(nav, esc)";
-          };
-          nav = {
-            h = "left";
-            j = "down";
-            k = "up";
-            l = "right";
-          };
+  services.keyd = {
+    enable = true;
+    keyboards.default = {
+      ids = [ "*" ];
+      settings = {
+        main = {
+          esc = "overload(nav, esc)";
+          capslock = "overload(nav, esc)";
+        };
+        nav = {
+          h = "left";
+          j = "down";
+          k = "up";
+          l = "right";
         };
       };
     };

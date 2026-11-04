@@ -20,40 +20,7 @@
     # with a `user-password` secret in secrets/HOSTNAME.yaml when sops is set
     # up; that wins over this whenever it exists.
     user.initialPassword = "changeme";
-
-    desktop.enable = true;
-    apps.gui = true;
-    tailscale = true;
-
-    # Containers only. Full VMs belong on the desktop, not on something
-    # running off a 60W charger.
-    virtualisation.docker = true;
-
-    # Reachable from a phone on the same network: Metro, the local API, and
-    # whatever the next thing turns out to be. This is the machine the Expo
-    # project is developed on and testing it on real hardware is the point —
-    # see `languages = [ ... "android" ]` below.
-    trustLocalNetwork = true;
-
-    hardware = {
-      xps13 = true; # Lunar Lake: kernel, Xe2, SOF audio, fprintd, upower
-      keychron = true;
-      bluetooth = true;
-    };
   };
-
-  # /home only — the system is a generation and rolls back from the boot
-  # menu; /home is the part that does not.
-  nixstart.system.snapshots.home = true;
-
-  # The two configurations that stay working checkouts rather than store paths.
-  # Both options default to off, on the reasoning "link it yourself once with
-  # ln -s and Nix never touches the directory" — but nobody ever did, so
-  # ~/.config/nvim did not exist at all and neovim ran with no configuration
-  # despite dotfiles/nvim being fully ported, and ~/.pi did not exist either.
-  # Turning them on makes activation keep both links in place.
-  home-manager.users.alex.nixstart.neovim.linkConfig = true;
-  home-manager.users.alex.nixstart.pi.linkConfig = true;
 
   home-manager.users.alex.nixstart.home = {
     checkout = "/home/alex/nixstart";

@@ -73,26 +73,24 @@ let
   };
 in
 {
-  config = lib.mkIf cfg.desktop.enable {
-    home.packages = [ switch ];
+  home.packages = [ switch ];
 
-    # Named "sp" first for the same reason the bluetooth entry is named "bt":
-    # that is the name the command has, and typing it into the launcher is the
-    # muscle memory this replaces. A prefix match on the title does not depend
-    # on whether the provider indexes Keywords.
-    xdg.desktopEntries.laptop-speakers = {
-      name = "sp — Laptop Speakers Mode";
-      genericName = "Laptop Speakers";
-      comment = "Bluetooth off, built-in speakers and mic default, playing streams moved over";
-      icon = "audio-speakers";
-      exec = lib.getExe switch;
-      terminal = false;
-      categories = [
-        "Audio"
-        "AudioVideo"
-        "Settings"
-      ];
-      settings.Keywords = "sp;speakers;laptop;internal;builtin;audio;output;sink;bluetooth;off;disconnect;headphones;mode;";
-    };
+  # Named "sp" first for the same reason the bluetooth entry is named "bt":
+  # that is the name the command has, and typing it into the launcher is the
+  # muscle memory this replaces. A prefix match on the title does not depend
+  # on whether the provider indexes Keywords.
+  xdg.desktopEntries.laptop-speakers = {
+    name = "sp — Laptop Speakers Mode";
+    genericName = "Laptop Speakers";
+    comment = "Bluetooth off, built-in speakers and mic default, playing streams moved over";
+    icon = "audio-speakers";
+    exec = lib.getExe switch;
+    terminal = false;
+    categories = [
+      "Audio"
+      "AudioVideo"
+      "Settings"
+    ];
+    settings.Keywords = "sp;speakers;laptop;internal;builtin;audio;output;sink;bluetooth;off;disconnect;headphones;mode;";
   };
 }

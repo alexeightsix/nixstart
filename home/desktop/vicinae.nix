@@ -63,12 +63,10 @@ let
   json = (pkgs.formats.json { }).generate "vicinae-settings.json" settings;
 in
 {
-  config = lib.mkIf cfg.desktop.enable {
-    home.packages = [ pkgs.vicinae ];
+  home.packages = [ pkgs.vicinae ];
 
-    home.activation.seedVicinae = helpers.mkSeededFile {
-      target = "${config.xdg.configHome}/vicinae/settings.json";
-      source = json;
-    };
+  home.activation.seedVicinae = helpers.mkSeededFile {
+    target = "${config.xdg.configHome}/vicinae/settings.json";
+    source = json;
   };
 }

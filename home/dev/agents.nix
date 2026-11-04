@@ -87,13 +87,14 @@ let
   # The patch makes build.ts read the variable; --replace-quiet lets it go
   # quietly inert once upstream fixes this.
   opencodeDesktop =
-    (opencodeUpstream.opencode-desktop.override { inherit opencode; }).overrideAttrs (old: {
-      postPatch = (old.postPatch or "") + ''
-        substituteInPlace packages/desktop/script/build.ts \
-          --replace-quiet 'path.resolve(dir, "../cli/dist")' \
-                          'process.env.OPENCODE_CLI_DIST ?? path.resolve(dir, "../cli/dist")'
-      '';
-    });
+    (opencodeUpstream.opencode-desktop.override { inherit opencode; }).overrideAttrs
+      (old: {
+        postPatch = (old.postPatch or "") + ''
+          substituteInPlace packages/desktop/script/build.ts \
+            --replace-quiet 'path.resolve(dir, "../cli/dist")' \
+                            'process.env.OPENCODE_CLI_DIST ?? path.resolve(dir, "../cli/dist")'
+        '';
+      });
 in
 {
   config = lib.mkIf cfg.agents {

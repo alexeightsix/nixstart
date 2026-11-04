@@ -45,7 +45,7 @@ let
   minutes = cfg.desktop.hibernateAfter;
 in
 {
-  config = lib.mkIf (cfg.desktop.enable && minutes != null) {
+  config = lib.mkIf (minutes != null) {
     systemd.user.services.idle-hibernate = {
       Unit = {
         Description = "Hibernate after ${toString minutes} minutes of X idle time";

@@ -1,5 +1,4 @@
 {
-  config,
   lib,
   pkgs,
   ...
@@ -23,9 +22,16 @@
     };
   };
 
-  # Trust the private networks this machine is on, rather than listing ports.
-  # Off unless a host asks for it; see the option in system/options.nix for
-  # what that exposes and for the Tailscale version that exposes nothing.
+  # Accept everything arriving from a private address (10/8, 172.16/12,
+  # 192.168/16, IPv6 ULA and link-local) rather than naming ports, so a phone
+  # on the same network reaches Metro (8081), the local API and whatever comes
+  # next without a rebuild each time.
+  #
+  # The cost: this is every private network the machine joins, cafe wifi
+  # included, and behind it sit a bundler, an API, pgweb and Postgres on 5432.
+  # Docker's bridges (172.17/16, 172.18/16) are covered too. tailscale0 is
+  # already trusted, so a phone on the tailnet needs none of this. Only
+  # inbound connections are affected.
   #
   # extraCommands and not extraInputRules: the latter is read only by the
   # nftables backend, and this machine is on iptables, where it is accepted as
@@ -36,7 +42,7 @@
   # ends the chain — so these land ahead of the catch-all rather than after
   # it, where they would never be reached. `iptables` and `ip6tables` are the
   # module's own helpers, already carrying -w.
-  networking.firewall.extraCommands = lib.mkIf config.nixstart.system.trustLocalNetwork ''
+  networking.firewall.extraCommands = ''
     iptables -A nixos-fw -s 10.0.0.0/8 -j nixos-fw-accept
     iptables -A nixos-fw -s 172.16.0.0/12 -j nixos-fw-accept
     iptables -A nixos-fw -s 192.168.0.0/16 -j nixos-fw-accept

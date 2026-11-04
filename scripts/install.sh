@@ -10,7 +10,7 @@
 #   --keep-home     do not format; reuse the existing @home subvolume
 #   --dry-run       print the plan and stop
 #
-# Layout is btrfs with subvolumes, because nixstart.system.snapshots.home
+# Layout is btrfs with subvolumes, because snapper (system/services/snapshots.nix)
 # needs /home to be a subvolume rather than a directory:
 #
 #   part1  1GiB   vfat, label BOOT   -> /boot

@@ -51,21 +51,19 @@ let
   };
 in
 {
-  config = lib.mkIf cfg.desktop.enable {
-    home.packages = [ easy-boot ];
+  home.packages = [ easy-boot ];
 
-    xdg.desktopEntries.easy-boot = {
-      name = "Toggle easy boot";
-      genericName = "Skip the boot passwords";
-      comment = "No disk passphrase and no login password from the next startup, or back again";
-      icon = "dialog-password";
-      exec = "${lib.getExe config.programs.ghostty.package} -e env EASY_BOOT_LAUNCHER=1 ${lib.getExe easy-boot} toggle";
-      terminal = false;
-      categories = [
-        "System"
-        "Settings"
-      ];
-      settings.Keywords = "easy boot;autologin;auto login;luks;encryption;password;passphrase;boot;";
-    };
+  xdg.desktopEntries.easy-boot = {
+    name = "Toggle easy boot";
+    genericName = "Skip the boot passwords";
+    comment = "No disk passphrase and no login password from the next startup, or back again";
+    icon = "dialog-password";
+    exec = "${lib.getExe config.programs.ghostty.package} -e env EASY_BOOT_LAUNCHER=1 ${lib.getExe easy-boot} toggle";
+    terminal = false;
+    categories = [
+      "System"
+      "Settings"
+    ];
+    settings.Keywords = "easy boot;autologin;auto login;luks;encryption;password;passphrase;boot;";
   };
 }

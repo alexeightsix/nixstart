@@ -281,231 +281,229 @@ let
   barOutputs = lib.concatMapStrings (o: "output ${o}\n    ") desktop.barOutputs;
 in
 {
-  config = lib.mkIf desktop.enable {
-    xdg.configFile."i3/config".text = ''
-      set $mod Mod4
+  xdg.configFile."i3/config".text = ''
+    set $mod Mod4
 
-      workspace_layout default
-      font pango:monospace 8
+    workspace_layout default
+    font pango:monospace 8
 
-      # Leave the pointer where it is. i3's default is `mouse_warping output`,
-      # which teleports the cursor to the middle of a screen whenever focus
-      # moves to it — including the focus moves the workspace switch below
-      # makes on its way through the screens, so every $mod+N threw the
-      # pointer across the desk.
-      mouse_warping none
+    # Leave the pointer where it is. i3's default is `mouse_warping output`,
+    # which teleports the cursor to the middle of a screen whenever focus
+    # moves to it — including the focus moves the workspace switch below
+    # makes on its way through the screens, so every $mod+N threw the
+    # pointer across the desk.
+    mouse_warping none
 
-      new_window pixel 0
-      gaps inner 0
-      gaps outer 0
-      floating_modifier $mod
+    new_window pixel 0
+    gaps inner 0
+    gaps outer 0
+    floating_modifier $mod
 
-      exec --no-startup-id ${lib.getExe pkgs.dex} --autostart --environment i3
-      exec --no-startup-id ${pkgs.xss-lock}/bin/xss-lock --transfer-sleep-lock -- ${lib.getExe pkgs.i3lock} --nofork
-      exec --no-startup-id ${lib.getExe pkgs.picom} --config ${
-        config.xdg.configFile."picom/picom.conf".source
-      } -b
-      exec --no-startup-id ${lib.getExe pkgs.feh} --bg-fill ${desktop._resolvedWallpaper}
+    exec --no-startup-id ${lib.getExe pkgs.dex} --autostart --environment i3
+    exec --no-startup-id ${pkgs.xss-lock}/bin/xss-lock --transfer-sleep-lock -- ${lib.getExe pkgs.i3lock} --nofork
+    exec --no-startup-id ${lib.getExe pkgs.picom} --config ${
+      config.xdg.configFile."picom/picom.conf".source
+    } -b
+    exec --no-startup-id ${lib.getExe pkgs.feh} --bg-fill ${desktop._resolvedWallpaper}
 
-      # The volume and Bluetooth windows, always open on $mod+0 side by side —
-      # see audioPanels. `exec` rather than `exec_always`, so a reload does
-      # not open a second pair.
-      exec --no-startup-id ${lib.getExe audioPanels}
-      exec --no-startup-id ${monitorScript}
+    # The volume and Bluetooth windows, always open on $mod+0 side by side —
+    # see audioPanels. `exec` rather than `exec_always`, so a reload does
+    # not open a second pair.
+    exec --no-startup-id ${lib.getExe audioPanels}
+    exec --no-startup-id ${monitorScript}
 
-      # Obsidian, always open on $mod+6 — the assign below puts it there.
-      exec --no-startup-id ${lib.getExe pkgs.obsidian}
+    # Obsidian, always open on $mod+6 — the assign below puts it there.
+    exec --no-startup-id ${lib.getExe pkgs.obsidian}
 
-      # Chrome on $mod+3, and a terminal on $mod+1. The terminal gets a class of
-      # its own so only this one is pinned: assigning com.mitchellh.ghostty
-      # would send every $mod+Return to workspace 1 as well.
-      exec --no-startup-id ${lib.getExe pkgs.google-chrome}
-      exec --no-startup-id ${lib.getExe config.programs.ghostty.package} --class=com.mitchellh.ghostty.login
+    # Chrome on $mod+3, and a terminal on $mod+1. The terminal gets a class of
+    # its own so only this one is pinned: assigning com.mitchellh.ghostty
+    # would send every $mod+Return to workspace 1 as well.
+    exec --no-startup-id ${lib.getExe pkgs.google-chrome}
+    exec --no-startup-id ${lib.getExe config.programs.ghostty.package} --class=com.mitchellh.ghostty.login
 
-      # vicinae is a systemd user unit now (modules/nixos/desktop/i3.nix), not
-      # a `systemctl --user start` from the window manager.
+    # vicinae is a systemd user unit now (modules/nixos/desktop/i3.nix), not
+    # a `systemctl --user start` from the window manager.
 
-      set $refresh_i3status killall -SIGUSR1 i3status
-      bindsym XF86AudioRaiseVolume exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-sink-volume @DEFAULT_SINK@ +10% && $refresh_i3status
-      bindsym XF86AudioLowerVolume exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-sink-volume @DEFAULT_SINK@ -10% && $refresh_i3status
-      bindsym XF86AudioMute exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-sink-mute @DEFAULT_SINK@ toggle && $refresh_i3status
-      bindsym XF86AudioMicMute exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-source-mute @DEFAULT_SOURCE@ toggle && $refresh_i3status
+    set $refresh_i3status killall -SIGUSR1 i3status
+    bindsym XF86AudioRaiseVolume exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-sink-volume @DEFAULT_SINK@ +10% && $refresh_i3status
+    bindsym XF86AudioLowerVolume exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-sink-volume @DEFAULT_SINK@ -10% && $refresh_i3status
+    bindsym XF86AudioMute exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-sink-mute @DEFAULT_SINK@ toggle && $refresh_i3status
+    bindsym XF86AudioMicMute exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-source-mute @DEFAULT_SOURCE@ toggle && $refresh_i3status
 
-      bindsym $mod+Return exec ${lib.getExe config.programs.ghostty.package}
-      bindsym $mod+q kill
-      bindsym $mod+Tab focus right
+    bindsym $mod+Return exec ${lib.getExe config.programs.ghostty.package}
+    bindsym $mod+q kill
+    bindsym $mod+Tab focus right
 
-      # $mod+1..0 and $mod+Shift+1..0, over ten workspaces. Written as a fold
-      # rather than twenty near-identical lines, which is the one place in
-      # this file where the option tree's shape genuinely wins.
-      #
-      # What each binding expands to depends on desktop.pairedWorkspaces: i3's
-      # own `workspace number N`, or the script that moves every screen.
-      ${lib.concatMapStringsSep "\n" (n: ''
-        bindsym $mod+${toString (lib.mod n 10)} ${wsSwitch n}
-        bindsym $mod+Shift+${toString (lib.mod n 10)} ${wsMove n}
-      '') (lib.range 1 10)}
+    # $mod+1..0 and $mod+Shift+1..0, over ten workspaces. Written as a fold
+    # rather than twenty near-identical lines, which is the one place in
+    # this file where the option tree's shape genuinely wins.
+    #
+    # What each binding expands to depends on desktop.pairedWorkspaces: i3's
+    # own `workspace number N`, or the script that moves every screen.
+    ${lib.concatMapStringsSep "\n" (n: ''
+      bindsym $mod+${toString (lib.mod n 10)} ${wsSwitch n}
+      bindsym $mod+Shift+${toString (lib.mod n 10)} ${wsMove n}
+    '') (lib.range 1 10)}
 
-      # Which screen each workspace belongs to. Empty unless the workspaces
-      # are paired.
-      ${workspaceAssignments}
+    # Which screen each workspace belongs to. Empty unless the workspaces
+    # are paired.
+    ${workspaceAssignments}
 
-      # The numpad, with and without NumLock. bindcode rather than bindsym
-      # because the keysym a numpad key produces depends on the lock state,
-      # so bindsym would only ever catch one of the two.
-      ${lib.concatStringsSep "\n" (
-        lib.imap1
-          (i: code: ''
-            bindcode $mod+Shift+Mod2+${toString code} ${wsMove i}
-            bindcode $mod+Shift+${toString code} ${wsMove i}
-          '')
-          [
-            87
-            88
-            89
-            83
-            84
-            85
-            79
-            80
-            81
-            90
-          ]
-      )}
+    # The numpad, with and without NumLock. bindcode rather than bindsym
+    # because the keysym a numpad key produces depends on the lock state,
+    # so bindsym would only ever catch one of the two.
+    ${lib.concatStringsSep "\n" (
+      lib.imap1
+        (i: code: ''
+          bindcode $mod+Shift+Mod2+${toString code} ${wsMove i}
+          bindcode $mod+Shift+${toString code} ${wsMove i}
+        '')
+        [
+          87
+          88
+          89
+          83
+          84
+          85
+          79
+          80
+          81
+          90
+        ]
+    )}
 
-      mode "resize" {
-          bindsym Left resize shrink width 10 px or 10 ppt
-          bindsym Down resize grow height 10 px or 10 ppt
-          bindsym Up resize shrink height 10 px or 10 ppt
-          bindsym Right resize grow width 10 px or 10 ppt
-          bindsym Return mode "default"
-          bindsym Escape mode "default"
-      }
+    mode "resize" {
+        bindsym Left resize shrink width 10 px or 10 ppt
+        bindsym Down resize grow height 10 px or 10 ppt
+        bindsym Up resize shrink height 10 px or 10 ppt
+        bindsym Right resize grow width 10 px or 10 ppt
+        bindsym Return mode "default"
+        bindsym Escape mode "default"
+    }
 
-      bindsym $mod+r mode "resize"
-      bindsym $mod+Shift+c reload
-      bindsym $mod+Shift+r restart
+    bindsym $mod+r mode "resize"
+    bindsym $mod+Shift+c reload
+    bindsym $mod+Shift+r restart
 
-      bindsym $mod+b focus up
-      bindsym $mod+j focus left
-      bindsym $mod+k focus down
-      bindsym $mod+o focus right
-      bindsym $mod+Down focus down
-      bindsym $mod+Left focus left
-      bindsym $mod+Right focus right
-      bindsym $mod+Up focus up
+    bindsym $mod+b focus up
+    bindsym $mod+j focus left
+    bindsym $mod+k focus down
+    bindsym $mod+o focus right
+    bindsym $mod+Down focus down
+    bindsym $mod+Left focus left
+    bindsym $mod+Right focus right
+    bindsym $mod+Up focus up
 
-      bindsym $mod+Shift+b move up
-      bindsym $mod+Shift+j move left
-      bindsym $mod+Shift+k move down
-      bindsym $mod+Shift+o move right
-      bindsym $mod+Shift+Left move left
-      bindsym $mod+Shift+Down move down
-      bindsym $mod+Shift+Up move up
-      bindsym $mod+Shift+Right move right
+    bindsym $mod+Shift+b move up
+    bindsym $mod+Shift+j move left
+    bindsym $mod+Shift+k move down
+    bindsym $mod+Shift+o move right
+    bindsym $mod+Shift+Left move left
+    bindsym $mod+Shift+Down move down
+    bindsym $mod+Shift+Up move up
+    bindsym $mod+Shift+Right move right
 
-      bindsym $mod+h split h
-      bindsym $mod+v split v
-      bindsym $mod+f fullscreen toggle
-      bindsym $mod+s layout stacking
-      bindsym $mod+g layout tabbed
-      bindsym $mod+e layout toggle split
-      bindsym $mod+Shift+space floating toggle
-      bindsym $mod+space focus mode_toggle
-      bindsym $mod+a focus parent
+    bindsym $mod+h split h
+    bindsym $mod+v split v
+    bindsym $mod+f fullscreen toggle
+    bindsym $mod+s layout stacking
+    bindsym $mod+g layout tabbed
+    bindsym $mod+e layout toggle split
+    bindsym $mod+Shift+space floating toggle
+    bindsym $mod+space focus mode_toggle
+    bindsym $mod+a focus parent
 
-      assign [class="[zZ]oom.*"] 7
-      assign [class="^[Tt]elegram.*"] 7
-      assign [class="^[tT]eams.*"] 7
-      assign [class="^[sS]lack.*"] 7
-      assign [class="^[fF]irefox$"] 3
-      # nixpkgs' Obsidian maps as "md.obsidian.Obsidian", not "obsidian".
-      # `number 6` is "6" on the primary screen, as with workspace 10 below.
-      assign [class="(?i)obsidian"] number 6
-      assign [class="^Google-chrome$"] 3
-      assign [class="^com.mitchellh.ghostty.login$"] number 1
-      # `number 10` is $mod+0's workspace: "10" on the primary screen.
-      assign [class="^Blueman-manager$"] number 10
-      assign [class="^pavucontrol$"] number 10
+    assign [class="[zZ]oom.*"] 7
+    assign [class="^[Tt]elegram.*"] 7
+    assign [class="^[tT]eams.*"] 7
+    assign [class="^[sS]lack.*"] 7
+    assign [class="^[fF]irefox$"] 3
+    # nixpkgs' Obsidian maps as "md.obsidian.Obsidian", not "obsidian".
+    # `number 6` is "6" on the primary screen, as with workspace 10 below.
+    assign [class="(?i)obsidian"] number 6
+    assign [class="^Google-chrome$"] 3
+    assign [class="^com.mitchellh.ghostty.login$"] number 1
+    # `number 10` is $mod+0's workspace: "10" on the primary screen.
+    assign [class="^Blueman-manager$"] number 10
+    assign [class="^pavucontrol$"] number 10
 
-      for_window [class=(?i)firefox] focus
-      for_window [class=TelegramDesktop] focus
-      for_window [class="^.*"] border pixel 0
-      # flameshot's monitor chooser is a plain window and i3 tiles it into the
-      # layout. screenshotFocused passes -n so it should never appear; this is
-      # the net under that, not the fix.
-      for_window [class="(?i)flameshot"] floating enable
+    for_window [class=(?i)firefox] focus
+    for_window [class=TelegramDesktop] focus
+    for_window [class="^.*"] border pixel 0
+    # flameshot's monitor chooser is a plain window and i3 tiles it into the
+    # layout. screenshotFocused passes -n so it should never appear; this is
+    # the net under that, not the fix.
+    for_window [class="(?i)flameshot"] floating enable
 
-      ${builtins.readFile ./i3-colors.conf}
+    ${builtins.readFile ./i3-colors.conf}
 
-      bar {
-          # `dock`, not `hide`. The bar used to exist only while $mod was
-          # held — `mode hide` with `hidden_state hide` — which on a screen
-          # you are not holding a key on is indistinguishable from no bar at
-          # all. Dock keeps it on screen and reserves the 21px it occupies,
-          # so nothing is laid out underneath it.
-          #
-          # `modifier` and `hidden_state` are gone with it: both only mean
-          # anything to a bar that hides, and i3 ignores them here.
-          ${barOutputs}mode dock
-          padding 0 0 0 0
-          bindsym button1 nop
-          bindsym button4 nop
-          bindsym button5 nop
-          bindsym button6 nop
-          bindsym button7 nop
-          status_command ${statusCommand}
-          position bottom
-          tray_padding 0
-          strip_workspace_numbers yes
+    bar {
+        # `dock`, not `hide`. The bar used to exist only while $mod was
+        # held — `mode hide` with `hidden_state hide` — which on a screen
+        # you are not holding a key on is indistinguishable from no bar at
+        # all. Dock keeps it on screen and reserves the 21px it occupies,
+        # so nothing is laid out underneath it.
+        #
+        # `modifier` and `hidden_state` are gone with it: both only mean
+        # anything to a bar that hides, and i3 ignores them here.
+        ${barOutputs}mode dock
+        padding 0 0 0 0
+        bindsym button1 nop
+        bindsym button4 nop
+        bindsym button5 nop
+        bindsym button6 nop
+        bindsym button7 nop
+        status_command ${statusCommand}
+        position bottom
+        tray_padding 0
+        strip_workspace_numbers yes
 
-          colors {
-            active_workspace   $rp_rose $rp_overlay $rp_subtle $rp_iris
-            background         $rp_base
-            binding_mode       $rp_love $rp_love $rp_base
-            focused_workspace  $rp_rose $rp_rose $rp_base
-            inactive_workspace $rp_base $rp_base $rp_muted $rp_iris
-            separator          $rp_iris
-            statusline         $rp_text
-            urgent_workspace   $rp_love $rp_love $rp_base $rp_iris
-          }
-      }
+        colors {
+          active_workspace   $rp_rose $rp_overlay $rp_subtle $rp_iris
+          background         $rp_base
+          binding_mode       $rp_love $rp_love $rp_base
+          focused_workspace  $rp_rose $rp_rose $rp_base
+          inactive_workspace $rp_base $rp_base $rp_muted $rp_iris
+          separator          $rp_iris
+          statusline         $rp_text
+          urgent_workspace   $rp_love $rp_love $rp_base $rp_iris
+        }
+    }
 
-      # Agent mode, from home/desktop/agent-mode.nix: the terminal stays on
-      # the laptop panel through every workspace switch for as long as it is
-      # on. Empty unless the mode is built — $mod+Shift+a is otherwise free
-      # and stays that way rather than being bound to a script that does not
-      # exist.
-      ${lib.optionalString (desktop._agentModeToggle != "")
-        "bindsym $mod+Shift+a exec --no-startup-id ${desktop._agentModeToggle}"
-      }
+    # Agent mode, from home/desktop/agent-mode.nix: the terminal stays on
+    # the laptop panel through every workspace switch for as long as it is
+    # on. Empty unless the mode is built — $mod+Shift+a is otherwise free
+    # and stays that way rather than being bound to a script that does not
+    # exist.
+    ${lib.optionalString (
+      desktop._agentModeToggle != ""
+    ) "bindsym $mod+Shift+a exec --no-startup-id ${desktop._agentModeToggle}"}
 
-      bindsym $mod+Shift+s exec --no-startup-id "systemctl suspend"
-      bindsym $mod+d exec --no-startup-id "${lib.getExe pkgs.vicinae} toggle"
+    bindsym $mod+Shift+s exec --no-startup-id "systemctl suspend"
+    bindsym $mod+d exec --no-startup-id "${lib.getExe pkgs.vicinae} toggle"
 
-      # Wifi. nmtui rather than a tray applet: i3bar's tray is XEmbed only and
-      # nixpkgs builds nm-applet with -Dappindicator=yes, so an applet would
-      # need a snixembed shim to render in the bar at all. That argument used
-      # to carry "in a bar that is hidden by default anyway" as a second half;
-      # the bar docks now, so the XEmbed half is the whole of it.
-      # The net block in statusbar.nix is the at-a-glance half of this; $mod+w
-      # is the half that can actually change networks. $mod+d stays the
-      # launcher.
-      bindsym $mod+w exec --no-startup-id ${lib.getExe config.programs.ghostty.package} -e ${lib.getExe' pkgs.networkmanager "nmtui"}
+    # Wifi. nmtui rather than a tray applet: i3bar's tray is XEmbed only and
+    # nixpkgs builds nm-applet with -Dappindicator=yes, so an applet would
+    # need a snixembed shim to render in the bar at all. That argument used
+    # to carry "in a bar that is hidden by default anyway" as a second half;
+    # the bar docks now, so the XEmbed half is the whole of it.
+    # The net block in statusbar.nix is the at-a-glance half of this; $mod+w
+    # is the half that can actually change networks. $mod+d stays the
+    # launcher.
+    bindsym $mod+w exec --no-startup-id ${lib.getExe config.programs.ghostty.package} -e ${lib.getExe' pkgs.networkmanager "nmtui"}
 
-      # flameshot. Two keys, two scopes, and the difference only started
-      # mattering once the built-in panel was switched on: `gui` overlays the
-      # whole X root window, which is now 1920x2130 spanning both stacked
-      # screens, including the two 120x1050 bands beside the narrower panel
-      # that no monitor displays. That is a capture canvas, not a screen.
-      #
-      # `screen -e` confines the same interactive selector to a single
-      # monitor, and screenshotFocused above picks which one from i3's focused
-      # output instead of from wherever the mouse was left. Ctrl+; is the
-      # common case and gets that; F10 keeps the everything-at-once grab for a
-      # capture that really does span both.
-      bindsym Control+semicolon exec --no-startup-id ${lib.getExe screenshotFocused}
-      bindsym F10 exec --no-startup-id ${lib.getExe pkgs.flameshot} gui
-    '';
-  };
+    # flameshot. Two keys, two scopes, and the difference only started
+    # mattering once the built-in panel was switched on: `gui` overlays the
+    # whole X root window, which is now 1920x2130 spanning both stacked
+    # screens, including the two 120x1050 bands beside the narrower panel
+    # that no monitor displays. That is a capture canvas, not a screen.
+    #
+    # `screen -e` confines the same interactive selector to a single
+    # monitor, and screenshotFocused above picks which one from i3's focused
+    # output instead of from wherever the mouse was left. Ctrl+; is the
+    # common case and gets that; F10 keeps the everything-at-once grab for a
+    # capture that really does span both.
+    bindsym Control+semicolon exec --no-startup-id ${lib.getExe screenshotFocused}
+    bindsym F10 exec --no-startup-id ${lib.getExe pkgs.flameshot} gui
+  '';
 }

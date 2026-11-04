@@ -23,20 +23,6 @@ let
   enabled = l: builtins.elem l langs;
 in
 {
-  options.nixstart.neovim.linkConfig = lib.mkOption {
-    type = lib.types.bool;
-    default = false;
-    description = ''
-      Symlink ~/.config/nvim at dotfiles/nvim in the checkout — a plain
-      symlink to a writable directory, not a store path, so the tree stays
-      editable and lazy.nvim can still write lazy-lock.json.
-
-      Off by default: link it yourself once with `ln -s`, and Nix never
-      touches the directory at all. Turn it on only if you want that one
-      symlink kept in place for you.
-    '';
-  };
-
   config = {
     # The editor and the things its config shells out to. init.lua is
     # untouched.
@@ -85,7 +71,7 @@ in
 
     home.sessionVariables.EDITOR = "nvim";
 
-    home.file.".config/nvim" = lib.mkIf config.nixstart.neovim.linkConfig {
+    home.file.".config/nvim" = {
       source = config.lib.file.mkOutOfStoreSymlink "${cfg.checkout}/dotfiles/nvim";
     };
   };

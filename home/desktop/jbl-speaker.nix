@@ -84,26 +84,24 @@ let
   };
 in
 {
-  config = lib.mkIf cfg.desktop.enable {
-    home.packages = [ connect ];
+  home.packages = [ connect ];
 
-    # Named "jbl" first for the same reason the other two are named "bt" and
-    # "sp": that is the name the command has, and typing it into the launcher
-    # is the muscle memory this replaces. A prefix match on the title does not
-    # depend on whether the provider indexes Keywords.
-    xdg.desktopEntries.jbl-speaker = {
-      name = "jbl — JBL Go 4 Speaker";
-      genericName = "Bluetooth Speaker";
-      comment = "Connect the JBL Go 4 and make it the default audio output";
-      icon = "bluetooth-active-symbolic";
-      exec = "${lib.getExe config.programs.ghostty.package} -e ${lib.getExe connect}";
-      terminal = false;
-      categories = [
-        "Audio"
-        "AudioVideo"
-        "Settings"
-      ];
-      settings.Keywords = "jbl;go;speaker;bluetooth;wireless;audio;output;sink;connect;mode;";
-    };
+  # Named "jbl" first for the same reason the other two are named "bt" and
+  # "sp": that is the name the command has, and typing it into the launcher
+  # is the muscle memory this replaces. A prefix match on the title does not
+  # depend on whether the provider indexes Keywords.
+  xdg.desktopEntries.jbl-speaker = {
+    name = "jbl — JBL Go 4 Speaker";
+    genericName = "Bluetooth Speaker";
+    comment = "Connect the JBL Go 4 and make it the default audio output";
+    icon = "bluetooth-active-symbolic";
+    exec = "${lib.getExe config.programs.ghostty.package} -e ${lib.getExe connect}";
+    terminal = false;
+    categories = [
+      "Audio"
+      "AudioVideo"
+      "Settings"
+    ];
+    settings.Keywords = "jbl;go;speaker;bluetooth;wireless;audio;output;sink;connect;mode;";
   };
 }
