@@ -23,7 +23,6 @@ in
         "docker-compose"
         "colorize"
         "fzf"
-        "tmux"
       ];
       theme = "dracula";
       # oh-my-zsh's own directory is read-only in the store, so the Dracula
@@ -62,16 +61,6 @@ in
       # keys, not the shell.
       (lib.mkOrder 500 ''
         [ -f "$HOME/.zsh_secrets" ] && source "$HOME/.zsh_secrets"
-      '')
-
-      # How this shell was reached, for the tmux status bar: a DEV_VIA trail
-      # set on the way in gets `>tmux` appended (idempotently) and is stored
-      # per pane.
-      (lib.mkOrder 1000 ''
-        if [ -n "$DEV_VIA" ] && [ -n "$TMUX" ]; then
-          export DEV_VIA="''${DEV_VIA%>tmux}>tmux"
-          command tmux set -p @dev_via "$DEV_VIA" 2>/dev/null
-        fi
       '')
 
       # `!copy` at the prompt -> last line of output on the clipboard. Sourced

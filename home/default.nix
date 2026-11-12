@@ -14,7 +14,6 @@
     ./shell/aliases.nix
     ./shell/atuin.nix
     ./shell/tools.nix
-    ./shell/tmux.nix
 
     ./git.nix
     ./editor/neovim.nix

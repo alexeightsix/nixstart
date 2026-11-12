@@ -38,26 +38,27 @@ last step:
 
 Then check that the new entry appears.
 
-## Rebuilding: use `rebuild` in a tmux session
+## Rebuilding: use `agent-apply`
 
-When a change needs a rebuild, do not run `nixos-rebuild` in your own shell.
-Open a detached tmux session and type the `rebuild` alias into it, but do
-**not** press Enter. The user runs it:
+When a change needs a rebuild, do not run `nixos-rebuild` or the `rebuild`
+alias in your own shell. Apply it only when the user asks you to; otherwise
+stop and tell them it is ready. To apply:
 
-    tmux new-session -d -s rebuild -c ~/nixstart zsh
-    tmux send-keys -t rebuild 'rebuild'
+    agent-apply           # switch (the default)
+    agent-apply test      # live, leaving the boot menu alone
 
-Then stop and tell the user it is ready: they attach with
-`tmux attach -t rebuild`, press Enter, and type the sudo password if asked.
-Do not send `Enter` yourself.
+Why it is done this way (the long version is at the top of
+`scripts/agent-apply.sh`):
 
-Why it is done this way:
+- **It outlives your terminal.** Activation can restart X, which kills every
+  terminal on it, yours included, and a rebuild still running in one. The
+  script runs the rebuild in a detached session that belongs to no terminal
+  and follows its output from outside, so you still see the build.
+- **It never waits on a password.** It relies on the NOPASSWD rule for
+  `nixos-rebuild` in `system/core/users.nix`, and fails in one line instead
+  of hanging if that rule is not active yet.
+- **One at a time.** If an apply is already running it follows that one
+  rather than starting a second rebuild against the same profile.
 
-- **The tmux session** keeps the rebuild running if activation restarts X
-  and kills the terminal it was started from.
-- **`rebuild`** is a zsh alias, so it only exists in an interactive zsh.
-  That is why the session starts `zsh` and the command is sent as keys
-  instead of being passed to `tmux new-session` directly.
-
-If a session named `rebuild` already exists, do not start a second one;
-tell the user, since a rebuild may still be running there.
+tmux is not installed on this machine. `agent-apply` carries its own copy for
+the detached session, so do not reach for `tmux` directly.

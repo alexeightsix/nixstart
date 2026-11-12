@@ -32,7 +32,7 @@ in
       type = types.path;
       description = ''
         Store path of dotfiles/ in this repository. Read at build time:
-        tmux.conf, dunstrc, the Ghostty shaders and the wallpapers.
+        dunstrc, the Ghostty shaders and the wallpapers.
       '';
     };
 
