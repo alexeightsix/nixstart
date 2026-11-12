@@ -3,7 +3,7 @@
 #
 # The wrapper runs the script from the checkout rather than the store, for two
 # reasons. Editing it then needs no rebuild. And the script finds apply.sh and
-# system/easy-boot-flag.nix relative to itself, so it has to be the copy in
+# system/boot/easy-boot-flag.nix relative to itself, so it has to be the copy in
 # the working tree, not a store path.
 #
 # In a terminal because it cannot run without one: sudo asks for the account

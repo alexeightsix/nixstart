@@ -51,7 +51,7 @@
     # 2.18 its package.nix needs, and says so in its own comment. Following
     # ours would build it against a nixpkgs it is not tested against.
     #
-    # The matching binary cache is in system/core/nix.nix: ghostty's flake
+    # The matching binary cache is in system/nix/settings.nix: ghostty's flake
     # declares it in nixConfig, but a dependency's nixConfig has no effect on
     # the flake consuming it, so it has to be repeated there or every bump
     # compiles Zig and GTK from source.

@@ -3,14 +3,16 @@
   imports = [
     ./options.nix
 
-    ./core/nix.nix
-    ./core/nix-ld.nix
-    ./core/boot.nix
+    ./nix/settings.nix
+    ./nix/nix-ld.nix
+
+    ./boot/loader.nix
+    ./boot/easy-boot.nix
+
     ./core/locale.nix
     ./core/networking.nix
     ./core/users.nix
     ./core/secrets.nix
-    ./core/easy-boot.nix
 
     ./desktop/x11.nix
     ./desktop/keyd.nix
@@ -26,8 +28,7 @@
     ./services/openssh.nix
     ./services/tailscale.nix
     ./services/snapshots.nix
-
-    ./virtualisation.nix
+    ./services/docker.nix
 
     ./home.nix
   ];

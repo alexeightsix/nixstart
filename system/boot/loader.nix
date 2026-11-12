@@ -10,7 +10,7 @@
       # switch fail mid-install.
       #
       # This bounds the menu only. The system profile keeps its generations
-      # until nix.gc sweeps them at 30 days (see system/core/nix.nix), which
+      # until nix.gc sweeps them at 30 days (see system/nix/settings.nix), which
       # is deliberate: a generation older than the third newest is still
       # rollback-able with `nixos-rebuild switch --rollback`, it just is not
       # offered at boot.

@@ -1,6 +1,6 @@
 # Easy boot: power on and land on the desktop, with no LUKS passphrase and no
 # greeter password. Toggled with `scripts/boot/easy-boot.sh on|off`, which flips
-# system/easy-boot-flag.nix and does the parts that cannot live in Nix.
+# system/boot/easy-boot-flag.nix and does the parts that cannot live in Nix.
 #
 # The disk is not decrypted. Decrypting and re-encrypting the volume in place takes hours
 # each way, which is not something you can switch on and off. Instead, a random

@@ -7,7 +7,7 @@
 #   scripts/boot/easy-boot.sh status
 #
 # Both rebuild with `apply.sh boot`, so the change applies on the next
-# startup and the running session is left alone. See system/core/easy-boot.nix
+# startup and the running session is left alone. See system/boot/easy-boot.nix
 # for what this does and what it costs.
 set -euo pipefail
 
@@ -18,7 +18,7 @@ set -euo pipefail
 export PATH="/run/wrappers/bin:$PATH"
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-FLAG="$REPO/system/easy-boot-flag.nix"
+FLAG="$REPO/system/boot/easy-boot-flag.nix"
 KEY=/etc/secrets/initrd/cryptroot.key
 
 # The existing disk passphrase, used once to authorise adding the key file, so

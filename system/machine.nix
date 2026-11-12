@@ -3,7 +3,7 @@
 {
   imports = [
     ./hardware/hardware-configuration.nix
-    ./easy-boot-flag.nix
+    ./boot/easy-boot-flag.nix
   ];
 
   networking.hostName = "laptop";

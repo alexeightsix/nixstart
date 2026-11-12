@@ -45,7 +45,7 @@ in
         python3Packages.pynvim
       ]
       # Language servers, matched to lua/config/lsp.lua's two lists. Mason
-      # still works too; see system/core/nix-ld.nix.
+      # still works too; see system/nix/nix-ld.nix.
       ++ lib.optionals (enabled "node") [
         typescript-language-server
         vscode-langservers-extracted # cssls, eslint, html, json
