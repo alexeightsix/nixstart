@@ -26,7 +26,12 @@ in
     # vicinae indexes desktop entries once at startup and does not notice new
     # ones, so an app added by the switch stays out of the launcher until the
     # daemon restarts. `try-restart` is a no-op when it is not running.
-    rebuild = "sudo nixos-rebuild switch --flake ${config.home.homeDirectory}/nixstart && systemctl --user try-restart vicinae.service";
+    #
+    # i3 and its bar read their config once, so a switch that changes either
+    # is invisible until i3 restarts; `restart` is in place and keeps the
+    # windows. `|| true` because there is no i3 to reach from a TTY or over
+    # SSH, and that must not stop `update` and `sync-nix`, which chain on this.
+    rebuild = "sudo nixos-rebuild switch --flake ${config.home.homeDirectory}/nixstart && systemctl --user try-restart vicinae.service && (i3-msg -q restart || true)";
     rebuild-test = "sudo nixos-rebuild test --flake ${config.home.homeDirectory}/nixstart";
     generations = "nixos-rebuild list-generations";
 
@@ -59,6 +64,12 @@ in
     # releases a day and no branch tracks them (`dev` runs ahead, `production`
     # behind), so the newest vX.Y.Z tag is the only reliable "latest".
     bump-opencode = "tag=$(git ls-remote --tags --refs https://github.com/anomalyco/opencode 'v*' | cut -d/ -f3 | grep -E '^v[0-9]+\\.[0-9]+\\.[0-9]+$' | sort -V | tail -1) && [ -n \"$tag\" ] && sed -i \"s|github:anomalyco/opencode/v[0-9.]*|github:anomalyco/opencode/$tag|\" ${config.home.homeDirectory}/nixstart/flake.nix && echo \"opencode pinned to $tag\"";
+
+    # Powering the adapter off drops every Bluetooth connection, so the
+    # headsets come back fresh rather than reattaching to a half-dead session.
+    # The pause gives wireplumber's bluez monitor time to come up before the
+    # adapter returns, or the devices reconnect with no audio profile.
+    restart-audio = "bluetoothctl power off && systemctl --user restart pipewire pipewire-pulse wireplumber && sleep 2 && bluetoothctl power on";
 
     # ~/.zshrc is a store path, so edit the module that generates it.
     zsh = "nvim ${config.home.homeDirectory}/nixstart/home/shell/zsh.nix";
