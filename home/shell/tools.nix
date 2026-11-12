@@ -1,7 +1,19 @@
 # The small shell tools.
-{ config, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   cfg = config.nixstart.home;
+
+  # `zoxide init zsh` prints the same script every time for a given zoxide,
+  # so it is generated once here and sourced, rather than the integration's
+  # `eval "$(zoxide init zsh)"` starting zoxide on every shell.
+  zoxideInit = pkgs.runCommand "zoxide-init.zsh" { } ''
+    ${lib.getExe config.programs.zoxide.package} init zsh > $out
+  '';
 in
 {
   # A store symlink rather than seeded like flameshot.ini: lazydocker
@@ -11,8 +23,9 @@ in
 
   programs.zoxide = {
     enable = true;
-    enableZshIntegration = true;
+    enableZshIntegration = false;
   };
+  programs.zsh.initContent = lib.mkOrder 1000 "source ${zoxideInit}";
 
   programs.fzf = {
     enable = true;

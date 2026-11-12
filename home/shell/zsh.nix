@@ -8,6 +8,14 @@
 }:
 let
   cfg = config.nixstart.home;
+
+  # LS_COLORS from coreutils' built-in database, which is fixed for a given
+  # coreutils, so `dircolors -b` runs at build time instead of in every shell.
+  # oh-my-zsh only runs dircolors itself when LS_COLORS is unset, so this
+  # also stands in for that; /etc/zshrc's copy is off in system/core/users.nix.
+  lsColors = pkgs.runCommand "ls-colors.zsh" { } ''
+    ${pkgs.coreutils}/bin/dircolors -b > $out
+  '';
 in
 {
   programs.zsh = {
@@ -71,6 +79,9 @@ in
       (lib.mkOrder 500 ''
         [ -f "$HOME/.zsh_secrets" ] && source "$HOME/.zsh_secrets"
       '')
+
+      # Before oh-my-zsh, which reads it; see lsColors above.
+      (lib.mkOrder 500 "source ${lsColors}")
 
       # `!copy` at the prompt -> last line of output on the clipboard. Sourced
       # last: it wraps whatever accept-line widget the plugins left in place.

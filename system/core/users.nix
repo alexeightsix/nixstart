@@ -60,6 +60,9 @@ in
     # completion directory, was the largest single cost of opening a shell.
     programs.zsh.enableGlobalCompInit = false;
     programs.zsh.promptInit = "";
+    # LS_COLORS comes from a file generated at build time instead; see
+    # home/shell/zsh.nix.
+    programs.zsh.enableLsColors = false;
 
     # An account nobody can log into is worse than a weak first password, and
     # far harder to notice — it looks fine until the first boot.
