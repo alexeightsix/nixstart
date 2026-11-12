@@ -57,7 +57,7 @@ in
         default = 30;
         description = ''
           Minutes of X idle time before the machine hibernates, implemented by
-          home/desktop/idle.nix. The lock that happens first is X's own
+          home/desktop/power/idle.nix. The lock that happens first is X's own
           screensaver timer driving xss-lock, and is separate from this.
           null leaves the session locked but awake indefinitely.
         '';
@@ -87,7 +87,7 @@ in
         '';
       };
 
-      # Resolved by home/desktop/wallpaper.nix: the static image, or the
+      # Resolved by home/desktop/display/wallpaper.nix: the static image, or the
       # dynamic one when the weather wallpaper is on. Internal.
       _resolvedWallpaper = mkOption {
         type = types.str;
@@ -231,7 +231,7 @@ in
             Where the built-in panel sits physically relative to the external
             monitor, when `keepInternal` is true. `below` is centred, computed
             as an explicit `--pos` since xrandr's `--below` left-aligns — see
-            home/desktop/dock.nix.
+            home/desktop/display/dock.nix.
           '';
         };
 

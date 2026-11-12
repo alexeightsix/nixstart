@@ -67,7 +67,7 @@ in
     enableZshIntegration = true;
 
     # main, pinned by revision in flake.nix, rather than the tagged release
-    # in nixpkgs. home/desktop/i3.nix binds $mod+Return to this same
+    # in nixpkgs. home/desktop/wm/i3.nix binds $mod+Return to this same
     # attribute rather than pkgs.ghostty, so the terminal i3 opens and the
     # one this configures cannot drift apart.
     package = ghosttyPackage;

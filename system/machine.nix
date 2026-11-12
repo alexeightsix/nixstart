@@ -46,7 +46,7 @@
 
       # autorandr alone is not enough: with no saved profiles it matches
       # nothing, and home-manager's unit only fires at login. See
-      # home/desktop/dock.nix.
+      # home/desktop/display/dock.nix.
       dock = {
         enable = true;
         internal = "eDP-1"; # `xrandr --query` on this machine

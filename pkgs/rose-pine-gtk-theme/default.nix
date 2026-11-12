@@ -10,7 +10,7 @@
 # of assets — and the desktop uses one: the base Rose Pine palette, dark, the
 # same one Ghostty's `theme = "Rose Pine"` and vicinae's `theme.dark.name`
 # already name. The installed theme is called `Rosepine-Dark`, which is what
-# home/desktop/gtk.nix has to ask for.
+# home/desktop/apps/gtk.nix has to ask for.
 {
   lib,
   stdenvNoCC,

@@ -121,7 +121,7 @@
  
 -	srcImg, err := jpeg.Decode(f)
 +	// image.Decode rather than jpeg.Decode: wallpapers/ holds .png as well as
-+	// .jpg, and the wrapper in home/desktop/wallpaper.nix only happens to hand
++	// .jpg, and the wrapper in home/desktop/display/wallpaper.nix only happens to hand
 +	// this a JPEG because it runs the base through `magick` on every path. That
 +	// is a coupling nothing states, and it fails as "missing SOI marker" —
 +	// which does not say "wrong format" to anyone reading the journal.

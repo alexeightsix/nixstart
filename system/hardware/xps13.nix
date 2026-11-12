@@ -43,7 +43,7 @@
   # Lunar Lake has no S3; suspend is s2idle (modern standby). Saying so
   # avoids the kernel picking a state the firmware does not implement.
   #
-  # Hibernate (used by criticalPowerAction below and home/desktop/idle.nix)
+  # Hibernate (used by criticalPowerAction below and home/desktop/power/idle.nix)
   # resumes from the swap partition, found by its swsuspend signature.
   #
   # HibernateMode = shutdown: the default `platform` runs every driver's

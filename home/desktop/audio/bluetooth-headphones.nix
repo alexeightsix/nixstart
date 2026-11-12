@@ -7,7 +7,7 @@
 #
 # A desktop entry makes it reachable from $mod+d instead: vicinae's
 # applications provider indexes ~/.local/share/applications, which is where
-# home-manager writes these (see the `paths` list in desktop/vicinae.nix), so
+# home-manager writes these (see the `paths` list in desktop/apps/vicinae.nix), so
 # the entry shows up in the launcher and in any other application menu at the
 # same time.
 #

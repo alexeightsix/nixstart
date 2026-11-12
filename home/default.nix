@@ -18,24 +18,28 @@
     ./git.nix
     ./editor/neovim.nix
 
-    ./desktop/i3.nix
-    ./desktop/statusbar.nix
-    ./desktop/battery.nix
-    ./desktop/idle.nix
-    ./desktop/display.nix
-    ./desktop/gtk.nix
-    ./desktop/wallpaper.nix
-    ./desktop/picom.nix
-    ./desktop/dunst.nix
-    ./desktop/ghostty.nix
-    ./desktop/flameshot.nix
-    ./desktop/vicinae.nix
-    ./desktop/network.nix
-    ./desktop/dock.nix
-    ./desktop/bluetooth-headphones.nix
-    ./desktop/easy-boot.nix
-    ./desktop/laptop-speakers.nix
-    ./desktop/jbl-speaker.nix
+    ./desktop/wm/i3.nix
+    ./desktop/wm/statusbar.nix
+    ./desktop/wm/picom.nix
+
+    ./desktop/display/outputs.nix
+    ./desktop/display/dock.nix
+    ./desktop/display/wallpaper.nix
+
+    ./desktop/power/battery.nix
+    ./desktop/power/idle.nix
+    ./desktop/power/easy-boot.nix
+
+    ./desktop/audio/bluetooth-headphones.nix
+    ./desktop/audio/laptop-speakers.nix
+    ./desktop/audio/jbl-speaker.nix
+
+    ./desktop/apps/ghostty.nix
+    ./desktop/apps/vicinae.nix
+    ./desktop/apps/flameshot.nix
+    ./desktop/apps/dunst.nix
+    ./desktop/apps/gtk.nix
+    ./desktop/apps/network.nix
 
     ./dev/toolchains.nix
     ./dev/agents.nix

@@ -3,8 +3,8 @@
 ## New programs go in the launcher
 
 Every new program added here must be reachable from the launcher: vicinae
-on `$mod+d` (`home/desktop/i3.nix`). Vicinae lists desktop entries from the
-paths in `home/desktop/vicinae.nix`, so a program with no `.desktop` file
+on `$mod+d` (`home/desktop/wm/i3.nix`). Vicinae lists desktop entries from the
+paths in `home/desktop/apps/vicinae.nix`, so a program with no `.desktop` file
 does not appear in it. Check this every time you add a package:
 
 - **GUI app from nixpkgs**: these usually ship their own entry. After the
@@ -17,7 +17,7 @@ does not appear in it. Check this every time you add a package:
 - **TUI program or script**: add an `xdg.desktopEntries.<name>` whose `exec`
   opens it in ghostty
   (`${lib.getExe config.programs.ghostty.package} -e …`), the way
-  `home/desktop/bluetooth-headphones.nix` does for `bt`.
+  `home/desktop/audio/bluetooth-headphones.nix` does for `bt`.
 
 Skip this only for plain command-line tools that nobody launches on their
 own (`ripgrep`, `jq`, or libraries pulled in for other packages). When

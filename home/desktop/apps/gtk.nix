@@ -10,7 +10,7 @@
 # inherits breeze and hicolor, and adwaita-icon-theme stays installed under
 # it as the last resort.
 #
-# The cursor is deliberately not set here. home/desktop/display.nix owns it,
+# The cursor is deliberately not set here. home/desktop/display/outputs.nix owns it,
 # because its size is a HiDPI decision rather than a colour one.
 {
   config,

@@ -51,7 +51,7 @@ let
       # *active* monitor and nothing for an output that is connected but
       # switched off, which is the distinction that matters here. A disabled
       # panel keeps its old modeline in --query output (see the stale-CRTC
-      # note in desktop/dock.nix) and would otherwise be drawn for.
+      # note in desktop/display/dock.nix) and would otherwise be drawn for.
       #
       #    Monitors: 2
       #     0: +*DP-1 1920/600x1080/340+0+0  DP-1
@@ -158,7 +158,7 @@ let
   };
 in
 {
-  # What i3's feh line uses. Read by home/desktop/i3.nix.
+  # What i3's feh line uses. Read by home/desktop/wm/i3.nix.
   #
   # Always the base image, even with the weather wallpaper on: it is a store
   # path and always exists, while the dynamic one may not yet. The weather

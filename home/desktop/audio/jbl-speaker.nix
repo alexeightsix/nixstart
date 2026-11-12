@@ -3,9 +3,9 @@
 # `jbl` is a zsh function in dotfiles/zsh/alias/jbl — power the radio on,
 # connect the JBL Go 4, wait for PipeWire to publish its node, make it the
 # default sink and drag whatever is already playing onto it. The third of the
-# three audio modes, and the reasoning is desktop/bluetooth-headphones.nix's
+# three audio modes, and the reasoning is desktop/audio/bluetooth-headphones.nix's
 # in full: a desktop entry is the whole of the integration, vicinae indexes
-# ~/.local/share/applications (see the `paths` list in desktop/vicinae.nix),
+# ~/.local/share/applications (see the `paths` list in desktop/apps/vicinae.nix),
 # and the function stays in the alias directory so that editing it changes
 # what the launcher runs with no rebuild.
 #

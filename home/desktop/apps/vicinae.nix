@@ -11,7 +11,7 @@
 }:
 let
   cfg = config.nixstart.home;
-  helpers = import ../lib.nix { inherit lib config; };
+  helpers = import ../../lib.nix { inherit lib config; };
 
   settings = {
     "$schema" = "https://vicinae.com/schemas/config.json";

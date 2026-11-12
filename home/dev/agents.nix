@@ -111,7 +111,7 @@ in
     # The file becomes a read-only store symlink: herdr can no longer write
     # it (e.g. `herdr config reset-keys`), so change settings here instead.
     #
-    # Keys follow the tmux/Ghostty set in home/desktop/ghostty.nix. herdr's
+    # Keys follow the tmux/Ghostty set in home/desktop/apps/ghostty.nix. herdr's
     # prefix is already ctrl+b, and c, x, z, h/j/k/l are its defaults, so
     # only the differences are listed; herdr's own keys stay alongside.
     # n is a new workspace here as in tmux.conf, which moves next tab to `.`.

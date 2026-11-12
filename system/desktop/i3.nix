@@ -1,5 +1,5 @@
 # The i3 session's system-level parts: the daemons and helpers the i3 config
-# execs. The configuration file itself is home-manager's (home/desktop/i3.nix).
+# execs. The configuration file itself is home-manager's (home/desktop/wm/i3.nix).
 {
   config,
   lib,
