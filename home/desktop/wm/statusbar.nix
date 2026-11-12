@@ -120,9 +120,9 @@ let
   # Agents running in the herdr app, counted by what they need from you, in
   # herdr's own marks and colours so the bar reads like its sidebar. Its
   # Rosé Pine theme takes them from the palette (the Win98 theme spells the
-  # mapping out): waiting (an approval or question is on screen) a red dot,
-  # which also turns the robot red; done (a finished turn nobody has looked
-  # at yet) a foam dot; working a gold ring. The colours are Pango spans,
+  # mapping out): waiting (an approval or question is on screen) a red dot;
+  # done (a finished turn nobody has looked at yet) a foam dot; working a
+  # gold ring. The marks are the whole of it, with no block icon in front. The colours are Pango spans,
   # which the block's `pango-str()` passes through as markup rather than
   # escaping.
   #
@@ -190,7 +190,7 @@ let
             (if $unread > 0 then ("󰝥" | tint("#9ccfd8")) + " \($unread) done" else empty end),
             (if $working > 0 then ("󰝦" | tint($ring)) + " \($working) working" else empty end) ]
         | if length == 0 then {text: ""}
-          else {text: join("  "), icon: "agent", state: (if $waiting > 0 then "Critical" else "Idle" end)}
+          else {text: join("  ")}
           end' "$cache"
     '';
   };
@@ -241,14 +241,11 @@ let
       json = true;
       hide_when_empty = true;
       interval = 0.5; # for the working pulse; see herdrStatus
-      format = " $icon $text.pango-str() ";
+      format = " $text.pango-str() ";
       # Its own panel, Rosé Pine overlay against the bar's base, at the left
       # end: agents are the one part of the bar that is about your work
       # rather than the machine.
-      theme_overrides = {
-        idle_bg = "#26233a";
-        critical_bg = "#26233a";
-      };
+      theme_overrides.idle_bg = "#26233a";
       click = [
         {
           button = "left";
@@ -356,14 +353,11 @@ in
         theme = rosePine;
         icons = {
           icons = "awesome4";
-          # awesome4 has no ethernet glyph and draws wired as a globe, and has
-          # nothing for an agent. These are Material Design icons from the
-          # Nerd Font the bar uses; `agent` is a new name, used by the herdr
-          # block above.
+          # awesome4 has no ethernet glyph and draws wired as a globe; these
+          # two are Material Design icons from the Nerd Font the bar uses.
           overrides = {
             net_wired = "󰈀"; # nf-md-ethernet
             net_wireless = "󰖩"; # nf-md-wifi
-            agent = "󰚩"; # nf-md-robot
           };
         };
         block = blocks;
