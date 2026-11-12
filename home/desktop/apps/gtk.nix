@@ -22,7 +22,7 @@
     enable = true;
 
     theme = {
-      # The one variant pkgs/rose-pine-gtk-theme builds — see the comment
+      # The one variant packages/rose-pine-gtk-theme builds — see the comment
       # there for why the whole matrix is not installed.
       name = "Rosepine-Dark";
       package = pkgs.rose-pine-gtk-theme;

@@ -88,7 +88,7 @@
 
     # Rose Pine for GTK, so Thunar and the other GTK applications match
     # Ghostty, the bar, vicinae and Neovim. nixpkgs had this and removed it —
-    # see pkgs/rose-pine-gtk-theme for what that was about — so it is built
+    # see packages/rose-pine-gtk-theme for what that was about — so it is built
     # from the same upstream here. The icons are still nixpkgs'
     # `rose-pine-icon-theme`, which survived.
     rose-pine-gtk-theme = {
@@ -127,7 +127,7 @@
             # build while it is false. It stands for having read Google's SDK
             # terms, so it is a statement about a licence rather than a build
             # flag — which is why it is here beside the allowlist and not in
-            # pkgs/android-sdk.
+            # packages/android-sdk.
             android_sdk.accept_license = true;
 
             # beekeeper-studio 6.1.4 bundles Electron 39.8.10, EOL since March

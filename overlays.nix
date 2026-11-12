@@ -1,13 +1,13 @@
 # Packages this repository builds, layered onto nixpkgs.
 inputs: final: prev: {
-  dracula-zsh-theme = final.callPackage ./pkgs/dracula-zsh-theme { };
-  weather-wallpaper = final.callPackage ./pkgs/weather-wallpaper {
+  dracula-zsh-theme = final.callPackage ./packages/dracula-zsh-theme { };
+  weather-wallpaper = final.callPackage ./packages/weather-wallpaper {
     src = inputs.weather-wallpaper;
   };
-  glow-rose-pine = final.callPackage ./pkgs/glow-rose-pine {
+  glow-rose-pine = final.callPackage ./packages/glow-rose-pine {
     src = inputs.glow-rose-pine;
   };
-  rose-pine-gtk-theme = final.callPackage ./pkgs/rose-pine-gtk-theme {
+  rose-pine-gtk-theme = final.callPackage ./packages/rose-pine-gtk-theme {
     src = inputs.rose-pine-gtk-theme;
   };
 
@@ -17,9 +17,9 @@ inputs: final: prev: {
   # package pins, so exporting the derivation alone would put
   # "build-tools/36.0.0/aapt2" in home/dev/toolchains.nix as a second place to edit
   # whenever Expo moves.
-  android-sdk = final.callPackage ./pkgs/android-sdk { };
+  android-sdk = final.callPackage ./packages/android-sdk { };
 
-  herdr-app = final.callPackage ./pkgs/herdr-app { };
+  herdr-app = final.callPackage ./packages/herdr-app { };
 
   # witr builds itself; this only lifts its package into the same namespace
   # as everything else so modules do not have to reach into `inputs`.

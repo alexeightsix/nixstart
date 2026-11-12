@@ -283,7 +283,7 @@ in
         managed here — see home/editor/neovim.nix.
 
         `android` is the Android SDK, a JDK 17 and Gradle. See
-        pkgs/android-sdk for what the versions are pinned to and why.
+        packages/android-sdk for what the versions are pinned to and why.
       '';
     };
 

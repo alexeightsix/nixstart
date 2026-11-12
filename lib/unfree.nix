@@ -25,7 +25,7 @@ builtins.elem name [
 # Google's repository manifest — `tools`, `platforms`, `cmake`, `emulator`,
 # `ndk` — so an allowlist naming those would quietly admit any unfree package
 # that ever calls itself `cmake`, and it would need editing again the moment
-# pkgs/android-sdk asks for a component it does not currently pull in.
+# packages/android-sdk asks for a component it does not currently pull in.
 #
 # All seventeen do share one thing: androidenv builds them from a single `meta`
 # with this homepage, the archives included. Keying on that names the SDK

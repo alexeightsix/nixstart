@@ -96,7 +96,7 @@ in
       pkgs.grok-cli
 
       # herdr, the agent multiplexer: the TUI from nixpkgs, and the desktop
-      # app (with its herdr-core server) from pkgs/herdr-app.
+      # app (with its herdr-core server) from packages/herdr-app.
       pkgs.herdr
       pkgs.herdr-app
 

@@ -11,9 +11,9 @@ does not appear in it. Check this every time you add a package:
   build, check that `share/applications/*.desktop` exists in the output
   (`ls $(nix build --no-link --print-out-paths …)/share/applications`).
   If it is missing, add one with `xdg.desktopEntries`.
-- **Package built in `pkgs/`**: install an entry with `makeDesktopItem` and
+- **Package built in `packages/`**: install an entry with `makeDesktopItem` and
   `copyDesktopItems`, plus an icon under `share/icons/hicolor`, the way
-  `pkgs/herdr-app` does.
+  `packages/herdr-app` does.
 - **TUI program or script**: add an `xdg.desktopEntries.<name>` whose `exec`
   opens it in ghostty
   (`${lib.getExe config.programs.ghostty.package} -e …`), the way

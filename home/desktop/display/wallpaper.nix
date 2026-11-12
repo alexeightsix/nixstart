@@ -181,7 +181,7 @@ in
         "WALLPAPER_LOCATION=${desktop.weather.location}"
 
         # Legibility depends on the base image, so the colours are set with
-        # the wallpaper. Parsed by pkgs/weather-wallpaper/robustness.patch.
+        # the wallpaper. Parsed by packages/weather-wallpaper/robustness.patch.
         "WALLPAPER_TEXT_COLOR=${desktop.weather.textColor}"
         "WALLPAPER_SHADOW_COLOR=${desktop.weather.shadowColor}"
       ];
