@@ -156,59 +156,6 @@ in
         '';
       };
 
-      # Agent mode: the terminal stays on the laptop panel. See
-      # home/desktop/agent-mode.nix.
-      agentMode = {
-        enable = mkOption {
-          type = types.bool;
-          default = false;
-          description = ''
-            Build the mode and bind $mod+Shift+a to it. While on (it is off
-            at every login), every workspace switch puts the terminal back on
-            the built-in panel. Needs `dock.keepInternal`, or the panel is off
-            while docked and the pin has nowhere to land.
-          '';
-        };
-
-        output = mkOption {
-          type = types.nullOr types.str;
-          default = null;
-          example = "eDP-1";
-          description = ''
-            The screen the terminal is pinned to. null means `dock.internal`,
-            the built-in panel.
-          '';
-        };
-
-        terminalClass = mkOption {
-          type = types.str;
-          default = "com.mitchellh.ghostty";
-          description = ''
-            WM_CLASS of the terminal to pin, as `xprop WM_CLASS` reports it.
-            Only one window is moved: the oldest (lowest X window id), on the
-            assumption the agent was started first.
-          '';
-        };
-
-        exempt = mkOption {
-          type = types.listOf types.int;
-          default = [ 10 ];
-          description = ''
-            Workspaces the mode leaves alone, as the number on the key
-            ($mod+0 is 10), so there is somewhere that gets the whole desk.
-            Matched on the number, so "10" and "20:10" are one entry.
-          '';
-        };
-      };
-
-      # Set by home/desktop/agent-mode.nix, read by home/desktop/i3.nix: the
-      # toggle on PATH, or "" when the mode is not built. Internal.
-      _agentModeToggle = mkOption {
-        type = types.str;
-        internal = true;
-        default = "";
-      };
-
       barOutputs = mkOption {
         type = types.listOf types.str;
         default = [ ];

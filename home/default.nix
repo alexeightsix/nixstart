@@ -33,7 +33,6 @@
     ./desktop/vicinae.nix
     ./desktop/network.nix
     ./desktop/dock.nix
-    ./desktop/agent-mode.nix
     ./desktop/bluetooth-headphones.nix
     ./desktop/easy-boot.nix
     ./desktop/laptop-speakers.nix

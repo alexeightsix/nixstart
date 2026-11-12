@@ -44,11 +44,6 @@
       # cost: nothing on the panel says which workspace it is showing.
       barOutputs = [ "primary" ];
 
-      # The agent terminal lives on the panel while supervising happens on
-      # the monitor. $mod+Shift+a toggles it (off at every login); $mod+0 is
-      # left out of it. See home/desktop/agent-mode.nix.
-      agentMode.enable = true;
-
       # autorandr alone is not enough: with no saved profiles it matches
       # nothing, and home-manager's unit only fires at login. See
       # home/desktop/dock.nix.

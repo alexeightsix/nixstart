@@ -1,6 +1,5 @@
 # scripts/easy-boot.sh, as something the launcher can find: "Toggle easy boot"
-# on $mod+d, the same shape as "Toggle agent mode" in agent-mode.nix, and
-# opened in Ghostty the way bluetooth-headphones.nix opens `bt`.
+# on $mod+d, opened in Ghostty the way bluetooth-headphones.nix opens `bt`.
 #
 # The wrapper runs the script from the checkout rather than the store, for two
 # reasons. Editing it then needs no rebuild. And the script finds apply.sh and
