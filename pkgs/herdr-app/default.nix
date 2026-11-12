@@ -27,11 +27,11 @@ let
   # below makes sure it never has to.
   core = stdenv.mkDerivation rec {
     pname = "herdr-core";
-    version = "0.1.17";
+    version = "0.1.20";
 
     src = fetchurl {
       url = "https://releases.herdr.dev/core/${version}/herdr-core-linux-x86_64.tar.gz";
-      hash = "sha256-guxEBD9olL/bcWuXm4fNpD/X+kawEE57e9k+ZNGpuHc=";
+      hash = "sha256-rGuGiQxFGjdYRiCqpDi3G8DQvUMKLnwdfglfBSxBTnQ=";
     };
     sourceRoot = ".";
 
@@ -43,11 +43,11 @@ let
 in
 stdenv.mkDerivation rec {
   pname = "herdr-app";
-  version = "0.1.12";
+  version = "0.1.15";
 
   src = fetchurl {
     url = "https://releases.herdr.dev/app/${version}/herdr-app-linux-x86_64.tar.gz";
-    hash = "sha256-omXmySXEh0WEBnQf+gnS+g09S9QBo07YwBwzYQjlfB8=";
+    hash = "sha256-+Z4eBL6CwOELL2nudAPKNDhvSA2SUR31hlr0cD52Vd0=";
   };
 
   nativeBuildInputs = [
