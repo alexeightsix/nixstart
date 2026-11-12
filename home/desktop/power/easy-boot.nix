@@ -1,4 +1,4 @@
-# scripts/easy-boot.sh, as something the launcher can find: "Toggle easy boot"
+# scripts/boot/easy-boot.sh, as something the launcher can find: "Toggle easy boot"
 # on $mod+d, opened in Ghostty the way bluetooth-headphones.nix opens `bt`.
 #
 # The wrapper runs the script from the checkout rather than the store, for two
@@ -17,7 +17,7 @@
 let
   cfg = config.nixstart.home;
 
-  script = "${cfg.checkout}/scripts/easy-boot.sh";
+  script = "${cfg.checkout}/scripts/boot/easy-boot.sh";
 
   easy-boot = pkgs.writeShellApplication {
     name = "easy-boot";

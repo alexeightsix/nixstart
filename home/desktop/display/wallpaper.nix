@@ -80,7 +80,7 @@ let
                }') || screen=""
 
       # magick unconditionally, even in the fallback. It used to be that the
-      # generator decoded JPEG only, so a .png in wallpapers/ failed at the
+      # generator decoded JPEG only, so a .png in assets/wallpapers/ failed at the
       # decode unless it came through here first; robustness.patch moved that
       # to image.Decode and the format no longer matters. What keeps this
       # unconditional is the canvas itself — WALLPAPER_INPUT is a path, so

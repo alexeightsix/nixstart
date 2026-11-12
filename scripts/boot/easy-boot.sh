@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Toggle easy boot: no LUKS passphrase, no greeter password.
 #
-#   scripts/easy-boot.sh toggle   on if it is off, off if it is on
-#   scripts/easy-boot.sh on       enroll a key file, enable auto-login, rebuild
-#   scripts/easy-boot.sh off      rebuild without it, then revoke the key
-#   scripts/easy-boot.sh status
+#   scripts/boot/easy-boot.sh toggle   on if it is off, off if it is on
+#   scripts/boot/easy-boot.sh on       enroll a key file, enable auto-login, rebuild
+#   scripts/boot/easy-boot.sh off      rebuild without it, then revoke the key
+#   scripts/boot/easy-boot.sh status
 #
 # Both rebuild with `apply.sh boot`, so the change applies on the next
 # startup and the running session is left alone. See system/core/easy-boot.nix
@@ -17,7 +17,7 @@ set -euo pipefail
 # apply.sh inherits this.
 export PATH="/run/wrappers/bin:$PATH"
 
-REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 FLAG="$REPO/system/easy-boot-flag.nix"
 KEY=/etc/secrets/initrd/cryptroot.key
 
@@ -64,14 +64,14 @@ case "$MODE" in
             fi
         fi
         set_flag true
-        "$REPO/scripts/apply.sh" boot
+        "$REPO/scripts/apply/apply.sh" boot
         step "easy boot is ON from the next startup"
         ;;
     off)
         set_flag false
         # Rebuild first. If this fails, the key stays enrolled and the current
         # initrd still boots.
-        "$REPO/scripts/apply.sh" boot
+        "$REPO/scripts/apply/apply.sh" boot
         if key_works; then
             step "revoking the key file's LUKS slot"
             sudo cryptsetup luksRemoveKey "$DEV" "$KEY"

@@ -5,7 +5,7 @@
 #   agent-apply boot       stage for the next boot
 #   agent-apply test       apply live, leave the boot menu alone
 #
-# scripts/apply.sh is the real thing and this does not replace it. What this
+# scripts/apply/apply.sh is the real thing and this does not replace it. What this
 # adds is the two properties an agent needs and an interactive shell does not:
 #
 # 1. The rebuild outlives the terminal it was started from. apply.sh ends by
@@ -32,7 +32,7 @@ case "$MODE" in
     *) echo "usage: $(basename "$0") [switch|boot|test]" >&2; exit 2 ;;
 esac
 
-REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 SESSION="agent-apply"
 RUNDIR="${XDG_RUNTIME_DIR:-/tmp}/agent-apply"
 LOG="$RUNDIR/log"
@@ -63,7 +63,7 @@ if ! sudo -n -l /run/current-system/sw/bin/nixos-rebuild >/dev/null 2>&1; then
     fail "sudo would ask for a password, and nothing here can answer it."
     fail "The NOPASSWD rule in system/core/users.nix is not on this generation yet."
     fail "Run this once by hand, then agent-apply works from then on:"
-    fail "    $REPO/scripts/apply.sh switch"
+    fail "    $REPO/scripts/apply/apply.sh switch"
     exit 1
 fi
 
@@ -78,7 +78,7 @@ rm -f "$RC"
 # and not tee's, which always succeeds.
 step "applying ($MODE) in tmux session '$SESSION'"
 tmux new-session -d -s "$SESSION" \
-    "bash -lc 'set -o pipefail; \"$REPO/scripts/apply.sh\" \"$MODE\" 2>&1 | tee \"$LOG\"; echo \$? > \"$RC\"'"
+    "bash -lc 'set -o pipefail; \"$REPO/scripts/apply/apply.sh\" \"$MODE\" 2>&1 | tee \"$LOG\"; echo \$? > \"$RC\"'"
 
 # --- follow it -------------------------------------------------------------
 # --pid so the tail dies with this script if the agent is interrupted, rather

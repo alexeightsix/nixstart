@@ -29,7 +29,7 @@ let
       pkgs.coreutils
     ];
     text = ''
-      exec ${cfg.checkout}/scripts/agent-apply.sh "$@"
+      exec ${cfg.checkout}/scripts/apply/agent-apply.sh "$@"
     '';
   };
 
@@ -101,7 +101,7 @@ in
       pkgs.herdr-app
 
       # Applying a nix change is part of an agent's work here, not something
-      # handed back to be run by hand. See scripts/agent-apply.sh for what it
+      # handed back to be run by hand. See scripts/apply/agent-apply.sh for what it
       # does about the two things that otherwise stop it — the terminal dying
       # mid-rebuild, and a sudo prompt nothing can answer.
       agentApply

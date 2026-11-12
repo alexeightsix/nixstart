@@ -48,7 +48,7 @@ stop and tell them it is ready. To apply:
     agent-apply test      # live, leaving the boot menu alone
 
 Why it is done this way (the long version is at the top of
-`scripts/agent-apply.sh`):
+`scripts/apply/agent-apply.sh`):
 
 - **It outlives your terminal.** Activation can restart X, which kills every
   terminal on it, yours included, and a rebuild still running in one. The

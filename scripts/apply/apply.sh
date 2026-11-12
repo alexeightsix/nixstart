@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Build and apply this configuration.
 #
-#   scripts/apply.sh            stage for next boot (default, safest)
-#   scripts/apply.sh switch     apply live
-#   scripts/apply.sh test       apply live, but do not touch the boot menu
+#   scripts/apply/apply.sh            stage for next boot (default, safest)
+#   scripts/apply/apply.sh switch     apply live
+#   scripts/apply/apply.sh test       apply live, but do not touch the boot menu
 #
 # `boot` is the default deliberately: a change that restarts display-manager
 # kills X and this terminal mid-activation when run as `switch` from the session.
@@ -17,7 +17,7 @@ case "$MODE" in
     *) echo "usage: $0 [boot|switch|test]" >&2; exit 2 ;;
 esac
 
-REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 step() { printf '\n\033[1;32m==>\033[0m \033[1m%s\033[0m\n' "$*"; }
 warn() { printf '\033[1;33m    %s\033[0m\n' "$*"; }

@@ -1,5 +1,5 @@
 # Easy boot: power on and land on the desktop, with no LUKS passphrase and no
-# greeter password. Toggled with `scripts/easy-boot.sh on|off`, which flips
+# greeter password. Toggled with `scripts/boot/easy-boot.sh on|off`, which flips
 # system/easy-boot-flag.nix and does the parts that cannot live in Nix.
 #
 # The disk is not decrypted. Decrypting and re-encrypting the volume in place takes hours
@@ -28,12 +28,12 @@ in
     default = false;
     description = ''
       Unlock cryptroot from a key file in the initrd and auto-login the user.
-      Use scripts/easy-boot.sh to flip it: that script also creates and
+      Use scripts/boot/easy-boot.sh to flip it: that script also creates and
       enrolls the key, and revokes it again when you turn this off.
     '';
   };
 
-  # Outside the initrd: root-only, and enrolled by scripts/easy-boot.sh. It has
+  # Outside the initrd: root-only, and enrolled by scripts/boot/easy-boot.sh. It has
   # to exist before the rebuild, because the bootloader install copies it into
   # each initrd it writes.
   options.nixstart.system.easyBoot.keyFile = lib.mkOption {

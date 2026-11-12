@@ -104,7 +104,7 @@ in
             command = "/run/current-system/sw/bin/nixos-rebuild";
             options = [ "NOPASSWD" ];
           }
-          # scripts/apply.sh starts this first when a failed activation has
+          # scripts/apply/apply.sh starts this first when a failed activation has
           # left the daemon down, and a password prompt there would block
           # the rebuild before it began. Spelled out with its argument, so
           # it permits this one unit and not `systemctl start` in general.

@@ -24,7 +24,7 @@ set -euo pipefail
 die() { echo "install: $*" >&2; exit 1; }
 step() { echo; echo "==> $*"; }
 
-REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 DEVICE=""; LUKS=0; SWAP=""; KEEP_HOME=0; DRY=0
 while [ $# -gt 0 ]; do
@@ -158,7 +158,7 @@ install -m 0644 /mnt/etc/nixos/hardware-configuration.nix \
 
 {
     echo ""
-    echo "# Filesystems, written by scripts/install.sh."
+    echo "# Filesystems, written by scripts/install/install.sh."
     echo "{ ... }:"
     echo "{"
     echo "  fileSystems.\"/\"        = { device = \"/dev/disk/by-label/nixos\"; fsType = \"btrfs\"; options = [ \"subvol=@\" \"compress=zstd\" \"noatime\" ]; };"
