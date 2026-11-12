@@ -426,6 +426,12 @@ in
         # anything to a bar that hides, and i3 ignores them here.
         ${barOutputs}mode dock
         padding 0 0 0 0
+        # The Propo variant, not the `monospace` the rest of i3 uses: that
+        # resolves to the plain Nerd Font, which squeezes every icon into one
+        # cell, so wide ones (the battery) spill over the space after them and
+        # the gaps between blocks come out uneven. Propo gives each icon its
+        # real width; the text itself is still monospaced.
+        font pango:JetBrainsMono Nerd Font Propo 10
         bindsym button1 nop
         bindsym button4 nop
         bindsym button5 nop
