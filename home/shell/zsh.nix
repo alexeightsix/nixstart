@@ -19,15 +19,24 @@ in
 
     oh-my-zsh = {
       enable = true;
+      # No "fzf": programs.fzf in tools.nix already sources fzf's key bindings
+      # and completion from static files, where the plugin ran `fzf --zsh` on
+      # every shell start to produce the same thing a second time.
       plugins = [
         "docker-compose"
         "colorize"
-        "fzf"
       ];
       theme = "dracula";
       # oh-my-zsh's own directory is read-only in the store, so the Dracula
       # theme is a custom-directory drop-in.
       custom = "${pkgs.dracula-zsh-theme}";
+      # Skips oh-my-zsh's own compaudit pass, which looks for group- or
+      # world-writable completion directories. Every one on fpath here is a
+      # read-only store path, so it can only ever come back clean, and it was
+      # the most expensive thing left in shell startup.
+      extraConfig = ''
+        ZSH_DISABLE_COMPFIX=true
+      '';
     };
 
     # Ghost text off — the grey inline suggestion that completes from history.

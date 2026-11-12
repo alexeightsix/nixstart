@@ -54,6 +54,13 @@ in
   config = {
     programs.zsh.enable = true;
 
+    # The user's .zshrc (home/shell/zsh.nix) runs compinit through
+    # oh-my-zsh and sets its own prompt, so /etc/zshrc doing both first only
+    # doubled them: a second compinit, with its compaudit scan of every
+    # completion directory, was the largest single cost of opening a shell.
+    programs.zsh.enableGlobalCompInit = false;
+    programs.zsh.promptInit = "";
+
     # An account nobody can log into is worse than a weak first password, and
     # far harder to notice — it looks fine until the first boot.
     assertions = [
