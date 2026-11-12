@@ -116,7 +116,7 @@ in
 
       # Absolute store path, so the shader and the line naming it move
       # together.
-      custom-shader = lib.mkIf (shader != null) "${cfg.dotfiles}/ghostty-shaders/${shader}.glsl";
+      custom-shader = lib.mkIf (shader != null) "${cfg.dotfiles}/ghostty/shaders/${shader}.glsl";
 
       # Ghostty's own tabs and splits, driven by the tmux bindings in
       # home/shell/tmux.nix so the muscle memory is one set of keys whether
@@ -192,7 +192,7 @@ in
   # Both tracked shaders are installed, not just the selected one, so
   # switching is an option change rather than a file copy.
   xdg.configFile = {
-    "ghostty/shaders/bloom.glsl".source = "${cfg.dotfiles}/ghostty-shaders/bloom.glsl";
-    "ghostty/shaders/water.glsl".source = "${cfg.dotfiles}/ghostty-shaders/water.glsl";
+    "ghostty/shaders/bloom.glsl".source = "${cfg.dotfiles}/ghostty/shaders/bloom.glsl";
+    "ghostty/shaders/water.glsl".source = "${cfg.dotfiles}/ghostty/shaders/water.glsl";
   };
 }

@@ -7,7 +7,7 @@ in
   # A store symlink rather than seeded like flameshot.ini: lazydocker
   # rewrites this file with its full defaults on exit, and the read-only
   # store path is what makes that write fail and keeps the setting.
-  xdg.configFile."lazydocker/config.yml".source = "${cfg.dotfiles}/lazydocker.yml";
+  xdg.configFile."lazydocker/config.yml".source = "${cfg.dotfiles}/lazydocker/config.yml";
 
   programs.zoxide = {
     enable = true;

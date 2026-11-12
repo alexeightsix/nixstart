@@ -1,7 +1,7 @@
 # Screenshots.
 #
 # flameshot rewrites flameshot.ini from its own UI, so the file is seeded once
-# and then left alone; see home/lib.nix.
+# and then left alone; see lib/home.nix.
 {
   config,
   lib,
@@ -9,7 +9,7 @@
   ...
 }:
 let
-  helpers = import ../../lib.nix { inherit lib config; };
+  helpers = import ../../../lib/home.nix { inherit lib config; };
 
   # useX11LegacyScreenshot below is what makes ctrl+; work at all: flameshot 14
   # captures through the XDG screenshot portal, and no backend in nixpkgs

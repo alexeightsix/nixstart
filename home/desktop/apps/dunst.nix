@@ -1,6 +1,6 @@
 # Notifications.
 #
-# dotfiles/dunstrc is installed as-is rather than re-typed into `settings`;
+# dotfiles/dunst/dunstrc is installed as-is rather than re-typed into `settings`;
 # the home-manager module still runs the service.
 {
   config,
@@ -18,7 +18,7 @@ in
   # empty file, so the tracked one replaces it here. mkForce because both
   # definitions target the same path.
   xdg.configFile."dunst/dunstrc" = lib.mkForce {
-    source = "${cfg.dotfiles}/dunstrc";
+    source = "${cfg.dotfiles}/dunst/dunstrc";
   };
 
   # dunstrc asks for "JetBrains Mono 10" and icon lookup; neither works

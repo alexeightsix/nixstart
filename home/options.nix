@@ -73,7 +73,7 @@ in
         default = "bloom";
         description = ''
           Fragment shader Ghostty runs over the terminal, from
-          dotfiles/ghostty-shaders/. null turns the shader off.
+          dotfiles/ghostty/shaders/. null turns the shader off.
         '';
       };
 
@@ -280,7 +280,7 @@ in
       description = ''
         Toolchains, and the language servers and formatters Neovim's config
         expects to find on PATH. The editor configuration itself is not
-        managed here — see home/editor/neovim.nix.
+        managed here — see home/dev/neovim.nix.
 
         `android` is the Android SDK, a JDK 17 and Gradle. See
         packages/android-sdk for what the versions are pinned to and why.

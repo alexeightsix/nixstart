@@ -15,9 +15,6 @@
     ./shell/atuin.nix
     ./shell/tools.nix
 
-    ./git.nix
-    ./editor/neovim.nix
-
     ./desktop/wm/i3.nix
     ./desktop/wm/statusbar.nix
     ./desktop/wm/picom.nix
@@ -41,6 +38,8 @@
     ./desktop/apps/gtk.nix
     ./desktop/apps/network.nix
 
+    ./dev/git.nix
+    ./dev/neovim.nix
     ./dev/toolchains.nix
     ./dev/agents.nix
     ./dev/claude-plugins.nix

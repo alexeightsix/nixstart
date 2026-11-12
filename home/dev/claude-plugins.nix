@@ -16,7 +16,7 @@
 # settings.json is one of the files an application rewrites as you use it —
 # theme, effortLevel and the fullscreen toggle all land there from inside the
 # TUI — so it is merged rather than linked or seeded, for the reason spelled
-# out above mkSeededFile in ../lib.nix. A store symlink would be read-only and
+# out above mkSeededFile in lib/home.nix. A store symlink would be read-only and
 # every change made from /config would fail against it; seeding is a no-op on
 # a file that is already there.
 {
