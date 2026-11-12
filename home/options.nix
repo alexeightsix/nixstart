@@ -48,7 +48,7 @@ in
 
     wallpapers = mkOption {
       type = types.path;
-      description = "Store path of assets/wallpapers/ in this repository.";
+      description = "Store path of wallpapers/ in this repository.";
     };
 
     desktop = {
@@ -82,7 +82,7 @@ in
         default = null;
         example = "wallpaper-3.png";
         description = ''
-          Filename under assets/wallpapers/. null means the last one by name, so
+          Filename under wallpapers/. null means the last one by name, so
           adding a new wallpaper is all it takes to switch to it.
         '';
       };

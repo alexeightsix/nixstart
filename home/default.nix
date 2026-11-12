@@ -49,7 +49,7 @@
 
   # Both live in this repository, so the store path is this flake's source.
   nixstart.home.dotfiles = lib.mkDefault "${self}/dotfiles";
-  nixstart.home.wallpapers = lib.mkDefault "${self}/assets/wallpapers";
+  nixstart.home.wallpapers = lib.mkDefault "${self}/wallpapers";
 
   home.username = config.nixstart.home.user.name;
   home.homeDirectory = "/home/${config.nixstart.home.user.name}";

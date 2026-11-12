@@ -12,6 +12,6 @@
   users.groups.plugdev = { };
   nixstart.system.user.extraGroups = [ "plugdev" ];
 
-  # VIA is the flashing tool the layout in assets/keyboard/ is written for.
+  # VIA is the flashing tool the layout in keyboard/ is written for.
   environment.systemPackages = [ pkgs.via ];
 }
