@@ -151,6 +151,38 @@ let
     '';
   };
 
+  # $mod+Return opens Herdr and starts a new space in it. Herdr is a single
+  # window over herdr-core's terminals, so a press with it already open
+  # reuses that window rather than starting another. Ghostty stays for the
+  # `-e` launchers, which need a window of their own. space.new selects the
+  # space it makes, so focusing the window is all that is left.
+  herdrOpen = pkgs.writeShellApplication {
+    name = "i3-herdr-open";
+    runtimeInputs = [
+      pkgs.coreutils # seq, sleep
+      pkgs.i3
+      pkgs.jq
+      pkgs.herdr-app
+    ];
+    text = ''
+      open() {
+        i3-msg -t get_tree \
+          | jq -e 'any(.. | objects; .window_properties?.class? == "herdr-app")' > /dev/null
+      }
+
+      if ! open; then
+        herdr-app &
+        for _ in $(seq 50); do
+          open && herdr-app status > /dev/null 2>&1 && break
+          sleep 0.2
+        done
+      fi
+
+      herdr-app "do" space.new > /dev/null
+      i3-msg -q '[class="herdr-app"] focus'
+    '';
+  };
+
   # Which screen Ctrl+; captures.
   #
   # Without -n, `flameshot screen` on two screens puts up a monitor chooser
@@ -308,7 +340,7 @@ in
     bindsym XF86AudioMute exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-sink-mute @DEFAULT_SINK@ toggle && $refresh_i3status
     bindsym XF86AudioMicMute exec --no-startup-id ${pkgs.pulseaudio}/bin/pactl set-source-mute @DEFAULT_SOURCE@ toggle && $refresh_i3status
 
-    bindsym $mod+Return exec ${lib.getExe config.programs.ghostty.package}
+    bindsym $mod+Return exec --no-startup-id ${lib.getExe herdrOpen}
     bindsym $mod+q kill
     bindsym $mod+Tab focus right
 
